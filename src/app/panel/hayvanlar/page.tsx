@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { speciesLabels, genderLabels, statusLabels } from "@/lib/labels";
+import { DeleteAnimalButton } from "@/components/delete-animal-button";
 
 // Hayvan durumuna gore renkli rozet stili
 const statusStyles: Record<string, string> = {
@@ -49,6 +50,7 @@ export default async function HayvanlarPage() {
                 <th className="px-4 py-3 font-medium">Tur</th>
                 <th className="px-4 py-3 font-medium">Cinsiyet</th>
                 <th className="px-4 py-3 font-medium">Durum</th>
+                <th className="px-4 py-3 text-right font-medium">Islemler</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -72,6 +74,20 @@ export default async function HayvanlarPage() {
                     >
                       {statusLabels[animal.status]}
                     </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-4">
+                      <Link
+                        href={`/panel/hayvanlar/${animal.id}/duzenle`}
+                        className="text-sm font-medium text-green-600 hover:underline"
+                      >
+                        Duzenle
+                      </Link>
+                      <DeleteAnimalButton
+                        id={animal.id}
+                        label={animal.name ?? animal.tagNumber}
+                      />
+                    </div>
                   </td>
                 </tr>
               ))}
