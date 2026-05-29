@@ -64,4 +64,20 @@ model Animal {
   notes      String? // Serbest notlar
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
+
+  healthRecords HealthRecord[]
+}
+
+// Bir hayvana ait saglik/tedavi kaydi
+model HealthRecord {
+  id        String   @id @default(cuid())
+  animalId  String
+  animal    Animal   @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  date      DateTime // Muayene/tedavi tarihi
+  diagnosis String // Teshis
+  treatment String? // Uygulanan tedavi
+  notes     String? // Ek notlar
+  createdAt DateTime @default(now())
+
+  @@index([animalId])
 }
