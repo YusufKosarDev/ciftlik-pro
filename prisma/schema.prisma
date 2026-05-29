@@ -9,3 +9,22 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// Kullanici rolleri (RBAC)
+enum Role {
+  ADMIN // Yonetici: her seye tam erisim
+  WORKER // Calisan: hayvan/tarla/stok gunluk islemleri
+  VET // Veteriner: saglik, asi, tedavi
+  ACCOUNTANT // Muhasebeci: finans, gelir-gider, satis
+}
+
+// Sistemi kullanan personel
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String // Parolanin hash'lenmis hali saklanir, asla duz metin degil
+  role      Role     @default(WORKER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
