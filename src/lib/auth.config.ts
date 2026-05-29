@@ -13,6 +13,28 @@ export const authConfig = {
   },
 
   callbacks: {
+    // Middleware bu callback'i her istekte calistirir.
+    // true -> erisime izin ver, false -> giris sayfasina yonlendir.
+    authorized({ auth, request }) {
+      const isLoggedIn = !!auth?.user;
+      const { pathname } = request.nextUrl;
+
+      // Korumali alanlar
+      const isProtected = pathname.startsWith("/panel");
+
+      // Giris yapmamis kullanici korumali alana giremez
+      if (isProtected) {
+        return isLoggedIn;
+      }
+
+      // Giris yapmis kullanici giris/kayit sayfalarina giderse panele yonlendir
+      if (isLoggedIn && (pathname === "/giris" || pathname === "/kayit")) {
+        return Response.redirect(new URL("/panel", request.nextUrl));
+      }
+
+      return true;
+    },
+
     // Giris yapildiginda kullanicinin id ve rolunu token'a yaziyoruz.
     jwt({ token, user }) {
       if (user) {

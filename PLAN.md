@@ -90,11 +90,11 @@ User 1-N Task • Product 1-N Sale.
 - [x] .env yönetimi ve .gitignore
 
 ### Faz 1 — Kimlik Doğrulama & RBAC
-- [ ] Auth.js (NextAuth v5) kurulumu
-- [ ] Kayıt / giriş sayfaları
-- [ ] Parola hashleme
-- [ ] Roller ve rol bazlı erişim koruması (middleware)
-- [ ] Korumalı dashboard iskeleti ve menü
+- [x] Auth.js (NextAuth v5) kurulumu
+- [x] Kayıt / giriş sayfaları
+- [x] Parola hashleme (bcrypt)
+- [x] Giriş koruması (middleware) — rol bazlı detay yetki modüllerde eklenecek
+- [x] Korumalı panel iskeleti + çıkış (logout) ve menü
 
 ### Faz 2 — Çekirdek MVP: Hayvan Modülü
 - [ ] Animal CRUD (ekle / listele / düzenle / sil)
