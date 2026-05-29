@@ -82,13 +82,12 @@ User 1-N Task • Product 1-N Sale.
 > Her yeni adıma geçmeden önce planlanır, onaylanır, sonra uygulanır.
 
 ### Faz 0 — Kurulum
-- [ ] GitHub deposu oluştur
-- [ ] Next.js + TypeScript projesi başlat
-- [ ] Tailwind CSS + shadcn/ui kurulumu
-- [ ] PostgreSQL (Docker ile) ayağa kaldır
-- [ ] Prisma kurulumu ve bağlantısı
-- [ ] Klasör yapısı ve temel proje düzeni
-- [ ] .env yönetimi ve .gitignore
+- [x] GitHub deposu oluştur
+- [x] Next.js + TypeScript projesi başlat
+- [x] Tailwind CSS kurulumu (shadcn/ui sonra eklenecek)
+- [x] PostgreSQL (Docker ile) ayağa kaldır (port 5433)
+- [x] Prisma 6 kurulumu ve bağlantısı + Client singleton
+- [x] .env yönetimi ve .gitignore
 
 ### Faz 1 — Kimlik Doğrulama & RBAC
 - [ ] Auth.js (NextAuth v5) kurulumu
