@@ -28,3 +28,40 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// Hayvan turleri
+enum AnimalSpecies {
+  CATTLE // Sigir / inek
+  SHEEP // Koyun
+  GOAT // Keci
+  CHICKEN // Tavuk
+  OTHER // Diger
+}
+
+// Hayvanin cinsiyeti
+enum AnimalGender {
+  FEMALE // Disi
+  MALE // Erkek
+}
+
+// Hayvanin guncel durumu
+enum AnimalStatus {
+  ACTIVE // Ciftlikte aktif
+  SOLD // Satildi
+  DECEASED // Oldu
+}
+
+// Ciftlikteki hayvanlar
+model Animal {
+  id         String        @id @default(cuid())
+  tagNumber  String        @unique // Kulak kupesi numarasi (benzersiz)
+  name       String? // Istege bagli isim/lakap
+  species    AnimalSpecies
+  breed      String? // Cins/irk (orn. Holstein)
+  gender     AnimalGender
+  birthDate  DateTime?
+  status     AnimalStatus  @default(ACTIVE)
+  notes      String? // Serbest notlar
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+}
