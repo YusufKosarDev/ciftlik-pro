@@ -56,8 +56,13 @@ export default async function HayvanlarPage() {
             <tbody className="divide-y divide-gray-100">
               {animals.map((animal) => (
                 <tr key={animal.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">
-                    {animal.tagNumber}
+                  <td className="px-4 py-3 font-medium">
+                    <Link
+                      href={`/panel/hayvanlar/${animal.id}`}
+                      className="text-green-700 hover:underline"
+                    >
+                      {animal.tagNumber}
+                    </Link>
                   </td>
                   <td className="px-4 py-3 text-gray-700">{animal.name ?? "-"}</td>
                   <td className="px-4 py-3 text-gray-700">
