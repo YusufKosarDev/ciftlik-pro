@@ -46,7 +46,14 @@ export default async function TarlalarPage() {
             <tbody className="divide-y divide-gray-100">
               {fields.map((field) => (
                 <tr key={field.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">{field.name}</td>
+                  <td className="px-4 py-3 font-medium">
+                    <Link
+                      href={`/panel/tarlalar/${field.id}`}
+                      className="text-green-700 hover:underline"
+                    >
+                      {field.name}
+                    </Link>
+                  </td>
                   <td className="px-4 py-3 text-gray-700">{field.area}</td>
                   <td className="px-4 py-3 text-gray-700">{field.location ?? "-"}</td>
                   <td className="px-4 py-3">

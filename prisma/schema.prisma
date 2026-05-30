@@ -98,6 +98,13 @@ model Vaccination {
   @@index([animalId])
 }
 
+// Ekim durumu
+enum CropStatus {
+  PLANTED // Ekildi
+  GROWING // Buyuyor
+  HARVESTED // Hasat edildi
+}
+
 // Ciftlikteki tarlalar
 model Field {
   id        String   @id @default(cuid())
@@ -107,6 +114,23 @@ model Field {
   notes     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  crops Crop[]
+}
+
+// Bir tarlaya yapilan ekim/hasat kaydi
+model Crop {
+  id          String     @id @default(cuid())
+  fieldId     String
+  field       Field      @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  name        String // Urun adi (orn. Bugday)
+  plantedDate DateTime // Ekim tarihi
+  harvestDate DateTime? // Hasat tarihi (varsa)
+  status      CropStatus @default(PLANTED)
+  notes       String?
+  createdAt   DateTime   @default(now())
+
+  @@index([fieldId])
 }
 
 // Bir hayvanin gunluk sut verimi kaydi
