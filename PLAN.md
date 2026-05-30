@@ -104,16 +104,16 @@ User 1-N Task • Product 1-N Sale.
 - [x] Bu modül diğer modüller için şablon olacak
 
 ### Faz 3 — Diğer Modüller
-- [ ] Tarla Yönetimi (Field, Crop)
-- [ ] Stok & Envanter (InventoryItem)
-- [ ] Finans (Transaction)
-- [ ] Personel & Görevler (Task)
+- [x] Tarla Yönetimi (Field, Crop)
+- [x] Stok & Envanter (InventoryItem)
+- [x] Finans (Transaction)
+- [x] Personel & Görevler (Task)
 
 ### Faz 4 — Dashboard & Raporlama
-- [ ] Genel özet kartları
-- [ ] Süt verimi grafiği
-- [ ] Gelir-gider grafiği
-- [ ] Kritik stok uyarıları
+- [x] Genel özet kartları
+- [x] Süt verimi grafiği
+- [x] Gelir-gider grafiği
+- [x] Kritik stok uyarıları
 
 ### Faz 5 — Dosya / Resim Yükleme
 - [x] Hayvan görseli (URL ile; Cloudinary ileride eklenebilir)
@@ -121,15 +121,18 @@ User 1-N Task • Product 1-N Sale.
 ### Ek: Deploy öncesi iyileştirmeler
 - [x] Kayıt kısıtlaması (sadece admin personel ekler) — RBAC
 - [x] Tasarım cilası (giriş, üst bar, dashboard, liste başlıkları)
+- [x] Rol bazlı yetki zorlaması — tüm yazma API'leri rol kontrolü yapar
+      (`lib/authz.ts`); menü ve form sayfaları role göre gizlenir/korunur
 
 ### Faz 6 — Test
 - [x] Vitest ile birim testleri (12 test)
 - [x] Playwright ile uçtan uca testler (giriş akışı, koruma)
 
 ### Faz 7 — Docker & CI/CD
-- [ ] Uygulama için Dockerfile
-- [ ] docker-compose (uygulama + veritabanı)
-- [x] GitHub Actions ile CI (typecheck + lint + birim testleri)
+- [x] Uygulama için Dockerfile (multi-stage, standalone çıktı)
+- [x] docker-compose (uygulama + veritabanı + tek seferlik migrate servisi)
+- [x] Başlangıçta migration + idempotent ilk admin bootstrap
+- [x] GitHub Actions ile CI (typecheck + lint + birim + üretim derlemesi + e2e)
 
 ### Faz 8 — (Opsiyonel) E-ticaret Genişletme
 - [ ] Müşteri tarafı vitrin

@@ -10,6 +10,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    # Derleme/Prisma icin yer tutucu degiskenler (gercek DB'ye baglanilmaz).
+    env:
+      DATABASE_URL: "postgresql://placeholder:placeholder@localhost:5432/placeholder"
+      AUTH_SECRET: "ci-build-placeholder-secret"
+
     steps:
       - name: Depoyu cek
         uses: actions/checkout@v4
@@ -34,3 +39,57 @@ jobs:
 
       - name: Birim testleri
         run: npm test
+
+      - name: Uretim derlemesi
+        run: npm run build
+
+  e2e:
+    runs-on: ubuntu-latest
+
+    # Uctan uca testler icin gercek bir Postgres ve seed verisi gerekir.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ciftlik
+          POSTGRES_PASSWORD: ciftlik
+          POSTGRES_DB: ciftlik_test
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd "pg_isready -U ciftlik -d ciftlik_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: "postgresql://ciftlik:ciftlik@localhost:5432/ciftlik_test?schema=public"
+      AUTH_SECRET: "ci-e2e-test-secret"
+
+    steps:
+      - name: Depoyu cek
+        uses: actions/checkout@v4
+
+      - name: Node.js kur
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Bagimliliklari yukle
+        run: npm install
+
+      - name: Prisma Client uret
+        run: npx prisma generate
+
+      - name: Veritabani semasini uygula
+        run: npx prisma migrate deploy
+
+      - name: Ornek veriyle doldur (seed)
+        run: npm run db:seed
+
+      - name: Playwright tarayicilarini kur
+        run: npx playwright install --with-deps chromium
+
+      - name: Uctan uca testler
+        run: npm run test:e2e
