@@ -27,6 +27,30 @@ model User {
   role      Role     @default(WORKER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  tasks Task[]
+}
+
+// Gorev durumu
+enum TaskStatus {
+  PENDING // Bekliyor
+  IN_PROGRESS // Devam ediyor
+  DONE // Tamamlandi
+}
+
+// Personele atanan gorev
+model Task {
+  id           String     @id @default(cuid())
+  title        String // Gorev basligi
+  description  String?
+  assignedToId String?
+  assignedTo   User?      @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
+  status       TaskStatus @default(PENDING)
+  dueDate      DateTime? // Son tarih
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([assignedToId])
 }
 
 // Hayvan turleri
