@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { buildMonthlyFinance } from "@/lib/finance";
+import { MonthlyFinanceChart } from "@/components/monthly-finance-chart";
 
 function formatMoney(amount: number): string {
   return amount.toLocaleString("tr-TR", { minimumFractionDigits: 2 }) + " TL";
@@ -51,7 +53,7 @@ export default async function PanelPage() {
   ] = await Promise.all([
     prisma.animal.count({ where: { status: "ACTIVE" } }),
     prisma.field.count(),
-    prisma.transaction.findMany({ select: { type: true, amount: true } }),
+    prisma.transaction.findMany({ select: { type: true, amount: true, date: true } }),
     prisma.task.count({ where: { status: { not: "DONE" } } }),
     prisma.inventoryItem.findMany(),
     prisma.task.findMany({
@@ -77,6 +79,8 @@ export default async function PanelPage() {
   const criticalItems = inventoryItems.filter(
     (i) => i.quantity <= i.criticalLevel
   );
+
+  const monthlyFinance = buildMonthlyFinance(transactions);
 
   const hasAlerts =
     criticalItems.length > 0 ||
@@ -112,6 +116,9 @@ export default async function PanelPage() {
           value={String(pendingTasks)}
         />
       </div>
+
+      {/* Aylik gelir-gider grafigi */}
+      <MonthlyFinanceChart data={monthlyFinance} />
 
       {/* Uyarilar */}
       <section className="space-y-4">
