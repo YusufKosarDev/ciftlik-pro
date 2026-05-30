@@ -36,10 +36,15 @@ export default function GirisPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-sm rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
-        <h1 className="mb-1 text-2xl font-bold text-gray-900">Giris Yap</h1>
-        <p className="mb-6 text-sm text-gray-500">Ciftlik Pro hesabiniza giris yapin</p>
+    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-700 via-green-600 to-emerald-800 p-4">
+      <div className="w-full max-w-sm rounded-2xl border border-gray-100 bg-white p-8 shadow-xl">
+        <div className="mb-6 text-center">
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-3xl">
+            🌾
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">Ciftlik Pro</h1>
+          <p className="mt-1 text-sm text-gray-500">Hesabiniza giris yapin</p>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
