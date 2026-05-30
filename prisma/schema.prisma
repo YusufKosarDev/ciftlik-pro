@@ -98,6 +98,17 @@ model Vaccination {
   @@index([animalId])
 }
 
+// Ciftlikteki tarlalar
+model Field {
+  id        String   @id @default(cuid())
+  name      String // Tarla adi
+  area      Float // Alan (donum)
+  location  String? // Konum/mevki
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 // Bir hayvanin gunluk sut verimi kaydi
 model MilkYield {
   id        String   @id @default(cuid())
