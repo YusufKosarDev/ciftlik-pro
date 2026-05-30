@@ -127,7 +127,7 @@ User 1-N Task • Product 1-N Sale.
 ### Faz 7 — Docker & CI/CD
 - [ ] Uygulama için Dockerfile
 - [ ] docker-compose (uygulama + veritabanı)
-- [ ] GitHub Actions ile test/build pipeline
+- [x] GitHub Actions ile CI (typecheck + lint + birim testleri)
 
 ### Faz 8 — (Opsiyonel) E-ticaret Genişletme
 - [ ] Müşteri tarafı vitrin
