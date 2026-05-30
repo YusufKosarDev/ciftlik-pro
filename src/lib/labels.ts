@@ -3,6 +3,7 @@ import type {
   AnimalGender,
   AnimalStatus,
   CropStatus,
+  InventoryCategory,
 } from "@prisma/client";
 
 // Enum degerlerini arayuzde gosterecegimiz Turkce etiketlere ceviren haritalar.
@@ -30,4 +31,11 @@ export const cropStatusLabels: Record<CropStatus, string> = {
   PLANTED: "Ekildi",
   GROWING: "Buyuyor",
   HARVESTED: "Hasat edildi",
+};
+
+export const inventoryCategoryLabels: Record<InventoryCategory, string> = {
+  FEED: "Yem",
+  MEDICINE: "Ilac",
+  EQUIPMENT: "Ekipman",
+  OTHER: "Diger",
 };

@@ -98,6 +98,27 @@ model Vaccination {
   @@index([animalId])
 }
 
+// Envanter kategorileri
+enum InventoryCategory {
+  FEED // Yem
+  MEDICINE // Ilac
+  EQUIPMENT // Ekipman
+  OTHER // Diger
+}
+
+// Stok / envanter kalemi
+model InventoryItem {
+  id            String            @id @default(cuid())
+  name          String // Kalem adi
+  category      InventoryCategory
+  quantity      Float // Mevcut miktar
+  unit          String // Birim (kg, adet, litre...)
+  criticalLevel Float             @default(0) // Kritik seviye (altina dusunce uyari)
+  notes         String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
 // Ekim durumu
 enum CropStatus {
   PLANTED // Ekildi

@@ -39,6 +39,12 @@ export default async function PanelLayout({
             >
               Tarlalar
             </Link>
+            <Link
+              href="/panel/stok"
+              className="text-gray-600 hover:text-green-700"
+            >
+              Stok
+            </Link>
           </nav>
         </div>
         <div className="flex items-center gap-4">
