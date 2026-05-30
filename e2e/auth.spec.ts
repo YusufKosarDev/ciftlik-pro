@@ -7,7 +7,8 @@ test("oturumsuz kullanici korunan sayfadan giris'e yonlendirilir", async ({
 }) => {
   await page.goto("/panel");
   await expect(page).toHaveURL(/\/giris/);
-  await expect(page.getByRole("heading", { name: "Giris Yap" })).toBeVisible();
+  // Giris sayfasi render oldu mu: form gonder butonu gorunur olmali.
+  await expect(page.getByRole("button", { name: "Giris Yap" })).toBeVisible();
 });
 
 test("gecerli bilgilerle giris yapilip panele ulasilir", async ({ page }) => {
