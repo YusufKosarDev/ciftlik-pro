@@ -17,21 +17,57 @@ function StatCard({
   href,
   label,
   value,
+  icon,
   valueClass = "text-gray-900",
 }: {
   href: string;
   label: string;
   value: string;
+  icon: string;
   valueClass?: string;
 }) {
   return (
     <Link
       href={href}
-      className="rounded-xl border border-gray-200 bg-white p-5 transition hover:border-green-400 hover:shadow-sm"
+      className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-5 transition hover:border-green-400 hover:shadow-md"
     >
-      <p className="text-sm text-gray-500">{label}</p>
-      <p className={`mt-1 text-2xl font-bold ${valueClass}`}>{value}</p>
+      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-green-50 text-2xl">
+        {icon}
+      </span>
+      <div>
+        <p className="text-sm text-gray-500">{label}</p>
+        <p className={`mt-0.5 text-2xl font-bold ${valueClass}`}>{value}</p>
+      </div>
     </Link>
+  );
+}
+
+// Uyari kutusu bileseni
+function AlertCard({
+  title,
+  icon,
+  emptyText,
+  children,
+  hasItems,
+}: {
+  title: string;
+  icon: string;
+  emptyText: string;
+  children: React.ReactNode;
+  hasItems: boolean;
+}) {
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-5">
+      <h3 className="mb-3 flex items-center gap-2 font-semibold text-gray-900">
+        <span>{icon}</span>
+        {title}
+      </h3>
+      {hasItems ? (
+        <ul className="space-y-2 text-sm">{children}</ul>
+      ) : (
+        <p className="text-sm text-gray-400">{emptyText}</p>
+      )}
+    </div>
   );
 }
 
@@ -102,18 +138,26 @@ export default async function PanelPage() {
           href="/panel/hayvanlar"
           label="Aktif Hayvan"
           value={String(animalCount)}
+          icon="🐮"
         />
-        <StatCard href="/panel/tarlalar" label="Tarla" value={String(fieldCount)} />
+        <StatCard
+          href="/panel/tarlalar"
+          label="Tarla"
+          value={String(fieldCount)}
+          icon="🌾"
+        />
         <StatCard
           href="/panel/finans"
           label="Net Bakiye"
           value={formatMoney(balance)}
+          icon="💰"
           valueClass={balance >= 0 ? "text-green-600" : "text-red-600"}
         />
         <StatCard
           href="/panel/gorevler"
           label="Acik Gorev"
           value={String(pendingTasks)}
+          icon="✅"
         />
       </div>
 
@@ -130,64 +174,55 @@ export default async function PanelPage() {
           </p>
         ) : (
           <div className="grid gap-4 lg:grid-cols-3">
-            {/* Kritik stok */}
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
-              <h3 className="mb-3 font-semibold text-gray-900">Kritik Stok</h3>
-              {criticalItems.length === 0 ? (
-                <p className="text-sm text-gray-500">Kritik stok yok.</p>
-              ) : (
-                <ul className="space-y-2 text-sm">
-                  {criticalItems.map((i) => (
-                    <li key={i.id} className="flex justify-between">
-                      <span className="text-gray-700">{i.name}</span>
-                      <span className="font-medium text-red-600">
-                        {i.quantity} {i.unit}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+            <AlertCard
+              title="Kritik Stok"
+              icon="📦"
+              emptyText="Kritik stok yok."
+              hasItems={criticalItems.length > 0}
+            >
+              {criticalItems.map((i) => (
+                <li key={i.id} className="flex justify-between">
+                  <span className="text-gray-700">{i.name}</span>
+                  <span className="font-medium text-red-600">
+                    {i.quantity} {i.unit}
+                  </span>
+                </li>
+              ))}
+            </AlertCard>
 
-            {/* Geciken gorevler */}
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
-              <h3 className="mb-3 font-semibold text-gray-900">Geciken Gorevler</h3>
-              {overdueTasks.length === 0 ? (
-                <p className="text-sm text-gray-500">Geciken gorev yok.</p>
-              ) : (
-                <ul className="space-y-2 text-sm">
-                  {overdueTasks.map((t) => (
-                    <li key={t.id} className="flex justify-between">
-                      <span className="text-gray-700">{t.title}</span>
-                      <span className="font-medium text-red-600">
-                        {t.dueDate ? formatDate(t.dueDate) : "-"}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+            <AlertCard
+              title="Geciken Gorevler"
+              icon="⏰"
+              emptyText="Geciken gorev yok."
+              hasItems={overdueTasks.length > 0}
+            >
+              {overdueTasks.map((t) => (
+                <li key={t.id} className="flex justify-between">
+                  <span className="text-gray-700">{t.title}</span>
+                  <span className="font-medium text-red-600">
+                    {t.dueDate ? formatDate(t.dueDate) : "-"}
+                  </span>
+                </li>
+              ))}
+            </AlertCard>
 
-            {/* Yaklasan asilar */}
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
-              <h3 className="mb-3 font-semibold text-gray-900">Yaklasan Asilar</h3>
-              {upcomingVaccinations.length === 0 ? (
-                <p className="text-sm text-gray-500">Yaklasan asi yok.</p>
-              ) : (
-                <ul className="space-y-2 text-sm">
-                  {upcomingVaccinations.map((v) => (
-                    <li key={v.id} className="flex justify-between">
-                      <span className="text-gray-700">
-                        {v.animal.name ?? v.animal.tagNumber} · {v.name}
-                      </span>
-                      <span className="font-medium text-yellow-700">
-                        {v.nextDate ? formatDate(v.nextDate) : "-"}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+            <AlertCard
+              title="Yaklasan Asilar"
+              icon="💉"
+              emptyText="Yaklasan asi yok."
+              hasItems={upcomingVaccinations.length > 0}
+            >
+              {upcomingVaccinations.map((v) => (
+                <li key={v.id} className="flex justify-between">
+                  <span className="text-gray-700">
+                    {v.animal.name ?? v.animal.tagNumber} · {v.name}
+                  </span>
+                  <span className="font-medium text-yellow-700">
+                    {v.nextDate ? formatDate(v.nextDate) : "-"}
+                  </span>
+                </li>
+              ))}
+            </AlertCard>
           </div>
         )}
       </section>
