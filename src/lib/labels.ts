@@ -6,6 +6,7 @@ import type {
   InventoryCategory,
   TransactionType,
   TaskStatus,
+  Role,
 } from "@prisma/client";
 
 // Enum degerlerini arayuzde gosterecegimiz Turkce etiketlere ceviren haritalar.
@@ -51,4 +52,11 @@ export const taskStatusLabels: Record<TaskStatus, string> = {
   PENDING: "Bekliyor",
   IN_PROGRESS: "Devam ediyor",
   DONE: "Tamamlandi",
+};
+
+export const roleLabels: Record<Role, string> = {
+  ADMIN: "Yonetici",
+  WORKER: "Calisan",
+  VET: "Veteriner",
+  ACCOUNTANT: "Muhasebeci",
 };

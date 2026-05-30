@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 
 export default function GirisPage() {
   const router = useRouter();
@@ -83,13 +82,6 @@ export default function GirisPage() {
             {loading ? "Giris yapiliyor..." : "Giris Yap"}
           </button>
         </form>
-
-        <p className="mt-6 text-center text-sm text-gray-500">
-          Hesabin yok mu?{" "}
-          <Link href="/kayit" className="font-medium text-green-600 hover:underline">
-            Kayit ol
-          </Link>
-        </p>
       </div>
     </main>
   );

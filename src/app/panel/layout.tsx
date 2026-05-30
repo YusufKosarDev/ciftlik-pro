@@ -57,6 +57,14 @@ export default async function PanelLayout({
             >
               Gorevler
             </Link>
+            {session.user.role === "ADMIN" && (
+              <Link
+                href="/panel/personel"
+                className="text-gray-600 hover:text-green-700"
+              >
+                Personel
+              </Link>
+            )}
           </nav>
         </div>
         <div className="flex items-center gap-4">

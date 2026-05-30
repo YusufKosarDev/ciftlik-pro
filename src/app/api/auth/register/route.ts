@@ -1,12 +1,25 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { registerSchema } from "@/lib/validations/auth";
 
 // POST /api/auth/register
-// Yeni kullanici kaydi olusturur.
+// Yeni kullanici kaydi olusturur (sadece ADMIN).
 export async function POST(request: Request) {
   try {
+    // 0) Sadece ADMIN yeni kullanici olusturabilir
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+    }
+    if (session.user.role !== "ADMIN") {
+      return NextResponse.json(
+        { error: "Bu islem icin yetkiniz yok" },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
 
     // 1) Gelen veriyi dogrula
@@ -18,7 +31,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { name, email, password } = parsed.data;
+    const { name, email, password, role } = parsed.data;
 
     // 2) E-posta zaten kayitli mi?
     const existing = await prisma.user.findUnique({ where: { email } });
@@ -34,7 +47,7 @@ export async function POST(request: Request) {
 
     // 4) Kullaniciyi olustur
     const user = await prisma.user.create({
-      data: { name, email, password: passwordHash },
+      data: { name, email, password: passwordHash, role },
       // Parolayi asla geri dondurmuyoruz
       select: { id: true, name: true, email: true, role: true, createdAt: true },
     });
