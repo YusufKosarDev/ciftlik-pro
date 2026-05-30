@@ -21,7 +21,7 @@ jobs:
           cache: npm
 
       - name: Bagimliliklari yukle
-        run: npm ci
+        run: npm install
 
       - name: Prisma Client uret
         run: npx prisma generate
