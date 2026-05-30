@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { authorizeWrite } from "@/lib/authz";
 import { inventorySchema } from "@/lib/validations/inventory";
 
 // POST /api/inventory -> yeni stok kalemi olusturur
 export async function POST(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
-    }
+    const authz = await authorizeWrite("inventory");
+    if ("error" in authz) return authz.error;
 
     const body = await request.json();
     const parsed = inventorySchema.safeParse(body);

@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { AnimalForm } from "@/components/animal-form";
+import { requirePageWrite } from "@/lib/authz";
 
-export default function YeniHayvanPage() {
+export default async function YeniHayvanPage() {
+  await requirePageWrite("animals");
+
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-center justify-between">

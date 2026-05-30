@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { LogoutButton } from "@/components/logout-button";
 import { PanelNav } from "@/components/panel-nav";
 import { roleLabels } from "@/lib/labels";
+import { navHrefsFor } from "@/lib/authz";
 
 export default async function PanelLayout({
   children,
@@ -17,17 +18,18 @@ export default async function PanelLayout({
     redirect("/giris");
   }
 
-  const navItems = [
+  // Tum olasi menu ogeleri; her rol yalnizca yetkili oldugu yollari gorur.
+  const allNavItems = [
     { href: "/panel", label: "Panel" },
     { href: "/panel/hayvanlar", label: "Hayvanlar" },
     { href: "/panel/tarlalar", label: "Tarlalar" },
     { href: "/panel/stok", label: "Stok" },
     { href: "/panel/finans", label: "Finans" },
     { href: "/panel/gorevler", label: "Gorevler" },
+    { href: "/panel/personel", label: "Personel" },
   ];
-  if (session.user.role === "ADMIN") {
-    navItems.push({ href: "/panel/personel", label: "Personel" });
-  }
+  const allowed = navHrefsFor(session.user.role);
+  const navItems = allNavItems.filter((item) => allowed.has(item.href));
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -2,12 +2,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { TaskForm } from "@/components/task-form";
+import { requirePageWrite } from "@/lib/authz";
 
 export default async function GorevDuzenlePage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requirePageWrite("tasks");
+
   const { id } = await params;
   const [task, users] = await Promise.all([
     prisma.task.findUnique({ where: { id } }),

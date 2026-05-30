@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import { canWrite } from "@/lib/authz";
 import { inventoryCategoryLabels } from "@/lib/labels";
 import { DeleteInventoryButton } from "@/components/delete-inventory-button";
 
@@ -11,6 +13,9 @@ export default async function StokPage() {
   const criticalCount = items.filter(
     (i) => i.quantity <= i.criticalLevel
   ).length;
+
+  const session = await auth();
+  const canEdit = session ? canWrite(session.user.role, "inventory") : false;
 
   return (
     <div className="space-y-6">
@@ -28,23 +33,27 @@ export default async function StokPage() {
             )}
           </p>
         </div>
-        <Link
-          href="/panel/stok/yeni"
-          className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700"
-        >
-          + Yeni Kalem
-        </Link>
+        {canEdit && (
+          <Link
+            href="/panel/stok/yeni"
+            className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700"
+          >
+            + Yeni Kalem
+          </Link>
+        )}
       </div>
 
       {items.length === 0 ? (
         <div className="rounded-xl border border-dashed border-gray-300 bg-white p-12 text-center">
           <p className="text-gray-500">Henuz stok kalemi eklenmemis.</p>
-          <Link
-            href="/panel/stok/yeni"
-            className="mt-3 inline-block text-sm font-medium text-green-600 hover:underline"
-          >
-            Ilk kalemi ekle
-          </Link>
+          {canEdit && (
+            <Link
+              href="/panel/stok/yeni"
+              className="mt-3 inline-block text-sm font-medium text-green-600 hover:underline"
+            >
+              Ilk kalemi ekle
+            </Link>
+          )}
         </div>
       ) : (
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
@@ -55,7 +64,9 @@ export default async function StokPage() {
                 <th className="px-4 py-3 font-medium">Kategori</th>
                 <th className="px-4 py-3 font-medium">Miktar</th>
                 <th className="px-4 py-3 font-medium">Kritik</th>
-                <th className="px-4 py-3 text-right font-medium">Islemler</th>
+                {canEdit && (
+                  <th className="px-4 py-3 text-right font-medium">Islemler</th>
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -88,17 +99,19 @@ export default async function StokPage() {
                     <td className="px-4 py-3 text-gray-500">
                       {item.criticalLevel} {item.unit}
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-4">
-                        <Link
-                          href={`/panel/stok/${item.id}/duzenle`}
-                          className="text-sm font-medium text-green-600 hover:underline"
-                        >
-                          Duzenle
-                        </Link>
-                        <DeleteInventoryButton id={item.id} label={item.name} />
-                      </div>
-                    </td>
+                    {canEdit && (
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-end gap-4">
+                          <Link
+                            href={`/panel/stok/${item.id}/duzenle`}
+                            className="text-sm font-medium text-green-600 hover:underline"
+                          >
+                            Duzenle
+                          </Link>
+                          <DeleteInventoryButton id={item.id} label={item.name} />
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 );
               })}

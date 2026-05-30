@@ -10,7 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "db:seed-admin": "node prisma/ensure-admin.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import { canWrite } from "@/lib/authz";
 import { taskStatusLabels } from "@/lib/labels";
 import { DeleteTaskButton } from "@/components/delete-task-button";
 
@@ -26,6 +28,9 @@ export default async function GorevlerPage() {
     include: { assignedTo: { select: { name: true } } },
   });
 
+  const session = await auth();
+  const canEdit = session ? canWrite(session.user.role, "tasks") : false;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -35,23 +40,27 @@ export default async function GorevlerPage() {
           </h1>
           <p className="text-sm text-gray-500">Toplam {tasks.length} gorev</p>
         </div>
-        <Link
-          href="/panel/gorevler/yeni"
-          className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700"
-        >
-          + Yeni Gorev
-        </Link>
+        {canEdit && (
+          <Link
+            href="/panel/gorevler/yeni"
+            className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700"
+          >
+            + Yeni Gorev
+          </Link>
+        )}
       </div>
 
       {tasks.length === 0 ? (
         <div className="rounded-xl border border-dashed border-gray-300 bg-white p-12 text-center">
           <p className="text-gray-500">Henuz gorev eklenmemis.</p>
-          <Link
-            href="/panel/gorevler/yeni"
-            className="mt-3 inline-block text-sm font-medium text-green-600 hover:underline"
-          >
-            Ilk gorevi ekle
-          </Link>
+          {canEdit && (
+            <Link
+              href="/panel/gorevler/yeni"
+              className="mt-3 inline-block text-sm font-medium text-green-600 hover:underline"
+            >
+              Ilk gorevi ekle
+            </Link>
+          )}
         </div>
       ) : (
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
@@ -62,7 +71,9 @@ export default async function GorevlerPage() {
                 <th className="px-4 py-3 font-medium">Atanan</th>
                 <th className="px-4 py-3 font-medium">Son Tarih</th>
                 <th className="px-4 py-3 font-medium">Durum</th>
-                <th className="px-4 py-3 text-right font-medium">Islemler</th>
+                {canEdit && (
+                  <th className="px-4 py-3 text-right font-medium">Islemler</th>
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -95,17 +106,19 @@ export default async function GorevlerPage() {
                         {taskStatusLabels[task.status]}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-4">
-                        <Link
-                          href={`/panel/gorevler/${task.id}/duzenle`}
-                          className="text-sm font-medium text-green-600 hover:underline"
-                        >
-                          Duzenle
-                        </Link>
-                        <DeleteTaskButton id={task.id} />
-                      </div>
-                    </td>
+                    {canEdit && (
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-end gap-4">
+                          <Link
+                            href={`/panel/gorevler/${task.id}/duzenle`}
+                            className="text-sm font-medium text-green-600 hover:underline"
+                          >
+                            Duzenle
+                          </Link>
+                          <DeleteTaskButton id={task.id} />
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 );
               })}

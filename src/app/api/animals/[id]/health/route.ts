@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { authorizeWrite } from "@/lib/authz";
 import { healthRecordSchema } from "@/lib/validations/health";
 
 // POST /api/animals/[id]/health -> hayvana saglik kaydi ekler
@@ -9,10 +9,8 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
-    }
+    const authz = await authorizeWrite("animalMedical");
+    if ("error" in authz) return authz.error;
 
     const { id } = await params;
     const body = await request.json();

@@ -17,5 +17,40 @@ services:
       timeout: 5s
       retries: 5
 
+  # Tek seferlik: bekleyen migration'lari uygular, sonra cikar.
+  migrate:
+    build:
+      context: .
+      target: migrator
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public"
+    restart: "no"
+
+  app:
+    build:
+      context: .
+      target: runner
+    container_name: ciftlik_app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      # Once migration'lar tamamlansin, sonra app baslasin.
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      # Container icinden DB'ye Docker agi uzerinden baglanilir (db:5432)
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public"
+      AUTH_SECRET: ${AUTH_SECRET}
+      # Bos veritabaninda olusturulacak ilk yonetici (idempotent).
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ADMIN_NAME: ${ADMIN_NAME}
+    ports:
+      - "3000:3000"
+
 volumes:
   ciftlik_db_data:
