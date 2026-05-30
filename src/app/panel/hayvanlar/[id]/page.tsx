@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { speciesLabels, genderLabels, statusLabels } from "@/lib/labels";
 import { HealthRecordForm } from "@/components/health-record-form";
 import { VaccinationForm } from "@/components/vaccination-form";
+import { MilkYieldForm } from "@/components/milk-yield-form";
 
 const statusStyles: Record<string, string> = {
   ACTIVE: "bg-green-100 text-green-700",
@@ -79,12 +80,23 @@ export default async function HayvanDetayPage({
     include: {
       healthRecords: { orderBy: { date: "desc" } },
       vaccinations: { orderBy: { date: "desc" } },
+      milkYields: { orderBy: { date: "desc" } },
     },
   });
 
   if (!animal) {
     notFound();
   }
+
+  // Sut verimi ozeti
+  const totalMilk = animal.milkYields.reduce((sum, m) => sum + m.amount, 0);
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const last7 = animal.milkYields.filter((m) => new Date(m.date) >= sevenDaysAgo);
+  const avg7Milk =
+    last7.length > 0
+      ? last7.reduce((sum, m) => sum + m.amount, 0) / last7.length
+      : 0;
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -196,6 +208,57 @@ export default async function HayvanDetayPage({
                     <td className="px-4 py-2 text-gray-700">{formatDate(v.date)}</td>
                     <td className="px-4 py-2">{nextVaccineBadge(v.nextDate)}</td>
                     <td className="px-4 py-2 text-gray-700">{v.notes ?? "-"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      {/* Sut Verimi */}
+      <section className="space-y-4">
+        <h2 className="text-lg font-bold text-gray-900">Sut Verimi</h2>
+
+        {animal.milkYields.length > 0 && (
+          <div className="flex gap-4">
+            <div className="rounded-xl border border-gray-200 bg-white px-5 py-3">
+              <p className="text-xs text-gray-500">Toplam</p>
+              <p className="text-lg font-bold text-gray-900">
+                {totalMilk.toFixed(1)} L
+              </p>
+            </div>
+            <div className="rounded-xl border border-gray-200 bg-white px-5 py-3">
+              <p className="text-xs text-gray-500">Son 7 gun ortalama</p>
+              <p className="text-lg font-bold text-gray-900">
+                {avg7Milk.toFixed(1)} L/gun
+              </p>
+            </div>
+          </div>
+        )}
+
+        <MilkYieldForm animalId={animal.id} />
+
+        {animal.milkYields.length === 0 ? (
+          <p className="text-sm text-gray-500">Henuz sut verimi kaydi yok.</p>
+        ) : (
+          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-gray-200 bg-gray-50 text-gray-600">
+                <tr>
+                  <th className="px-4 py-2 font-medium">Tarih</th>
+                  <th className="px-4 py-2 font-medium">Miktar (L)</th>
+                  <th className="px-4 py-2 font-medium">Not</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {animal.milkYields.map((m) => (
+                  <tr key={m.id}>
+                    <td className="px-4 py-2 text-gray-700">{formatDate(m.date)}</td>
+                    <td className="px-4 py-2 font-medium text-gray-900">
+                      {m.amount.toFixed(1)}
+                    </td>
+                    <td className="px-4 py-2 text-gray-700">{m.notes ?? "-"}</td>
                   </tr>
                 ))}
               </tbody>
