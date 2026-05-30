@@ -66,6 +66,7 @@ model Animal {
   updatedAt  DateTime      @updatedAt
 
   healthRecords HealthRecord[]
+  vaccinations  Vaccination[]
 }
 
 // Bir hayvana ait saglik/tedavi kaydi
@@ -78,6 +79,20 @@ model HealthRecord {
   treatment String? // Uygulanan tedavi
   notes     String? // Ek notlar
   createdAt DateTime @default(now())
+
+  @@index([animalId])
+}
+
+// Bir hayvana yapilan asi kaydi
+model Vaccination {
+  id        String    @id @default(cuid())
+  animalId  String
+  animal    Animal    @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  name      String // Asi adi
+  date      DateTime // Yapilis tarihi
+  nextDate  DateTime? // Sonraki asi tarihi (varsa)
+  notes     String?
+  createdAt DateTime  @default(now())
 
   @@index([animalId])
 }
