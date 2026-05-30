@@ -97,11 +97,11 @@ User 1-N Task • Product 1-N Sale.
 - [x] Korumalı panel iskeleti + çıkış (logout) ve menü
 
 ### Faz 2 — Çekirdek MVP: Hayvan Modülü
-- [ ] Animal CRUD (ekle / listele / düzenle / sil)
-- [ ] Sağlık kaydı (HealthRecord)
-- [ ] Aşı takvimi (Vaccination)
-- [ ] Süt verimi (MilkYield)
-- [ ] Bu modül diğer modüller için şablon olacak
+- [x] Animal CRUD (ekle / listele / düzenle / sil) + detay sayfası
+- [x] Sağlık kaydı (HealthRecord)
+- [x] Aşı takvimi (Vaccination) + tarih uyarıları
+- [x] Süt verimi (MilkYield) + özet kartları
+- [x] Bu modül diğer modüller için şablon olacak
 
 ### Faz 3 — Diğer Modüller
 - [ ] Tarla Yönetimi (Field, Crop)
