@@ -4,6 +4,7 @@ import type {
   AnimalStatus,
   CropStatus,
   InventoryCategory,
+  TransactionType,
 } from "@prisma/client";
 
 // Enum degerlerini arayuzde gosterecegimiz Turkce etiketlere ceviren haritalar.
@@ -38,4 +39,9 @@ export const inventoryCategoryLabels: Record<InventoryCategory, string> = {
   MEDICINE: "Ilac",
   EQUIPMENT: "Ekipman",
   OTHER: "Diger",
+};
+
+export const transactionTypeLabels: Record<TransactionType, string> = {
+  INCOME: "Gelir",
+  EXPENSE: "Gider",
 };

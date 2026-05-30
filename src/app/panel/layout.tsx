@@ -45,6 +45,12 @@ export default async function PanelLayout({
             >
               Stok
             </Link>
+            <Link
+              href="/panel/finans"
+              className="text-gray-600 hover:text-green-700"
+            >
+              Finans
+            </Link>
           </nav>
         </div>
         <div className="flex items-center gap-4">

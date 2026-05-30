@@ -98,6 +98,25 @@ model Vaccination {
   @@index([animalId])
 }
 
+// Finansal islem turu
+enum TransactionType {
+  INCOME // Gelir
+  EXPENSE // Gider
+}
+
+// Gelir/gider kaydi
+model Transaction {
+  id          String          @id @default(cuid())
+  type        TransactionType
+  amount      Float // Tutar (TL)
+  category    String // Kategori (orn. Sut satisi, Yem alimi)
+  date        DateTime // Islem tarihi
+  description String?
+  createdAt   DateTime        @default(now())
+
+  @@index([date])
+}
+
 // Envanter kategorileri
 enum InventoryCategory {
   FEED // Yem
