@@ -1,0 +1,34 @@
+import { test, expect } from "@playwright/test";
+
+// Bu testler seed verisini kullanir: admin@ciftlik.com / sifre1234
+
+test("oturumsuz kullanici korunan sayfadan giris'e yonlendirilir", async ({
+  page,
+}) => {
+  await page.goto("/panel");
+  await expect(page).toHaveURL(/\/giris/);
+  await expect(page.getByRole("heading", { name: "Giris Yap" })).toBeVisible();
+});
+
+test("gecerli bilgilerle giris yapilip panele ulasilir", async ({ page }) => {
+  await page.goto("/giris");
+
+  await page.getByLabel("E-posta").fill("admin@ciftlik.com");
+  await page.getByLabel("Parola").fill("sifre1234");
+  await page.getByRole("button", { name: "Giris Yap" }).click();
+
+  // Panele yonlendirilmeli ve karsilama gorunmeli
+  await expect(page).toHaveURL(/\/panel/);
+  await expect(page.getByRole("heading", { name: "Panel" })).toBeVisible();
+});
+
+test("hatali parola ile giris reddedilir", async ({ page }) => {
+  await page.goto("/giris");
+
+  await page.getByLabel("E-posta").fill("admin@ciftlik.com");
+  await page.getByLabel("Parola").fill("yanlisparola");
+  await page.getByRole("button", { name: "Giris Yap" }).click();
+
+  // Giris sayfasinda kalmali ve hata gostermeli
+  await expect(page.getByText("E-posta veya parola hatali")).toBeVisible();
+});
