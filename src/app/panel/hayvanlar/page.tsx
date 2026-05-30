@@ -19,7 +19,9 @@ export default async function HayvanlarPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Hayvanlar</h1>
+          <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900">
+            <span>🐮</span> Hayvanlar
+          </h1>
           <p className="text-sm text-gray-500">Toplam {animals.length} kayit</p>
         </div>
         <Link

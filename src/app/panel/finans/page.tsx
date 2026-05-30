@@ -27,7 +27,9 @@ export default async function FinansPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Finans</h1>
+        <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900">
+          <span>💰</span> Finans
+        </h1>
         <Link
           href="/panel/finans/yeni"
           className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700"
