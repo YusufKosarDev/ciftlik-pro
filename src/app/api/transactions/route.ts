@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { authorizeWrite } from "@/lib/authz";
 import { transactionSchema } from "@/lib/validations/transaction";
 
 // POST /api/transactions -> yeni gelir/gider kaydi olusturur
 export async function POST(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
-    }
+    const authz = await authorizeWrite("transactions");
+    if ("error" in authz) return authz.error;
 
     const body = await request.json();
     const parsed = transactionSchema.safeParse(body);

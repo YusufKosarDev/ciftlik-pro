@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { authorizeWrite } from "@/lib/authz";
 import { animalSchema } from "@/lib/validations/animal";
 
 // PUT /api/animals/[id] -> hayvani gunceller
@@ -9,10 +9,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
-    }
+    const authz = await authorizeWrite("animals");
+    if ("error" in authz) return authz.error;
 
     const { id } = await params;
     const body = await request.json();
@@ -75,10 +73,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
-    }
+    const authz = await authorizeWrite("animals");
+    if ("error" in authz) return authz.error;
 
     const { id } = await params;
 

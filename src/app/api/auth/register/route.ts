@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { authorizeWrite } from "@/lib/authz";
 import { registerSchema } from "@/lib/validations/auth";
 
 // POST /api/auth/register
@@ -9,16 +9,8 @@ import { registerSchema } from "@/lib/validations/auth";
 export async function POST(request: Request) {
   try {
     // 0) Sadece ADMIN yeni kullanici olusturabilir
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
-    }
-    if (session.user.role !== "ADMIN") {
-      return NextResponse.json(
-        { error: "Bu islem icin yetkiniz yok" },
-        { status: 403 }
-      );
-    }
+    const authz = await authorizeWrite("users");
+    if ("error" in authz) return authz.error;
 
     const body = await request.json();
 

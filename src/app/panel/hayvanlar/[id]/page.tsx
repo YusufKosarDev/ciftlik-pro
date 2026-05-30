@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import { canWrite } from "@/lib/authz";
 import { speciesLabels, genderLabels, statusLabels } from "@/lib/labels";
 import { HealthRecordForm } from "@/components/health-record-form";
 import { VaccinationForm } from "@/components/vaccination-form";
@@ -88,6 +90,13 @@ export default async function HayvanDetayPage({
     notFound();
   }
 
+  // Rol bazli yetkiler: hayvan duzenleme, tibbi kayit (saglik/asi), sut verimi
+  const session = await auth();
+  const role = session?.user.role;
+  const canEditAnimal = role ? canWrite(role, "animals") : false;
+  const canMedical = role ? canWrite(role, "animalMedical") : false;
+  const canMilk = role ? canWrite(role, "milk") : false;
+
   // Sut verimi ozeti
   const totalMilk = animal.milkYields.reduce((sum, m) => sum + m.amount, 0);
   const sevenDaysAgo = new Date();
@@ -114,12 +123,14 @@ export default async function HayvanDetayPage({
           >
             &larr; Listeye don
           </Link>
-          <Link
-            href={`/panel/hayvanlar/${animal.id}/duzenle`}
-            className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700"
-          >
-            Duzenle
-          </Link>
+          {canEditAnimal && (
+            <Link
+              href={`/panel/hayvanlar/${animal.id}/duzenle`}
+              className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700"
+            >
+              Duzenle
+            </Link>
+          )}
         </div>
       </div>
 
@@ -160,7 +171,7 @@ export default async function HayvanDetayPage({
       <section className="space-y-4">
         <h2 className="text-lg font-bold text-gray-900">Saglik Kayitlari</h2>
 
-        <HealthRecordForm animalId={animal.id} />
+        {canMedical && <HealthRecordForm animalId={animal.id} />}
 
         {animal.healthRecords.length === 0 ? (
           <p className="text-sm text-gray-500">Henuz saglik kaydi yok.</p>
@@ -196,7 +207,7 @@ export default async function HayvanDetayPage({
       <section className="space-y-4">
         <h2 className="text-lg font-bold text-gray-900">Asi Takvimi</h2>
 
-        <VaccinationForm animalId={animal.id} />
+        {canMedical && <VaccinationForm animalId={animal.id} />}
 
         {animal.vaccinations.length === 0 ? (
           <p className="text-sm text-gray-500">Henuz asi kaydi yok.</p>
@@ -247,7 +258,7 @@ export default async function HayvanDetayPage({
           </div>
         )}
 
-        <MilkYieldForm animalId={animal.id} />
+        {canMilk && <MilkYieldForm animalId={animal.id} />}
 
         {animal.milkYields.length === 0 ? (
           <p className="text-sm text-gray-500">Henuz sut verimi kaydi yok.</p>

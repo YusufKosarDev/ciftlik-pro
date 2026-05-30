@@ -1,16 +1,14 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { authorizeWrite } from "@/lib/authz";
 import { animalSchema } from "@/lib/validations/animal";
 
 // POST /api/animals -> yeni hayvan olusturur
 export async function POST(request: Request) {
   try {
-    // 1) Oturum kontrolu: sadece giris yapmis kullanici ekleyebilir
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
-    }
+    // 1) Yetki kontrolu: sadece ADMIN/WORKER hayvan ekleyebilir
+    const authz = await authorizeWrite("animals");
+    if ("error" in authz) return authz.error;
 
     const body = await request.json();
 

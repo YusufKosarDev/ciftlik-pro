@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import { canWrite } from "@/lib/authz";
 import { transactionTypeLabels } from "@/lib/labels";
 import { DeleteTransactionButton } from "@/components/delete-transaction-button";
 
@@ -24,18 +26,23 @@ export default async function FinansPage() {
     .reduce((sum, t) => sum + t.amount, 0);
   const balance = totalIncome - totalExpense;
 
+  const session = await auth();
+  const canEdit = session ? canWrite(session.user.role, "transactions") : false;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900">
           <span>💰</span> Finans
         </h1>
-        <Link
-          href="/panel/finans/yeni"
-          className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700"
-        >
-          + Yeni Islem
-        </Link>
+        {canEdit && (
+          <Link
+            href="/panel/finans/yeni"
+            className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700"
+          >
+            + Yeni Islem
+          </Link>
+        )}
       </div>
 
       {/* Ozet kartlari */}
@@ -67,12 +74,14 @@ export default async function FinansPage() {
       {transactions.length === 0 ? (
         <div className="rounded-xl border border-dashed border-gray-300 bg-white p-12 text-center">
           <p className="text-gray-500">Henuz islem eklenmemis.</p>
-          <Link
-            href="/panel/finans/yeni"
-            className="mt-3 inline-block text-sm font-medium text-green-600 hover:underline"
-          >
-            Ilk islemi ekle
-          </Link>
+          {canEdit && (
+            <Link
+              href="/panel/finans/yeni"
+              className="mt-3 inline-block text-sm font-medium text-green-600 hover:underline"
+            >
+              Ilk islemi ekle
+            </Link>
+          )}
         </div>
       ) : (
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
@@ -83,7 +92,9 @@ export default async function FinansPage() {
                 <th className="px-4 py-3 font-medium">Tur</th>
                 <th className="px-4 py-3 font-medium">Kategori</th>
                 <th className="px-4 py-3 text-right font-medium">Tutar</th>
-                <th className="px-4 py-3 text-right font-medium">Islemler</th>
+                {canEdit && (
+                  <th className="px-4 py-3 text-right font-medium">Islemler</th>
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -110,17 +121,19 @@ export default async function FinansPage() {
                     {t.type === "INCOME" ? "+" : "-"}
                     {formatMoney(t.amount)}
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-4">
-                      <Link
-                        href={`/panel/finans/${t.id}/duzenle`}
-                        className="text-sm font-medium text-green-600 hover:underline"
-                      >
-                        Duzenle
-                      </Link>
-                      <DeleteTransactionButton id={t.id} />
-                    </div>
-                  </td>
+                  {canEdit && (
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end gap-4">
+                        <Link
+                          href={`/panel/finans/${t.id}/duzenle`}
+                          className="text-sm font-medium text-green-600 hover:underline"
+                        >
+                          Duzenle
+                        </Link>
+                        <DeleteTransactionButton id={t.id} />
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

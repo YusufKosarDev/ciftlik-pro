@@ -2,12 +2,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { FieldForm } from "@/components/field-form";
+import { requirePageWrite } from "@/lib/authz";
 
 export default async function TarlaDuzenlePage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requirePageWrite("fields");
+
   const { id } = await params;
   const field = await prisma.field.findUnique({ where: { id } });
 

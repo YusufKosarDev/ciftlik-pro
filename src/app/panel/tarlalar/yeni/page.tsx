@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { FieldForm } from "@/components/field-form";
+import { requirePageWrite } from "@/lib/authz";
 
-export default function YeniTarlaPage() {
+export default async function YeniTarlaPage() {
+  await requirePageWrite("fields");
+
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-center justify-between">

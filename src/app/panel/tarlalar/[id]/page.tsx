@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import { canWrite } from "@/lib/authz";
 import { cropStatusLabels } from "@/lib/labels";
 import { CropForm } from "@/components/crop-form";
 
@@ -41,6 +43,9 @@ export default async function TarlaDetayPage({
     notFound();
   }
 
+  const session = await auth();
+  const canEdit = session ? canWrite(session.user.role, "fields") : false;
+
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-center justify-between">
@@ -52,12 +57,14 @@ export default async function TarlaDetayPage({
           <Link href="/panel/tarlalar" className="text-sm text-gray-500 hover:underline">
             &larr; Listeye don
           </Link>
-          <Link
-            href={`/panel/tarlalar/${field.id}/duzenle`}
-            className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700"
-          >
-            Duzenle
-          </Link>
+          {canEdit && (
+            <Link
+              href={`/panel/tarlalar/${field.id}/duzenle`}
+              className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700"
+            >
+              Duzenle
+            </Link>
+          )}
         </div>
       </div>
 
@@ -72,7 +79,7 @@ export default async function TarlaDetayPage({
       <section className="space-y-4">
         <h2 className="text-lg font-bold text-gray-900">Ekim Kayitlari</h2>
 
-        <CropForm fieldId={field.id} />
+        {canEdit && <CropForm fieldId={field.id} />}
 
         {field.crops.length === 0 ? (
           <p className="text-sm text-gray-500">Henuz ekim kaydi yok.</p>

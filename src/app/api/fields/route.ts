@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { authorizeWrite } from "@/lib/authz";
 import { fieldSchema } from "@/lib/validations/field";
 
 // POST /api/fields -> yeni tarla olusturur
 export async function POST(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
-    }
+    const authz = await authorizeWrite("fields");
+    if ("error" in authz) return authz.error;
 
     const body = await request.json();
     const parsed = fieldSchema.safeParse(body);
