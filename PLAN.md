@@ -121,8 +121,8 @@ User 1-N Task • Product 1-N Sale.
 - [ ] Cloudinary entegrasyonu
 
 ### Faz 6 — Test
-- [ ] Vitest ile birim testleri
-- [ ] Playwright ile uçtan uca testler
+- [x] Vitest ile birim testleri (12 test)
+- [x] Playwright ile uçtan uca testler (giriş akışı, koruma)
 
 ### Faz 7 — Docker & CI/CD
 - [ ] Uygulama için Dockerfile
