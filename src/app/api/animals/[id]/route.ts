@@ -54,6 +54,7 @@ export async function PUT(
         gender: data.gender,
         birthDate: data.birthDate ? new Date(data.birthDate) : null,
         status: data.status,
+        imageUrl: data.imageUrl || null,
         notes: data.notes || null,
       },
     });

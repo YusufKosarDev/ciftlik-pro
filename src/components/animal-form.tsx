@@ -41,6 +41,7 @@ export function AnimalForm({ animal }: Props) {
       gender: String(fd.get("gender")),
       birthDate: String(fd.get("birthDate")),
       status: String(fd.get("status")),
+      imageUrl: String(fd.get("imageUrl")),
       notes: String(fd.get("notes")),
     };
 
@@ -179,6 +180,20 @@ export function AnimalForm({ animal }: Props) {
             ))}
           </select>
         </div>
+      </div>
+
+      <div>
+        <label htmlFor="imageUrl" className={labelClass}>
+          Gorsel URL
+        </label>
+        <input
+          id="imageUrl"
+          name="imageUrl"
+          type="url"
+          placeholder="https://..."
+          defaultValue={animal?.imageUrl ?? ""}
+          className={inputClass}
+        />
       </div>
 
       <div>

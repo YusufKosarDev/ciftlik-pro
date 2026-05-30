@@ -46,6 +46,7 @@ export async function POST(request: Request) {
         gender: data.gender,
         birthDate: data.birthDate ? new Date(data.birthDate) : null,
         status: data.status,
+        imageUrl: data.imageUrl || null,
         notes: data.notes || null,
       },
     });

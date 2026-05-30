@@ -85,6 +85,7 @@ model Animal {
   gender     AnimalGender
   birthDate  DateTime?
   status     AnimalStatus  @default(ACTIVE)
+  imageUrl   String? // Hayvan gorseli (dis URL)
   notes      String? // Serbest notlar
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt

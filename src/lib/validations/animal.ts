@@ -19,6 +19,13 @@ export const animalSchema = z.object({
   // Form'dan tarih bos veya "YYYY-MM-DD" gelir.
   birthDate: z.string().trim().optional().or(z.literal("")),
   status: z.enum(animalStatuses).default("ACTIVE"),
+  imageUrl: z
+    .string()
+    .trim()
+    .url("Gecerli bir URL giriniz")
+    .max(500)
+    .optional()
+    .or(z.literal("")),
   notes: z.string().trim().max(500).optional().or(z.literal("")),
 });
 

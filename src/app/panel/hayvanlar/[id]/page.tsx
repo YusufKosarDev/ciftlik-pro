@@ -123,6 +123,16 @@ export default async function HayvanDetayPage({
         </div>
       </div>
 
+      {animal.imageUrl && (
+        // Dis URL kullandigimiz icin normal img kullaniyoruz (next/image domain ayari gerektirmez).
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={animal.imageUrl}
+          alt={animal.name ?? animal.tagNumber}
+          className="h-56 w-full rounded-xl border border-gray-200 object-cover"
+        />
+      )}
+
       <div className="rounded-xl border border-gray-200 bg-white p-6">
         <Row label="Kulak No" value={animal.tagNumber} />
         <Row label="Ad" value={animal.name ?? "-"} />
