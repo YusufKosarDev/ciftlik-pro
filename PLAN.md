@@ -116,9 +116,11 @@ User 1-N Task • Product 1-N Sale.
 - [ ] Kritik stok uyarıları
 
 ### Faz 5 — Dosya / Resim Yükleme
-- [ ] Hayvan fotoğrafı
-- [ ] Ürün görseli
-- [ ] Cloudinary entegrasyonu
+- [x] Hayvan görseli (URL ile; Cloudinary ileride eklenebilir)
+
+### Ek: Deploy öncesi iyileştirmeler
+- [x] Kayıt kısıtlaması (sadece admin personel ekler) — RBAC
+- [x] Tasarım cilası (giriş, üst bar, dashboard, liste başlıkları)
 
 ### Faz 6 — Test
 - [x] Vitest ile birim testleri (12 test)
