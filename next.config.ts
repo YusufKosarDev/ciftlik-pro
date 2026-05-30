@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Docker icin kucuk, bagimsiz calisabilir cikti uretir.
+  output: "standalone",
 };
 
 export default nextConfig;
