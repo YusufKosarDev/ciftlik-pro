@@ -22,11 +22,17 @@ rol bazlı yetkilendirmeyle tek panelden yöneten tam yığın Çiftlik Yönetim
 
 ## 📸 Ekran Görüntüleri
 
-> Ekran görüntüleri `docs/screenshots/` altına eklenecek. (Placeholder)
+| Panel (Dashboard) | 2D Çiftlik Haritası |
+| ----------------- | ------------------- |
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Harita](docs/screenshots/map.png) |
 
-| Dashboard | Hayvanlar | 2D Harita |
-| --------- | --------- | --------- |
-| ![Dashboard](docs/screenshots/dashboard.png) | ![Hayvanlar](docs/screenshots/animals.png) | ![Harita](docs/screenshots/map.png) |
+| Hayvanlar (aranabilir tablo) | Finans |
+| ---------------------------- | ------ |
+| ![Hayvanlar](docs/screenshots/animals.png) | ![Finans](docs/screenshots/finance.png) |
+
+**Hayvan detayı** — sağlık, aşı, süt verimi & ağırlık grafikleri, üreme ve soy:
+
+![Hayvan detayı](docs/screenshots/animal-detail.png)
 
 ## ✨ Özellikler
 
