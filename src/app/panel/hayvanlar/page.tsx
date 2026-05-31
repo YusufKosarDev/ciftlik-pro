@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { canWrite } from "@/lib/authz";
 import { speciesLabels, genderLabels, statusLabels } from "@/lib/labels";
-import { DeleteAnimalButton } from "@/components/delete-animal-button";
+import { DeleteButton } from "@/components/delete-button";
 
 // Hayvan durumuna gore renkli rozet stili
 const statusStyles: Record<string, string> = {
@@ -102,9 +102,10 @@ export default async function HayvanlarPage() {
                         >
                           Duzenle
                         </Link>
-                        <DeleteAnimalButton
-                          id={animal.id}
-                          label={animal.name ?? animal.tagNumber}
+                        <DeleteButton
+                          endpoint={`/api/animals/${animal.id}`}
+                          itemLabel={animal.name ?? animal.tagNumber}
+                          kind="Hayvan"
                         />
                       </div>
                     </td>

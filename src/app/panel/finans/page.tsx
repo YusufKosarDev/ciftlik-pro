@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { canWrite } from "@/lib/authz";
 import { transactionTypeLabels } from "@/lib/labels";
-import { DeleteTransactionButton } from "@/components/delete-transaction-button";
+import { DeleteButton } from "@/components/delete-button";
 
 function formatDate(date: Date): string {
   return new Date(date).toLocaleDateString("tr-TR");
@@ -130,7 +130,11 @@ export default async function FinansPage() {
                         >
                           Duzenle
                         </Link>
-                        <DeleteTransactionButton id={t.id} />
+                        <DeleteButton
+                        endpoint={`/api/transactions/${t.id}`}
+                        itemLabel={t.category}
+                        kind="İşlem"
+                      />
                       </div>
                     </td>
                   )}

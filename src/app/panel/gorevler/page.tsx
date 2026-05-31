@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { canWrite } from "@/lib/authz";
 import { taskStatusLabels } from "@/lib/labels";
-import { DeleteTaskButton } from "@/components/delete-task-button";
+import { DeleteButton } from "@/components/delete-button";
 
 const statusStyles: Record<string, string> = {
   PENDING: "bg-yellow-100 text-yellow-700",
@@ -115,7 +115,11 @@ export default async function GorevlerPage() {
                           >
                             Duzenle
                           </Link>
-                          <DeleteTaskButton id={task.id} />
+                          <DeleteButton
+                          endpoint={`/api/tasks/${task.id}`}
+                          itemLabel={task.title}
+                          kind="Görev"
+                        />
                         </div>
                       </td>
                     )}

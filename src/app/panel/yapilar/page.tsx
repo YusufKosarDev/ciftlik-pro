@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { canWrite } from "@/lib/authz";
 import { structureTypeLabels } from "@/lib/labels";
-import { DeleteStructureButton } from "@/components/delete-structure-button";
+import { DeleteButton } from "@/components/delete-button";
 
 export default async function YapilarPage() {
   const structures = await prisma.structure.findMany({
@@ -78,7 +78,11 @@ export default async function YapilarPage() {
                         >
                           Duzenle
                         </Link>
-                        <DeleteStructureButton id={s.id} label={s.name} />
+                        <DeleteButton
+                          endpoint={`/api/structures/${s.id}`}
+                          itemLabel={s.name}
+                          kind="Yapı"
+                        />
                       </div>
                     </td>
                   )}
