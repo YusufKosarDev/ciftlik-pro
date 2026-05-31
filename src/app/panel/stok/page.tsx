@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { canWrite } from "@/lib/authz";
 import { inventoryCategoryLabels } from "@/lib/labels";
-import { DeleteInventoryButton } from "@/components/delete-inventory-button";
+import { DeleteButton } from "@/components/delete-button";
 
 export default async function StokPage() {
   const items = await prisma.inventoryItem.findMany({
@@ -108,7 +108,11 @@ export default async function StokPage() {
                           >
                             Duzenle
                           </Link>
-                          <DeleteInventoryButton id={item.id} label={item.name} />
+                          <DeleteButton
+                          endpoint={`/api/inventory/${item.id}`}
+                          itemLabel={item.name}
+                          kind="Stok kalemi"
+                        />
                         </div>
                       </td>
                     )}

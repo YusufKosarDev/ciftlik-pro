@@ -2,7 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { canWrite } from "@/lib/authz";
-import { DeleteFieldButton } from "@/components/delete-field-button";
+import { DeleteButton } from "@/components/delete-button";
 
 export default async function TarlalarPage() {
   const fields = await prisma.field.findMany({
@@ -78,7 +78,11 @@ export default async function TarlalarPage() {
                         >
                           Duzenle
                         </Link>
-                        <DeleteFieldButton id={field.id} label={field.name} />
+                        <DeleteButton
+                        endpoint={`/api/fields/${field.id}`}
+                        itemLabel={field.name}
+                        kind="Tarla"
+                      />
                       </div>
                     </td>
                   )}
