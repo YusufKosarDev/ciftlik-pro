@@ -1,4 +1,4 @@
-import type { CropStatus } from "@prisma/client";
+import type { CropStatus, StructureType } from "@prisma/client";
 
 // 2D ciftlik haritasi icin saf (yan etkisiz) yerlesim/olcekleme yardimcilari.
 // UI'dan bagimsizdir; bu sayede kolayca birim testi yazilabilir.
@@ -88,5 +88,71 @@ export function layoutFields(
     x = Math.max(0, Math.min(canvas.width - side, x));
     y = Math.max(0, Math.min(canvas.height - side, y));
     return { id: f.id, name: f.name, area: f.area, x, y, side, status: f.status };
+  });
+}
+
+// --- Yapilar (ahir/kumes/depo) ---
+
+export const STRUCTURE_DEFAULT = { width: 120, height: 90 } as const;
+
+export type StructureMapInput = {
+  id: string;
+  name: string;
+  type: StructureType;
+  posX: number | null;
+  posY: number | null;
+  width: number | null;
+  height: number | null;
+};
+
+export type StructureRect = {
+  id: string;
+  name: string;
+  type: StructureType;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+// Konumu olmayan yapilar icin alt seritte (tarlalardan ayrik) otomatik yerlesim.
+export function autoLayoutStructurePosition(
+  index: number,
+  width: number,
+  height: number,
+  canvas: { width: number; height: number } = FARM_CANVAS
+): { x: number; y: number } {
+  const GAP = 20;
+  const cellW = width + GAP;
+  const cols = Math.max(1, Math.floor(canvas.width / cellW));
+  const col = index % cols;
+  const row = Math.floor(index / cols);
+  const x = GAP + col * cellW;
+  const y = canvas.height - height - GAP - row * (height + GAP);
+  return { x, y };
+}
+
+// Yapilari haritada konumlandirilmis dikdortgenlere cevirir.
+export function layoutStructures(
+  items: StructureMapInput[],
+  canvas: { width: number; height: number } = FARM_CANVAS
+): StructureRect[] {
+  let autoIndex = 0;
+  return items.map((s) => {
+    const width = s.width && s.width > 0 ? s.width : STRUCTURE_DEFAULT.width;
+    const height = s.height && s.height > 0 ? s.height : STRUCTURE_DEFAULT.height;
+    let x: number;
+    let y: number;
+    if (s.posX != null && s.posY != null) {
+      x = s.posX;
+      y = s.posY;
+    } else {
+      const p = autoLayoutStructurePosition(autoIndex++, width, height, canvas);
+      x = p.x;
+      y = p.y;
+    }
+    x = Math.max(0, Math.min(canvas.width - width, x));
+    y = Math.max(0, Math.min(canvas.height - height, y));
+    return { id: s.id, name: s.name, type: s.type, x, y, width, height };
   });
 }

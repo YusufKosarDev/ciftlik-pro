@@ -212,3 +212,25 @@ model MilkYield {
 
   @@index([animalId])
 }
+
+// Yapi turleri (2D harita uzerinde gosterilen tesisler)
+enum StructureType {
+  BARN // Ahir
+  COOP // Kumes
+  STORAGE // Depo
+  OTHER // Diger
+}
+
+// Ciftlikteki yapilar (ahir, kumes, depo...) — 2D haritada konumlu
+model Structure {
+  id        String        @id @default(cuid())
+  name      String // Yapi adi
+  type      StructureType
+  posX      Float? // 2D harita yatay konumu (sanal birim)
+  posY      Float? // 2D harita dikey konumu (sanal birim)
+  width     Float? // Genislik (sanal birim; null ise varsayilan)
+  height    Float? // Yukseklik (sanal birim; null ise varsayilan)
+  notes     String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
