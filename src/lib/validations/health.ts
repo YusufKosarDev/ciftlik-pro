@@ -1,8 +1,9 @@
 import { z } from "zod";
+import { requiredDateString } from "@/lib/validations/date";
 
 // Saglik kaydi dogrulama semasi.
 export const healthRecordSchema = z.object({
-  date: z.string().trim().min(1, "Tarih zorunludur"),
+  date: requiredDateString(),
   diagnosis: z
     .string()
     .trim()

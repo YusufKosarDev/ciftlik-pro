@@ -93,3 +93,17 @@ export async function requirePageWrite(module: WriteModule) {
   }
   return session;
 }
+
+// Hassas okuma sayfalarinda (orn. finans) kullanilir: rolun menusunde
+// gorunmeyen bir yolu dogrudan URL ile acmasini engeller. Menude varsa
+// (yani navByRole'de tanimliysa) oturumu doner, yoksa panele yonlendirir.
+export async function requirePageView(href: string) {
+  const session = await auth();
+  if (!session?.user) {
+    redirect("/giris");
+  }
+  if (!navHrefsFor(session.user.role).has(href)) {
+    redirect("/panel");
+  }
+  return session;
+}

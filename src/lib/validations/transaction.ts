@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { requiredDateString } from "@/lib/validations/date";
 
 export const transactionTypes = ["INCOME", "EXPENSE"] as const;
 
@@ -14,7 +15,7 @@ export const transactionSchema = z.object({
     .trim()
     .min(1, "Kategori zorunludur")
     .max(80, "Kategori en fazla 80 karakter olabilir"),
-  date: z.string().trim().min(1, "Tarih zorunludur"),
+  date: requiredDateString(),
   description: z.string().trim().max(500).optional().or(z.literal("")),
 });
 

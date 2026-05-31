@@ -6,17 +6,12 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { transactionTypeLabels } from "@/lib/labels";
+import { toDateInputValue } from "@/lib/date";
 import type { Transaction } from "@prisma/client";
 
 const inputClass =
   "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500";
 const labelClass = "mb-1 block text-sm font-medium text-gray-700";
-
-// Date'i input[type=date] icin "YYYY-MM-DD" formatina cevirir.
-function toDateInput(date: Date | null): string {
-  if (!date) return "";
-  return new Date(date).toISOString().slice(0, 10);
-}
 
 export function TransactionForm({ transaction }: { transaction?: Transaction }) {
   const router = useRouter();
@@ -125,7 +120,7 @@ export function TransactionForm({ transaction }: { transaction?: Transaction }) 
             name="date"
             type="date"
             required
-            defaultValue={toDateInput(transaction?.date ?? null)}
+            defaultValue={toDateInputValue(transaction?.date)}
             className={inputClass}
           />
         </div>

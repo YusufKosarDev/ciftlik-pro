@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { optionalDateString } from "@/lib/validations/date";
 
 // Prisma enum degerleriyle birebir ayni tutuyoruz.
 export const animalSpecies = ["CATTLE", "SHEEP", "GOAT", "CHICKEN", "OTHER"] as const;
@@ -17,7 +18,7 @@ export const animalSchema = z.object({
   breed: z.string().trim().max(60).optional().or(z.literal("")),
   gender: z.enum(animalGenders, { message: "Gecerli bir cinsiyet seciniz" }),
   // Form'dan tarih bos veya "YYYY-MM-DD" gelir.
-  birthDate: z.string().trim().optional().or(z.literal("")),
+  birthDate: optionalDateString(),
   status: z.enum(animalStatuses).default("ACTIVE"),
   imageUrl: z
     .string()

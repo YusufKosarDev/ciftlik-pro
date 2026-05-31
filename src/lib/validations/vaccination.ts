@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { requiredDateString, optionalDateString } from "@/lib/validations/date";
 
 // Asi kaydi dogrulama semasi.
 export const vaccinationSchema = z.object({
@@ -7,8 +8,8 @@ export const vaccinationSchema = z.object({
     .trim()
     .min(1, "Asi adi zorunludur")
     .max(120, "Asi adi en fazla 120 karakter olabilir"),
-  date: z.string().trim().min(1, "Tarih zorunludur"),
-  nextDate: z.string().trim().optional().or(z.literal("")),
+  date: requiredDateString(),
+  nextDate: optionalDateString(),
   notes: z.string().trim().max(500).optional().or(z.literal("")),
 });
 
