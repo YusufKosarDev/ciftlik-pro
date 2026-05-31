@@ -7,6 +7,7 @@ import type {
   TransactionType,
   TaskStatus,
   StructureType,
+  BreedingStatus,
   Role,
 } from "@prisma/client";
 
@@ -53,6 +54,13 @@ export const taskStatusLabels: Record<TaskStatus, string> = {
   PENDING: "Bekliyor",
   IN_PROGRESS: "Devam ediyor",
   DONE: "Tamamlandi",
+};
+
+export const breedingStatusLabels: Record<BreedingStatus, string> = {
+  PLANNED: "Planlandi",
+  PREGNANT: "Gebe",
+  BORN: "Dogdu",
+  FAILED: "Basarisiz",
 };
 
 export const structureTypeLabels: Record<StructureType, string> = {
