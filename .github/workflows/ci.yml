@@ -38,8 +38,17 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Birim testleri
-        run: npm test
+      - name: Birim testleri (coverage)
+        run: npm run test:coverage
+
+      - name: Coverage'i Codecov'a yukle
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/lcov.info
+          flags: unit
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Uretim derlemesi
         run: npm run build
