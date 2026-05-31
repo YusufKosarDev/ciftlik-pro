@@ -13,6 +13,7 @@ jobs:
     # Derleme/Prisma icin yer tutucu degiskenler (gercek DB'ye baglanilmaz).
     env:
       DATABASE_URL: "postgresql://placeholder:placeholder@localhost:5432/placeholder"
+      DIRECT_URL: "postgresql://placeholder:placeholder@localhost:5432/placeholder"
       AUTH_SECRET: "ci-build-placeholder-secret"
 
     steps:
@@ -64,6 +65,7 @@ jobs:
 
     env:
       DATABASE_URL: "postgresql://ciftlik:ciftlik@localhost:5432/ciftlik_test?schema=public"
+      DIRECT_URL: "postgresql://ciftlik:ciftlik@localhost:5432/ciftlik_test?schema=public"
       AUTH_SECRET: "ci-e2e-test-secret"
 
     steps:

@@ -115,25 +115,33 @@ src/
 ## Vercel'e Deploy
 
 1. **Veritabanı:** [Neon](https://neon.tech) veya [Supabase](https://supabase.com)
-   üzerinde bir PostgreSQL oluşturup bağlantı dizesini (`DATABASE_URL`) alın.
+   üzerinde bir PostgreSQL oluşturun. İki bağlantı dizesi alın:
+   - **Pooled** (pgbouncer) → `DATABASE_URL` (uygulama çalışma zamanı)
+   - **Direct** (pooler olmayan) → `DIRECT_URL` (migration'lar için)
+
+   > Serverless ortamda (Vercel) bağlantı tükenmesini önlemek için uygulama
+   > havuzlanmış bağlantı, migration'lar ise doğrudan bağlantı kullanır.
+
 2. **Vercel:** Bu repoyu Vercel'e import edin (Next.js otomatik algılanır).
    `prisma generate` deploy sırasında `postinstall` ile otomatik çalışır.
 3. **Ortam değişkenleri** (Vercel → Project Settings → Environment Variables):
 
-   | Değişken         | Açıklama                                  |
-   | ---------------- | ----------------------------------------- |
-   | `DATABASE_URL`   | Üretim PostgreSQL bağlantı dizesi         |
-   | `AUTH_SECRET`    | `openssl rand -base64 32` ile üretin      |
-   | `ADMIN_EMAIL`    | İlk yönetici e-postası                    |
-   | `ADMIN_PASSWORD` | İlk yönetici parolası (en az 8 karakter)  |
-   | `ADMIN_NAME`     | İlk yönetici adı (opsiyonel)              |
+   | Değişken         | Açıklama                                       |
+   | ---------------- | ---------------------------------------------- |
+   | `DATABASE_URL`   | Üretim PostgreSQL **pooled** bağlantı dizesi   |
+   | `DIRECT_URL`     | Üretim PostgreSQL **direct** bağlantı dizesi   |
+   | `AUTH_SECRET`    | `openssl rand -base64 32` ile üretin           |
+   | `ADMIN_EMAIL`    | İlk yönetici e-postası                         |
+   | `ADMIN_PASSWORD` | İlk yönetici parolası (en az 8 karakter)       |
+   | `ADMIN_NAME`     | İlk yönetici adı (opsiyonel)                   |
 
 4. **Şemayı üretim DB'sine uygulayın** (ilk deploy'dan önce, yerelden):
 
    ```bash
-   # Üretim bağlantısını geçici olarak vererek migration ve ilk admin
-   DATABASE_URL="<uretim_baglantisi>" npm run db:deploy
-   DATABASE_URL="<uretim_baglantisi>" ADMIN_EMAIL=... ADMIN_PASSWORD=... npm run db:seed-admin
+   # Migration'lar direct bağlantı üzerinden uygulanır
+   DATABASE_URL="<pooled>" DIRECT_URL="<direct>" npm run db:deploy
+   DATABASE_URL="<pooled>" DIRECT_URL="<direct>" \
+     ADMIN_EMAIL=... ADMIN_PASSWORD=... npm run db:seed-admin
    ```
 
    Alternatif: Vercel **Build Command**'i `prisma migrate deploy && next build`
