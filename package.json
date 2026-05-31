@@ -11,7 +11,9 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "db:seed": "tsx prisma/seed.ts",
-    "db:seed-admin": "node prisma/ensure-admin.mjs"
+    "db:seed-admin": "node prisma/ensure-admin.mjs",
+    "db:deploy": "prisma migrate deploy",
+    "postinstall": "prisma generate"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

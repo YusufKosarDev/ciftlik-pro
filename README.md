@@ -111,3 +111,32 @@ src/
   components/      Yeniden kullanılabilir bileşenler
   lib/             Yardımcılar (prisma, auth, doğrulama, etiketler)
 ```
+
+## Vercel'e Deploy
+
+1. **Veritabanı:** [Neon](https://neon.tech) veya [Supabase](https://supabase.com)
+   üzerinde bir PostgreSQL oluşturup bağlantı dizesini (`DATABASE_URL`) alın.
+2. **Vercel:** Bu repoyu Vercel'e import edin (Next.js otomatik algılanır).
+   `prisma generate` deploy sırasında `postinstall` ile otomatik çalışır.
+3. **Ortam değişkenleri** (Vercel → Project Settings → Environment Variables):
+
+   | Değişken         | Açıklama                                  |
+   | ---------------- | ----------------------------------------- |
+   | `DATABASE_URL`   | Üretim PostgreSQL bağlantı dizesi         |
+   | `AUTH_SECRET`    | `openssl rand -base64 32` ile üretin      |
+   | `ADMIN_EMAIL`    | İlk yönetici e-postası                    |
+   | `ADMIN_PASSWORD` | İlk yönetici parolası (en az 8 karakter)  |
+   | `ADMIN_NAME`     | İlk yönetici adı (opsiyonel)              |
+
+4. **Şemayı üretim DB'sine uygulayın** (ilk deploy'dan önce, yerelden):
+
+   ```bash
+   # Üretim bağlantısını geçici olarak vererek migration ve ilk admin
+   DATABASE_URL="<uretim_baglantisi>" npm run db:deploy
+   DATABASE_URL="<uretim_baglantisi>" ADMIN_EMAIL=... ADMIN_PASSWORD=... npm run db:seed-admin
+   ```
+
+   Alternatif: Vercel **Build Command**'i `prisma migrate deploy && next build`
+   yaparak migration'ı her deploy'da otomatik uygulayabilirsiniz.
+
+5. `main` dalına push → Vercel otomatik derleyip yayınlar.
