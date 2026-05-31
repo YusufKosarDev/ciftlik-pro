@@ -3,11 +3,16 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { Wheat, Mail, Lock, Sprout, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function GirisPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -27,7 +32,7 @@ export default function GirisPage() {
     setLoading(false);
 
     if (result?.error) {
-      setError("E-posta veya parola hatali");
+      setError("E-posta veya parola hatalı");
       return;
     }
 
@@ -35,18 +40,18 @@ export default function GirisPage() {
     router.refresh();
   }
 
-  // Ziyaretciler icin: kayit gerektirmeyen demo (WORKER) hesabiyla giris.
+  // Ziyaretçiler için: kayıt gerektirmeyen demo (WORKER) hesabıyla giriş.
   async function handleDemo() {
     setError(null);
-    setLoading(true);
+    setDemoLoading(true);
     const result = await signIn("credentials", {
       email: "demo@ciftlik.com",
       password: "demo1234",
       redirect: false,
     });
-    setLoading(false);
+    setDemoLoading(false);
     if (result?.error) {
-      setError("Demo girisi su an kullanilamiyor");
+      setError("Demo girişi şu an kullanılamıyor");
       return;
     }
     router.push("/panel");
@@ -57,67 +62,76 @@ export default function GirisPage() {
     <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-700 via-green-600 to-emerald-800 p-4">
       <div className="w-full max-w-sm rounded-2xl border border-gray-100 bg-white p-8 shadow-xl">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-3xl">
-            🌾
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-green-700">
+            <Wheat className="h-7 w-7" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Ciftlik Pro</h1>
-          <p className="mt-1 text-sm text-gray-500">Hesabiniza giris yapin</p>
+          <h1 className="text-2xl font-bold text-gray-900">Çiftlik Pro</h1>
+          <p className="mt-1 text-sm text-gray-500">Hesabınıza giriş yapın</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">
-              E-posta
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              autoComplete="email"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-            />
+            <Label htmlFor="email">E-posta</Label>
+            <div className="relative">
+              <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                required
+                autoComplete="email"
+                placeholder="ornek@ciftlik.com"
+                className="pl-9"
+              />
+            </div>
           </div>
 
           <div>
-            <label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700">
-              Parola
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              autoComplete="current-password"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-            />
+            <Label htmlFor="password">Parola</Label>
+            <div className="relative">
+              <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                required
+                autoComplete="current-password"
+                placeholder="••••••••"
+                className="pl-9"
+              />
+            </div>
           </div>
 
           {error && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
+            <p className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              {error}
+            </p>
           )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-green-600 py-2 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-60"
-          >
-            {loading ? "Giris yapiliyor..." : "Giris Yap"}
-          </button>
+          <Button type="submit" loading={loading} className="w-full">
+            Giriş Yap
+          </Button>
         </form>
 
-        <div className="my-4 text-center text-xs text-gray-400">veya</div>
+        <div className="my-4 flex items-center gap-3 text-xs text-gray-400">
+          <span className="h-px flex-1 bg-gray-200" />
+          veya
+          <span className="h-px flex-1 bg-gray-200" />
+        </div>
 
-        <button
+        <Button
           type="button"
+          variant="outline"
           onClick={handleDemo}
-          disabled={loading}
-          className="w-full rounded-lg border border-green-600 py-2 text-sm font-semibold text-green-700 transition hover:bg-green-50 disabled:opacity-60"
+          loading={demoLoading}
+          className="w-full"
         >
-          🌱 Demo olarak gez
-        </button>
+          <Sprout className="h-4 w-4" />
+          Demo olarak gez
+        </Button>
         <p className="mt-2 text-center text-xs text-gray-400">
-          Kayit gerektirmez · ornek verilerle inceleyin
+          Kayıt gerektirmez · örnek verilerle inceleyin
         </p>
       </div>
     </main>
