@@ -23,6 +23,7 @@ export default async function PanelLayout({
     { href: "/panel/hayvanlar", label: "Hayvanlar" },
     { href: "/panel/tarlalar", label: "Tarlalar" },
     { href: "/panel/stok", label: "Stok" },
+    { href: "/panel/yem", label: "Yem" },
     { href: "/panel/yapilar", label: "Yapılar" },
     { href: "/panel/finans", label: "Finans" },
     { href: "/panel/gorevler", label: "Görevler" },
