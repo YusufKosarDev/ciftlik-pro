@@ -8,7 +8,7 @@ test("oturumsuz kullanici korunan sayfadan giris'e yonlendirilir", async ({
   await page.goto("/panel");
   await expect(page).toHaveURL(/\/giris/);
   // Giris sayfasi render oldu mu: form gonder butonu gorunur olmali.
-  await expect(page.getByRole("button", { name: "Giris Yap" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Giriş Yap" })).toBeVisible();
 });
 
 test("gecerli bilgilerle giris yapilip panele ulasilir", async ({ page }) => {
@@ -16,7 +16,7 @@ test("gecerli bilgilerle giris yapilip panele ulasilir", async ({ page }) => {
 
   await page.getByLabel("E-posta").fill("admin@ciftlik.com");
   await page.getByLabel("Parola").fill("sifre1234");
-  await page.getByRole("button", { name: "Giris Yap" }).click();
+  await page.getByRole("button", { name: "Giriş Yap" }).click();
 
   // Panele yonlendirilmeli ve karsilama gorunmeli
   await expect(page).toHaveURL(/\/panel/);
@@ -28,8 +28,8 @@ test("hatali parola ile giris reddedilir", async ({ page }) => {
 
   await page.getByLabel("E-posta").fill("admin@ciftlik.com");
   await page.getByLabel("Parola").fill("yanlisparola");
-  await page.getByRole("button", { name: "Giris Yap" }).click();
+  await page.getByRole("button", { name: "Giriş Yap" }).click();
 
   // Giris sayfasinda kalmali ve hata gostermeli
-  await expect(page.getByText("E-posta veya parola hatali")).toBeVisible();
+  await expect(page.getByText("E-posta veya parola hatalı")).toBeVisible();
 });

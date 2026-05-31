@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { optionalDateString } from "@/lib/validations/date";
 
 export const taskStatuses = ["PENDING", "IN_PROGRESS", "DONE"] as const;
 
@@ -12,7 +13,7 @@ export const taskSchema = z.object({
   description: z.string().trim().max(500).optional().or(z.literal("")),
   assignedToId: z.string().trim().optional().or(z.literal("")),
   status: z.enum(taskStatuses).default("PENDING"),
-  dueDate: z.string().trim().optional().or(z.literal("")),
+  dueDate: optionalDateString(),
 });
 
 export type TaskInput = z.infer<typeof taskSchema>;

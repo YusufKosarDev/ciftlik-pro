@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { speciesLabels, genderLabels, statusLabels } from "@/lib/labels";
+import { toDateInputValue } from "@/lib/date";
 import type { Animal } from "@prisma/client";
 
 const inputClass =
@@ -16,12 +17,6 @@ type Props = {
   // Duzenleme modunda mevcut hayvan; ekleme modunda undefined.
   animal?: Animal;
 };
-
-// Date'i input[type=date] icin "YYYY-MM-DD" formatina cevirir.
-function toDateInput(date: Date | null): string {
-  if (!date) return "";
-  return new Date(date).toISOString().slice(0, 10);
-}
 
 export function AnimalForm({ animal }: Props) {
   const router = useRouter();
@@ -161,7 +156,7 @@ export function AnimalForm({ animal }: Props) {
             id="birthDate"
             name="birthDate"
             type="date"
-            defaultValue={toDateInput(animal?.birthDate ?? null)}
+            defaultValue={toDateInputValue(animal?.birthDate)}
             className={inputClass}
           />
         </div>

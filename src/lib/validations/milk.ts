@@ -1,8 +1,9 @@
 import { z } from "zod";
+import { requiredDateString } from "@/lib/validations/date";
 
 // Sut verimi dogrulama semasi.
 export const milkYieldSchema = z.object({
-  date: z.string().trim().min(1, "Tarih zorunludur"),
+  date: requiredDateString(),
   amount: z.coerce
     .number({ message: "Gecerli bir miktar giriniz" })
     .positive("Miktar 0'dan buyuk olmalidir")

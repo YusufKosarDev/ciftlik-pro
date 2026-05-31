@@ -6,16 +6,12 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { taskStatusLabels } from "@/lib/labels";
+import { toDateInputValue } from "@/lib/date";
 import type { Task } from "@prisma/client";
 
 const inputClass =
   "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500";
 const labelClass = "mb-1 block text-sm font-medium text-gray-700";
-
-function toDateInput(date: Date | null): string {
-  if (!date) return "";
-  return new Date(date).toISOString().slice(0, 10);
-}
 
 type UserOption = { id: string; name: string };
 
@@ -129,7 +125,7 @@ export function TaskForm({
             id="dueDate"
             name="dueDate"
             type="date"
-            defaultValue={toDateInput(task?.dueDate ?? null)}
+            defaultValue={toDateInputValue(task?.dueDate)}
             className={inputClass}
           />
         </div>

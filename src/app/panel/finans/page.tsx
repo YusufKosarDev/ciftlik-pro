@@ -1,19 +1,18 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { canWrite } from "@/lib/authz";
-import { transactionTypeLabels } from "@/lib/labels";
-import { DeleteButton } from "@/components/delete-button";
-
-function formatDate(date: Date): string {
-  return new Date(date).toLocaleDateString("tr-TR");
-}
+import { canWrite, requirePageView } from "@/lib/authz";
+import { buttonVariants } from "@/components/ui/button";
+import { TransactionsTable } from "@/components/tables/transactions-table";
 
 function formatMoney(amount: number): string {
   return amount.toLocaleString("tr-TR", { minimumFractionDigits: 2 }) + " TL";
 }
 
 export default async function FinansPage() {
+  // Finans hassas veridir: yalnizca menusunde finans gorunen roller
+  // (ADMIN, ACCOUNTANT) bu sayfayi acabilir. Digerleri panele yonlenir.
+  const session = await requirePageView("/panel/finans");
+
   const transactions = await prisma.transaction.findMany({
     orderBy: { date: "desc" },
   });
@@ -26,8 +25,7 @@ export default async function FinansPage() {
     .reduce((sum, t) => sum + t.amount, 0);
   const balance = totalIncome - totalExpense;
 
-  const session = await auth();
-  const canEdit = session ? canWrite(session.user.role, "transactions") : false;
+  const canEdit = canWrite(session.user.role, "transactions");
 
   return (
     <div className="space-y-6">
@@ -36,10 +34,7 @@ export default async function FinansPage() {
           <span>💰</span> Finans
         </h1>
         {canEdit && (
-          <Link
-            href="/panel/finans/yeni"
-            className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700"
-          >
+          <Link href="/panel/finans/yeni" className={buttonVariants({ size: "sm" })}>
             + Yeni Islem
           </Link>
         )}
@@ -71,79 +66,7 @@ export default async function FinansPage() {
         </div>
       </div>
 
-      {transactions.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-300 bg-white p-12 text-center">
-          <p className="text-gray-500">Henuz islem eklenmemis.</p>
-          {canEdit && (
-            <Link
-              href="/panel/finans/yeni"
-              className="mt-3 inline-block text-sm font-medium text-green-600 hover:underline"
-            >
-              Ilk islemi ekle
-            </Link>
-          )}
-        </div>
-      ) : (
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-gray-200 bg-gray-50 text-gray-600">
-              <tr>
-                <th className="px-4 py-3 font-medium">Tarih</th>
-                <th className="px-4 py-3 font-medium">Tur</th>
-                <th className="px-4 py-3 font-medium">Kategori</th>
-                <th className="px-4 py-3 text-right font-medium">Tutar</th>
-                {canEdit && (
-                  <th className="px-4 py-3 text-right font-medium">Islemler</th>
-                )}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {transactions.map((t) => (
-                <tr key={t.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-gray-700">{formatDate(t.date)}</td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`rounded px-2 py-0.5 text-xs font-medium ${
-                        t.type === "INCOME"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                      }`}
-                    >
-                      {transactionTypeLabels[t.type]}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-gray-700">{t.category}</td>
-                  <td
-                    className={`px-4 py-3 text-right font-medium ${
-                      t.type === "INCOME" ? "text-green-600" : "text-red-600"
-                    }`}
-                  >
-                    {t.type === "INCOME" ? "+" : "-"}
-                    {formatMoney(t.amount)}
-                  </td>
-                  {canEdit && (
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-4">
-                        <Link
-                          href={`/panel/finans/${t.id}/duzenle`}
-                          className="text-sm font-medium text-green-600 hover:underline"
-                        >
-                          Duzenle
-                        </Link>
-                        <DeleteButton
-                        endpoint={`/api/transactions/${t.id}`}
-                        itemLabel={t.category}
-                        kind="İşlem"
-                      />
-                      </div>
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <TransactionsTable transactions={transactions} canEdit={canEdit} />
     </div>
   );
 }
