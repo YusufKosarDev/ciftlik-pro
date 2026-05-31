@@ -7,6 +7,8 @@ import { speciesLabels, genderLabels, statusLabels } from "@/lib/labels";
 import { HealthRecordForm } from "@/components/health-record-form";
 import { VaccinationForm } from "@/components/vaccination-form";
 import { MilkYieldForm } from "@/components/milk-yield-form";
+import { MilkYieldChart } from "@/components/milk-yield-chart";
+import { milkStats, dailyMilkSeries } from "@/lib/milk-stats";
 
 const statusStyles: Record<string, string> = {
   ACTIVE: "bg-green-100 text-green-700",
@@ -97,15 +99,9 @@ export default async function HayvanDetayPage({
   const canMedical = role ? canWrite(role, "animalMedical") : false;
   const canMilk = role ? canWrite(role, "milk") : false;
 
-  // Sut verimi ozeti
-  const totalMilk = animal.milkYields.reduce((sum, m) => sum + m.amount, 0);
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  const last7 = animal.milkYields.filter((m) => new Date(m.date) >= sevenDaysAgo);
-  const avg7Milk =
-    last7.length > 0
-      ? last7.reduce((sum, m) => sum + m.amount, 0) / last7.length
-      : 0;
+  // Sut verimi ozeti + gunluk grafik serisi (saf mantik src/lib/milk-stats)
+  const stats = milkStats(animal.milkYields);
+  const milkSeries = dailyMilkSeries(animal.milkYields, 14);
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -242,20 +238,30 @@ export default async function HayvanDetayPage({
         <h2 className="text-lg font-bold text-gray-900">Sut Verimi</h2>
 
         {animal.milkYields.length > 0 && (
-          <div className="flex gap-4">
-            <div className="rounded-xl border border-gray-200 bg-white px-5 py-3">
-              <p className="text-xs text-gray-500">Toplam</p>
-              <p className="text-lg font-bold text-gray-900">
-                {totalMilk.toFixed(1)} L
-              </p>
+          <>
+            <div className="flex flex-wrap gap-4">
+              <div className="rounded-xl border border-gray-200 bg-white px-5 py-3">
+                <p className="text-xs text-gray-500">Toplam</p>
+                <p className="text-lg font-bold text-gray-900">
+                  {stats.total.toFixed(1)} L
+                </p>
+              </div>
+              <div className="rounded-xl border border-gray-200 bg-white px-5 py-3">
+                <p className="text-xs text-gray-500">Kayit basina ortalama</p>
+                <p className="text-lg font-bold text-gray-900">
+                  {stats.average.toFixed(1)} L
+                </p>
+              </div>
+              <div className="rounded-xl border border-gray-200 bg-white px-5 py-3">
+                <p className="text-xs text-gray-500">Son 7 gun ortalama</p>
+                <p className="text-lg font-bold text-gray-900">
+                  {stats.last7Average.toFixed(1)} L/gun
+                </p>
+              </div>
             </div>
-            <div className="rounded-xl border border-gray-200 bg-white px-5 py-3">
-              <p className="text-xs text-gray-500">Son 7 gun ortalama</p>
-              <p className="text-lg font-bold text-gray-900">
-                {avg7Milk.toFixed(1)} L/gun
-              </p>
-            </div>
-          </div>
+
+            <MilkYieldChart data={milkSeries} />
+          </>
         )}
 
         {canMilk && <MilkYieldForm animalId={animal.id} />}
