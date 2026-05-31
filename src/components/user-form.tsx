@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { roleLabels } from "@/lib/labels";
 
 const inputClass =
@@ -11,13 +13,11 @@ const labelClass = "mb-1 block text-sm font-medium text-gray-700";
 export function UserForm() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
-    setSuccess(false);
     setLoading(true);
 
     const form = e.currentTarget;
@@ -43,8 +43,8 @@ export function UserForm() {
       return;
     }
 
+    toast.success("Personel eklendi.");
     form.reset();
-    setSuccess(true);
     router.refresh();
   }
 
@@ -98,19 +98,10 @@ export function UserForm() {
       {error && (
         <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
       )}
-      {success && (
-        <p className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
-          Personel eklendi.
-        </p>
-      )}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-60"
-      >
-        {loading ? "Ekleniyor..." : "Personel Ekle"}
-      </button>
+      <Button type="submit" loading={loading}>
+        Personel Ekle
+      </Button>
     </form>
   );
 }

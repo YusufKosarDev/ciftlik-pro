@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { taskStatusLabels } from "@/lib/labels";
 import type { Task } from "@prisma/client";
@@ -57,6 +59,7 @@ export function TaskForm({
       return;
     }
 
+    toast.success("Görev kaydedildi.");
     router.push("/panel/gorevler");
     router.refresh();
   }
@@ -156,13 +159,9 @@ export function TaskForm({
         >
           Iptal
         </Link>
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-60"
-        >
-          {loading ? "Kaydediliyor..." : "Kaydet"}
-        </button>
+        <Button type="submit" loading={loading}>
+          Kaydet
+        </Button>
       </div>
     </form>
   );
