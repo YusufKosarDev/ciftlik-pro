@@ -9,8 +9,11 @@ import { VaccinationForm } from "@/components/vaccination-form";
 import { MilkYieldForm } from "@/components/milk-yield-form";
 import { MilkYieldChart } from "@/components/milk-yield-chart";
 import { BreedingForm } from "@/components/breeding-form";
+import { WeightForm } from "@/components/weight-form";
+import { WeightChart } from "@/components/weight-chart";
 import { DeleteButton } from "@/components/delete-button";
 import { milkStats, dailyMilkSeries } from "@/lib/milk-stats";
+import { weightStats, weightSeries } from "@/lib/weight-stats";
 
 const breedingStatusStyles: Record<string, string> = {
   PLANNED: "bg-gray-100 text-gray-700",
@@ -95,6 +98,7 @@ export default async function HayvanDetayPage({
       vaccinations: { orderBy: { date: "desc" } },
       milkYields: { orderBy: { date: "desc" } },
       breedingRecords: { orderBy: { breedingDate: "desc" } },
+      weightRecords: { orderBy: { date: "desc" } },
       mother: { select: { id: true, tagNumber: true, name: true } },
       offspring: {
         select: { id: true, tagNumber: true, name: true },
@@ -114,6 +118,11 @@ export default async function HayvanDetayPage({
   const canMedical = role ? canWrite(role, "animalMedical") : false;
   const canMilk = role ? canWrite(role, "milk") : false;
   const canBreeding = role ? canWrite(role, "breeding") : false;
+  const canWeight = role ? canWrite(role, "weight") : false;
+
+  // Agirlik ozeti + grafik serisi (saf mantik src/lib/weight-stats)
+  const wStats = weightStats(animal.weightRecords);
+  const wSeries = weightSeries(animal.weightRecords);
 
   // Sut verimi ozeti + gunluk grafik serisi (saf mantik src/lib/milk-stats)
   const stats = milkStats(animal.milkYields);
@@ -302,6 +311,82 @@ export default async function HayvanDetayPage({
                       {m.amount.toFixed(1)}
                     </td>
                     <td className="px-4 py-2 text-gray-700">{m.notes ?? "-"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      {/* Agirlik Takibi */}
+      <section className="space-y-4">
+        <h2 className="text-lg font-bold text-gray-900">Ağırlık Takibi</h2>
+
+        {animal.weightRecords.length > 0 && (
+          <>
+            <div className="flex flex-wrap gap-4">
+              <div className="rounded-xl border border-gray-200 bg-white px-5 py-3">
+                <p className="text-xs text-gray-500">Son tartım</p>
+                <p className="text-lg font-bold text-gray-900">
+                  {wStats.latest?.toFixed(1)} kg
+                </p>
+              </div>
+              <div className="rounded-xl border border-gray-200 bg-white px-5 py-3">
+                <p className="text-xs text-gray-500">İlk tartım</p>
+                <p className="text-lg font-bold text-gray-900">
+                  {wStats.first?.toFixed(1)} kg
+                </p>
+              </div>
+              <div className="rounded-xl border border-gray-200 bg-white px-5 py-3">
+                <p className="text-xs text-gray-500">Değişim</p>
+                <p
+                  className={`text-lg font-bold ${
+                    (wStats.change ?? 0) >= 0 ? "text-green-600" : "text-red-600"
+                  }`}
+                >
+                  {(wStats.change ?? 0) >= 0 ? "+" : ""}
+                  {wStats.change?.toFixed(1)} kg
+                </p>
+              </div>
+            </div>
+
+            {animal.weightRecords.length > 1 && <WeightChart data={wSeries} />}
+          </>
+        )}
+
+        {canWeight && <WeightForm animalId={animal.id} />}
+
+        {animal.weightRecords.length === 0 ? (
+          <p className="text-sm text-gray-500">Henuz agirlik kaydi yok.</p>
+        ) : (
+          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-gray-200 bg-gray-50 text-gray-600">
+                <tr>
+                  <th className="px-4 py-2 font-medium">Tarih</th>
+                  <th className="px-4 py-2 font-medium">Ağırlık (kg)</th>
+                  <th className="px-4 py-2 font-medium">Not</th>
+                  {canWeight && <th className="px-4 py-2 text-right font-medium">İşlem</th>}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {animal.weightRecords.map((w) => (
+                  <tr key={w.id}>
+                    <td className="px-4 py-2 text-gray-700">{formatDate(w.date)}</td>
+                    <td className="px-4 py-2 font-medium text-gray-900">
+                      {w.weightKg.toFixed(1)}
+                    </td>
+                    <td className="px-4 py-2 text-gray-700">{w.notes ?? "-"}</td>
+                    {canWeight && (
+                      <td className="px-4 py-2 text-right">
+                        <DeleteButton
+                          endpoint={`/api/weight/${w.id}`}
+                          itemLabel={`${formatDate(w.date)} tartım`}
+                          kind="Ağırlık kaydı"
+                        />
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

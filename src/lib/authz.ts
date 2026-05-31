@@ -14,6 +14,7 @@ export const writePermissions = {
   animalMedical: ["ADMIN", "VET"], // Saglik kaydi ve asi
   breeding: ["ADMIN", "VET", "WORKER"], // Ureme/gebelik kayitlari
   milk: ["ADMIN", "WORKER"], // Sut verimi (gunluk islem)
+  weight: ["ADMIN", "WORKER", "VET"], // Agirlik (tartim) kayitlari
   fields: ["ADMIN", "WORKER"], // Tarla ve ekim
   inventory: ["ADMIN", "WORKER"], // Stok / envanter
   transactions: ["ADMIN", "ACCOUNTANT"], // Finans

@@ -106,6 +106,7 @@ model Animal {
   vaccinations    Vaccination[]
   milkYields      MilkYield[]
   breedingRecords BreedingRecord[]
+  weightRecords   WeightRecord[]
 
   @@index([motherId])
 }
@@ -222,6 +223,19 @@ model MilkYield {
   animal    Animal   @relation(fields: [animalId], references: [id], onDelete: Cascade)
   date      DateTime // Olcum tarihi
   amount    Float // Litre cinsinden miktar
+  notes     String?
+  createdAt DateTime @default(now())
+
+  @@index([animalId])
+}
+
+// Bir hayvanin periyodik agirlik (tartim) kaydi
+model WeightRecord {
+  id        String   @id @default(cuid())
+  animalId  String
+  animal    Animal   @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  date      DateTime // Tartim tarihi
+  weightKg  Float // Agirlik (kg)
   notes     String?
   createdAt DateTime @default(now())
 
