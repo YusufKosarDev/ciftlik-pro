@@ -76,12 +76,16 @@ export default async function PanelPage() {
   const now = new Date();
   const in30Days = new Date();
   in30Days.setDate(in30Days.getDate() + 30);
+  // Grafik yalnizca son 6 ayi gosterir; bu yuzden tum islemleri degil,
+  // sadece bu pencereyi cekiyoruz. Toplamlar ise aggregate ile hesaplanir.
+  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
 
   // Tum ozet verilerini tek seferde paralel cekiyoruz
   const [
     animalCount,
     fieldCount,
-    transactions,
+    totalsByType,
+    recentTransactions,
     pendingTasks,
     inventoryItems,
     overdueTasks,
@@ -89,7 +93,13 @@ export default async function PanelPage() {
   ] = await Promise.all([
     prisma.animal.count({ where: { status: "ACTIVE" } }),
     prisma.field.count(),
-    prisma.transaction.findMany({ select: { type: true, amount: true, date: true } }),
+    // Tum zamanlarin gelir/gider toplamlari (kayitlari belleğe cekmeden)
+    prisma.transaction.groupBy({ by: ["type"], _sum: { amount: true } }),
+    // Grafik icin yalnizca son 6 ayin islemleri
+    prisma.transaction.findMany({
+      where: { date: { gte: sixMonthsAgo } },
+      select: { type: true, amount: true, date: true },
+    }),
     prisma.task.count({ where: { status: { not: "DONE" } } }),
     prisma.inventoryItem.findMany(),
     prisma.task.findMany({
@@ -104,19 +114,17 @@ export default async function PanelPage() {
     }),
   ]);
 
-  const totalIncome = transactions
-    .filter((t) => t.type === "INCOME")
-    .reduce((s, t) => s + t.amount, 0);
-  const totalExpense = transactions
-    .filter((t) => t.type === "EXPENSE")
-    .reduce((s, t) => s + t.amount, 0);
+  const totalIncome =
+    totalsByType.find((t) => t.type === "INCOME")?._sum.amount ?? 0;
+  const totalExpense =
+    totalsByType.find((t) => t.type === "EXPENSE")?._sum.amount ?? 0;
   const balance = totalIncome - totalExpense;
 
   const criticalItems = inventoryItems.filter(
     (i) => i.quantity <= i.criticalLevel
   );
 
-  const monthlyFinance = buildMonthlyFinance(transactions);
+  const monthlyFinance = buildMonthlyFinance(recentTransactions);
 
   const hasAlerts =
     criticalItems.length > 0 ||
