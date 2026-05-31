@@ -1,22 +1,76 @@
-# Çiftlik Pro
+<div align="center">
 
-Tek bir çiftliğin tüm operasyonlarını (hayvan, tarla, stok, finans, görevler)
-tek panelden yöneten, rol bazlı yetkilendirmeye sahip bir Çiftlik Yönetim
-Sistemi (ERP).
+# 🌾 Çiftlik Pro
 
-## Özellikler
+**Bir çiftliğin tüm operasyonlarını — hayvan, tarla, stok, finans ve görevler —
+rol bazlı yetkilendirmeyle tek panelden yöneten tam yığın Çiftlik Yönetim Sistemi (ERP).**
+
+[![CI](https://github.com/YusufKosarDev/ciftlik-pro/actions/workflows/ci.yml/badge.svg)](https://github.com/YusufKosarDev/ciftlik-pro/actions/workflows/ci.yml)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Tests](https://img.shields.io/badge/tests-67%20unit%20%2B%206%20e2e-success)](#test--kalite)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+🔗 **Canlı Demo:** _yakında_ <!-- Deploy sonrası: https://... -->
+
+</div>
+
+---
+
+## 📸 Ekran Görüntüleri
+
+> Ekran görüntüleri `docs/screenshots/` altına eklenecek. (Placeholder)
+
+| Dashboard | Hayvanlar | 2D Harita |
+| --------- | --------- | --------- |
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Hayvanlar](docs/screenshots/animals.png) | ![Harita](docs/screenshots/map.png) |
+
+## ✨ Özellikler
 
 - **Kimlik doğrulama & RBAC** — kayıt, giriş, rol bazlı erişim (Admin, Çalışan,
   Veteriner, Muhasebeci). Parolalar bcrypt ile hash'lenir.
 - **Hayvan takibi** — kayıt yönetimi, sağlık kayıtları, aşı takvimi (tarih
   uyarılı), süt verimi (toplam ve ortalama özetli).
-- **Tarla yönetimi** — tarlalar ve ekim/hasat kayıtları.
+- **Tarla yönetimi** — tarlalar, ekim/hasat kayıtları ve 2D çiftlik haritası.
 - **Stok & envanter** — yem/ilaç/ekipman takibi, kritik seviye uyarısı.
-- **Finans** — gelir-gider kayıtları, net bakiye özeti.
+- **Finans** — gelir-gider kayıtları, net bakiye özeti, aylık grafik.
 - **Personel & görevler** — çalışanlara görev atama, gecikme uyarısı.
-- **Dashboard** — özet kartları, uyarılar ve aylık gelir-gider grafiği.
+- **Dashboard** — özet kartları, kritik stok / geciken görev / yaklaşan aşı uyarıları.
+- **Aranabilir tablolar** — tüm liste modüllerinde arama, kolon sıralama ve sayfalama.
 
-## Teknolojiler
+## 🏆 Öne Çıkan Mühendislik Detayları
+
+- **Rol bazlı yetkilendirme (RBAC)** tek merkezden (`src/lib/authz.ts`); hem yazma
+  (API) hem hassas okuma (sayfa) düzeyinde uygulanır.
+- **Uçtan uca tip güvenliği** — Zod şemaları hem istemci hem sunucuda doğrular;
+  Prisma ile veritabanı tipleri.
+- **Test & CI/CD** — 67 birim testi (Vitest) + 6 uçtan uca test (Playwright),
+  GitHub Actions'ta gerçek PostgreSQL servisiyle her PR'da çalışır.
+- **Serverless-doğru veritabanı** — pooled (`DATABASE_URL`) + direct
+  (`DIRECT_URL`) ayrımıyla Vercel + Neon/Supabase'e hazır.
+- **Yeniden kullanılabilir tasarım sistemi** — `cva` tabanlı Button/Badge
+  primitive'leri ve jenerik `DataTable` bileşeni.
+
+## 🧱 Mimari
+
+```mermaid
+flowchart LR
+  B[Tarayıcı] -->|HTTP| P[Proxy / Auth.js<br/>oturum koruması]
+  P --> RSC[Next.js App Router<br/>Sunucu Bileşenleri]
+  RSC -->|okuma| DB[(PostgreSQL)]
+  RSC --> API[API Route'ları]
+  API -->|RBAC + Zod| DB
+  RSC -.->|Prisma Client| DB
+```
+
+- **App Router (RSC)** — listeler doğrudan sunucuda Prisma ile okunur.
+- **API Route'ları** — tüm yazma işlemleri; `authorizeWrite` (RBAC) + Zod doğrulaması.
+- **Auth.js (NextAuth v5)** — JWT oturum; edge-uyumlu proxy ile rota koruması.
+- **Prisma** — tek `PrismaClient` örneği (singleton).
+
+## 🛠️ Teknolojiler
 
 - [Next.js 16](https://nextjs.org/) (App Router) + TypeScript
 - [PostgreSQL](https://www.postgresql.org/) + [Prisma 6](https://www.prisma.io/) (ORM)
@@ -24,7 +78,8 @@ Sistemi (ERP).
 - [Tailwind CSS](https://tailwindcss.com/) — arayüz
 - [Zod](https://zod.dev/) — veri doğrulama
 - [Recharts](https://recharts.org/) — grafikler
-- [Docker](https://www.docker.com/) — veritabanı
+- [Vitest](https://vitest.dev/) + [Playwright](https://playwright.dev/) — test
+- [Docker](https://www.docker.com/) — yerel veritabanı
 
 ## Kurulum
 
@@ -92,13 +147,25 @@ Seed çalıştırıldıysa:
 
 ## Komutlar
 
-| Komut             | Açıklama                          |
-| ----------------- | --------------------------------- |
-| `npm run dev`     | Geliştirme sunucusu               |
-| `npm run build`   | Üretim derlemesi                  |
-| `npm run start`   | Üretim sunucusu                   |
-| `npm run lint`    | Kod denetimi (ESLint)             |
-| `npm run db:seed` | Veritabanını örnek veriyle doldur |
+| Komut              | Açıklama                          |
+| ------------------ | --------------------------------- |
+| `npm run dev`      | Geliştirme sunucusu               |
+| `npm run build`    | Üretim derlemesi                  |
+| `npm run start`    | Üretim sunucusu                   |
+| `npm run lint`     | Kod denetimi (ESLint)             |
+| `npm test`         | Birim testleri (Vitest)           |
+| `npm run test:e2e` | Uçtan uca testler (Playwright)    |
+| `npm run db:seed`  | Veritabanını örnek veriyle doldur |
+
+## Test & Kalite
+
+- **Birim testleri (Vitest):** doğrulama şemaları, RBAC yetkilendirme,
+  finans/harita yardımcıları — `npm test` (67 test).
+- **Uçtan uca testler (Playwright):** kimlik doğrulama, hayvan CRUD akışı ve
+  RBAC erişim engeli — `npm run test:e2e` (6 test).
+- **CI (GitHub Actions):** her push/PR'da iki paralel job —
+  `build` (tsc + ESLint + Vitest + üretim derlemesi) ve
+  `e2e` (gerçek PostgreSQL servisi + seed + Playwright).
 
 ## Proje Yapısı
 
