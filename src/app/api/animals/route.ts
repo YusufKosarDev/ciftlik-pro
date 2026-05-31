@@ -46,6 +46,7 @@ export async function POST(request: Request) {
         status: data.status,
         imageUrl: data.imageUrl || null,
         notes: data.notes || null,
+        motherId: data.motherId || null,
       },
     });
 

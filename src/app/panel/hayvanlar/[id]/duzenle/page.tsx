@@ -18,6 +18,13 @@ export default async function HayvanDuzenlePage({
     notFound();
   }
 
+  // Anne adaylari: disi hayvanlar (kendisi haric)
+  const mothers = await prisma.animal.findMany({
+    where: { gender: "FEMALE", id: { not: id } },
+    select: { id: true, tagNumber: true, name: true },
+    orderBy: { tagNumber: "asc" },
+  });
+
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-center justify-between">
@@ -27,7 +34,7 @@ export default async function HayvanDuzenlePage({
         </Link>
       </div>
 
-      <AnimalForm animal={animal} />
+      <AnimalForm animal={animal} mothers={mothers} />
     </div>
   );
 }

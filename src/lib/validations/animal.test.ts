@@ -40,4 +40,13 @@ describe("animalSchema", () => {
       expect(result.data.status).toBe("ACTIVE");
     }
   });
+
+  it("motherId opsiyoneldir (bos gecer, deger kabul edilir)", () => {
+    const base = { tagNumber: "TR-009", species: "CATTLE", gender: "FEMALE" } as const;
+    expect(animalSchema.safeParse({ ...base }).success).toBe(true);
+    expect(animalSchema.safeParse({ ...base, motherId: "" }).success).toBe(true);
+    const r = animalSchema.safeParse({ ...base, motherId: "abc123" });
+    expect(r.success).toBe(true);
+    if (r.success) expect(r.data.motherId).toBe("abc123");
+  });
 });
