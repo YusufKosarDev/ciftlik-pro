@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import { canWrite } from "@/lib/authz";
 import { FarmMap } from "@/components/farm-map";
 import {
   layoutFields,
@@ -39,6 +41,13 @@ export default async function HaritaPage() {
   }));
   const structureRects = layoutStructures(structureInput);
 
+  // Tarla veya yapi yazma yetkisi olan, yerlesimi surukleyip kaydedebilir.
+  const session = await auth();
+  const role = session?.user.role;
+  const editable = role
+    ? canWrite(role, "fields") || canWrite(role, "structures")
+    : false;
+
   return (
     <div className="space-y-6">
       <div>
@@ -64,7 +73,7 @@ export default async function HaritaPage() {
           </Link>
         </div>
       ) : (
-        <FarmMap fields={rects} structures={structureRects} />
+        <FarmMap fields={rects} structures={structureRects} editable={editable} />
       )}
     </div>
   );

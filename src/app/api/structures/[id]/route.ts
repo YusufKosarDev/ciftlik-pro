@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { structureSchema } from "@/lib/validations/structure";
+import { positionSchema } from "@/lib/validations/position";
 
 // PUT /api/structures/[id] -> yapiyi gunceller
 export async function PUT(
@@ -67,6 +68,46 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Yapi silme hatasi:", error);
+    return NextResponse.json(
+      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { status: 500 }
+    );
+  }
+}
+
+// PATCH /api/structures/[id] -> sadece harita konumunu (posX/posY) gunceller
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const authz = await authorizeWrite("structures");
+    if ("error" in authz) return authz.error;
+
+    const { id } = await params;
+    const body = await request.json();
+
+    const parsed = positionSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Gecersiz konum", details: parsed.error.flatten().fieldErrors },
+        { status: 400 }
+      );
+    }
+
+    const existing = await prisma.structure.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: "Yapi bulunamadi" }, { status: 404 });
+    }
+
+    const structure = await prisma.structure.update({
+      where: { id },
+      data: { posX: parsed.data.posX, posY: parsed.data.posY },
+    });
+
+    return NextResponse.json({ structure });
+  } catch (error) {
+    console.error("Yapi konum guncelleme hatasi:", error);
     return NextResponse.json(
       { error: "Sunucu hatasi, lutfen tekrar deneyin" },
       { status: 500 }

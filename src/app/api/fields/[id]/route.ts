@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { fieldSchema } from "@/lib/validations/field";
+import { positionSchema } from "@/lib/validations/position";
 
 // PUT /api/fields/[id] -> tarlayi gunceller
 export async function PUT(
@@ -68,6 +69,46 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Tarla silme hatasi:", error);
+    return NextResponse.json(
+      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { status: 500 }
+    );
+  }
+}
+
+// PATCH /api/fields/[id] -> sadece harita konumunu (posX/posY) gunceller
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const authz = await authorizeWrite("fields");
+    if ("error" in authz) return authz.error;
+
+    const { id } = await params;
+    const body = await request.json();
+
+    const parsed = positionSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Gecersiz konum", details: parsed.error.flatten().fieldErrors },
+        { status: 400 }
+      );
+    }
+
+    const existing = await prisma.field.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: "Tarla bulunamadi" }, { status: 404 });
+    }
+
+    const field = await prisma.field.update({
+      where: { id },
+      data: { posX: parsed.data.posX, posY: parsed.data.posY },
+    });
+
+    return NextResponse.json({ field });
+  } catch (error) {
+    console.error("Tarla konum guncelleme hatasi:", error);
     return NextResponse.json(
       { error: "Sunucu hatasi, lutfen tekrar deneyin" },
       { status: 500 }
