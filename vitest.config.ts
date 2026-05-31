@@ -18,6 +18,8 @@ export default defineConfig({
         "src/lib/prisma.ts",
         "src/lib/auth.ts",
         "src/lib/auth.config.ts",
+        // Harici servis sarmalayicisi (Resend); birim testi yerine entegrasyonla dogrulanir
+        "src/lib/email.ts",
         // Saf sabit/yardimci dosyalar (dallanma mantigi yok)
         "src/lib/labels.ts",
         "src/lib/cn.ts",
