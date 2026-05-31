@@ -35,6 +35,24 @@ export default function GirisPage() {
     router.refresh();
   }
 
+  // Ziyaretciler icin: kayit gerektirmeyen demo (WORKER) hesabiyla giris.
+  async function handleDemo() {
+    setError(null);
+    setLoading(true);
+    const result = await signIn("credentials", {
+      email: "demo@ciftlik.com",
+      password: "demo1234",
+      redirect: false,
+    });
+    setLoading(false);
+    if (result?.error) {
+      setError("Demo girisi su an kullanilamiyor");
+      return;
+    }
+    router.push("/panel");
+    router.refresh();
+  }
+
   return (
     <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-700 via-green-600 to-emerald-800 p-4">
       <div className="w-full max-w-sm rounded-2xl border border-gray-100 bg-white p-8 shadow-xl">
@@ -87,6 +105,20 @@ export default function GirisPage() {
             {loading ? "Giris yapiliyor..." : "Giris Yap"}
           </button>
         </form>
+
+        <div className="my-4 text-center text-xs text-gray-400">veya</div>
+
+        <button
+          type="button"
+          onClick={handleDemo}
+          disabled={loading}
+          className="w-full rounded-lg border border-green-600 py-2 text-sm font-semibold text-green-700 transition hover:bg-green-50 disabled:opacity-60"
+        >
+          🌱 Demo olarak gez
+        </button>
+        <p className="mt-2 text-center text-xs text-gray-400">
+          Kayit gerektirmez · ornek verilerle inceleyin
+        </p>
       </div>
     </main>
   );
