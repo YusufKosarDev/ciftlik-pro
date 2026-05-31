@@ -40,6 +40,8 @@ rol bazlı yetkilendirmeyle tek panelden yöneten tam yığın Çiftlik Yönetim
 - **Personel & görevler** — çalışanlara görev atama, gecikme uyarısı.
 - **Dashboard** — özet kartları, kritik stok / geciken görev / yaklaşan aşı uyarıları.
 - **Aranabilir tablolar** — tüm liste modüllerinde arama, kolon sıralama ve sayfalama.
+- **E-posta bildirimleri** — günlük cron (Vercel Cron) ile kritik stok, geciken
+  görev ve yaklaşan aşı özetini yöneticilere e-posta gönderir (Resend).
 
 ## 🏆 Öne Çıkan Mühendislik Detayları
 
