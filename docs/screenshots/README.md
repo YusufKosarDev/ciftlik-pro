@@ -1,9 +1,11 @@
 # Ekran Görüntüleri
 
-Bu klasöre README'de referans verilen görseller eklenir:
+README'de kullanılan görseller (admin hesabı + örnek/demo veriyle, çalışan
+uygulamadan Playwright ile alındı):
 
-- `dashboard.png` — Panel ana sayfası (özet kartları + grafik + uyarılar)
-- `animals.png` — Hayvanlar listesi (aranabilir tablo)
-- `map.png` — 2D çiftlik haritası
-
-Önerilen genişlik: ~1280px, PNG.
+- `dashboard.png` — Panel ana sayfası (özet kartları + aylık grafik + uyarılar)
+- `map.png` — 2D çiftlik haritası (tarlalar + yapılar)
+- `animals.png` — Hayvanlar listesi (aranabilir/sıralanabilir tablo)
+- `finance.png` — Finans (özet kartları + işlem tablosu)
+- `animal-detail.png` — Hayvan detayı (süt/ağırlık grafikleri, üreme, soy)
+- `feed.png` — Yem yönetimi (stok + tüketim)
