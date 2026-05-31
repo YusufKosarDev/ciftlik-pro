@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { inventoryCategoryLabels } from "@/lib/labels";
 import type { InventoryItem } from "@prisma/client";
@@ -48,6 +50,7 @@ export function InventoryForm({ item }: { item?: InventoryItem }) {
       return;
     }
 
+    toast.success("Stok kalemi kaydedildi.");
     router.push("/panel/stok");
     router.refresh();
   }
@@ -162,13 +165,9 @@ export function InventoryForm({ item }: { item?: InventoryItem }) {
         >
           Iptal
         </Link>
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-60"
-        >
-          {loading ? "Kaydediliyor..." : "Kaydet"}
-        </button>
+        <Button type="submit" loading={loading}>
+          Kaydet
+        </Button>
       </div>
     </form>
   );

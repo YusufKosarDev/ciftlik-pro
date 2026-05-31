@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import type { Field } from "@prisma/client";
 
@@ -45,6 +47,7 @@ export function FieldForm({ field }: { field?: Field }) {
       return;
     }
 
+    toast.success("Tarla kaydedildi.");
     router.push("/panel/tarlalar");
     router.refresh();
   }
@@ -123,13 +126,9 @@ export function FieldForm({ field }: { field?: Field }) {
         >
           Iptal
         </Link>
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-60"
-        >
-          {loading ? "Kaydediliyor..." : "Kaydet"}
-        </button>
+        <Button type="submit" loading={loading}>
+          Kaydet
+        </Button>
       </div>
     </form>
   );

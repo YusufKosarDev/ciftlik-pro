@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { cropStatusLabels } from "@/lib/labels";
 
 const inputClass =
@@ -41,6 +43,7 @@ export function CropForm({ fieldId }: { fieldId: string }) {
       return;
     }
 
+    toast.success("Ekim kaydı eklendi.");
     form.reset();
     router.refresh();
   }
@@ -91,13 +94,9 @@ export function CropForm({ fieldId }: { fieldId: string }) {
         <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
       )}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-60"
-      >
-        {loading ? "Ekleniyor..." : "Ekim Kaydi Ekle"}
-      </button>
+      <Button type="submit" loading={loading}>
+        Ekim Kaydı Ekle
+      </Button>
     </form>
   );
 }

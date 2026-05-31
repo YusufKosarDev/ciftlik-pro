@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 const inputClass =
   "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500";
@@ -39,6 +41,7 @@ export function HealthRecordForm({ animalId }: { animalId: string }) {
       return;
     }
 
+    toast.success("Sağlık kaydı eklendi.");
     form.reset();
     router.refresh();
   }
@@ -76,13 +79,9 @@ export function HealthRecordForm({ animalId }: { animalId: string }) {
         <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
       )}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-60"
-      >
-        {loading ? "Ekleniyor..." : "Saglik Kaydi Ekle"}
-      </button>
+      <Button type="submit" loading={loading}>
+        Sağlık Kaydı Ekle
+      </Button>
     </form>
   );
 }

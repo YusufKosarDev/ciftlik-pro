@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { transactionTypeLabels } from "@/lib/labels";
 import type { Transaction } from "@prisma/client";
@@ -53,6 +55,7 @@ export function TransactionForm({ transaction }: { transaction?: Transaction }) 
       return;
     }
 
+    toast.success("İşlem kaydedildi.");
     router.push("/panel/finans");
     router.refresh();
   }
@@ -152,13 +155,9 @@ export function TransactionForm({ transaction }: { transaction?: Transaction }) 
         >
           Iptal
         </Link>
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-60"
-        >
-          {loading ? "Kaydediliyor..." : "Kaydet"}
-        </button>
+        <Button type="submit" loading={loading}>
+          Kaydet
+        </Button>
       </div>
     </form>
   );
