@@ -9,3 +9,4 @@ uygulamadan Playwright ile alındı):
 - `finance.png` — Finans (özet kartları + işlem tablosu)
 - `animal-detail.png` — Hayvan detayı (süt/ağırlık grafikleri, üreme, soy)
 - `feed.png` — Yem yönetimi (stok + tüketim)
+- `calendar.png` — Takvim (aşı/görev/hasat/doğum)

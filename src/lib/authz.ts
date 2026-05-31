@@ -36,6 +36,7 @@ const navByRole: Record<Role, string[]> = {
   ADMIN: [
     "/panel",
     "/panel/harita",
+    "/panel/takvim",
     "/panel/hayvanlar",
     "/panel/tarlalar",
     "/panel/stok",
@@ -48,6 +49,7 @@ const navByRole: Record<Role, string[]> = {
   WORKER: [
     "/panel",
     "/panel/harita",
+    "/panel/takvim",
     "/panel/hayvanlar",
     "/panel/tarlalar",
     "/panel/stok",
@@ -55,8 +57,8 @@ const navByRole: Record<Role, string[]> = {
     "/panel/yapilar",
     "/panel/gorevler",
   ],
-  VET: ["/panel", "/panel/harita", "/panel/hayvanlar", "/panel/gorevler"],
-  ACCOUNTANT: ["/panel", "/panel/harita", "/panel/finans", "/panel/gorevler"],
+  VET: ["/panel", "/panel/harita", "/panel/takvim", "/panel/hayvanlar", "/panel/gorevler"],
+  ACCOUNTANT: ["/panel", "/panel/harita", "/panel/takvim", "/panel/finans", "/panel/gorevler"],
 };
 
 // Bir rolun menude gorebilecegi yollarin kumesi.
