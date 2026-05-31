@@ -12,6 +12,7 @@ import { auth } from "@/lib/auth";
 export const writePermissions = {
   animals: ["ADMIN", "WORKER"], // Hayvan kaydi
   animalMedical: ["ADMIN", "VET"], // Saglik kaydi ve asi
+  breeding: ["ADMIN", "VET", "WORKER"], // Ureme/gebelik kayitlari
   milk: ["ADMIN", "WORKER"], // Sut verimi (gunluk islem)
   fields: ["ADMIN", "WORKER"], // Tarla ve ekim
   inventory: ["ADMIN", "WORKER"], // Stok / envanter

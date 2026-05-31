@@ -96,9 +96,10 @@ model Animal {
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
 
-  healthRecords HealthRecord[]
-  vaccinations  Vaccination[]
-  milkYields    MilkYield[]
+  healthRecords   HealthRecord[]
+  vaccinations    Vaccination[]
+  milkYields      MilkYield[]
+  breedingRecords BreedingRecord[]
 }
 
 // Bir hayvana ait saglik/tedavi kaydi
@@ -215,6 +216,31 @@ model MilkYield {
   amount    Float // Litre cinsinden miktar
   notes     String?
   createdAt DateTime @default(now())
+
+  @@index([animalId])
+}
+
+// Ureme/gebelik kaydi durumu
+enum BreedingStatus {
+  PLANNED // Planlandi (tohumlama/ciftlesme yapildi)
+  PREGNANT // Gebe
+  BORN // Dogum gerceklesti
+  FAILED // Basarisiz / dusuk
+}
+
+// Bir disi hayvanin ureme/gebelik kaydi
+model BreedingRecord {
+  id                String         @id @default(cuid())
+  animalId          String
+  animal            Animal         @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  sireTag           String? // Baba kulak numarasi (serbest metin; baba sistemde olmayabilir)
+  breedingDate      DateTime // Tohumlama/ciftlesme tarihi
+  expectedBirthDate DateTime? // Tahmini dogum tarihi
+  actualBirthDate   DateTime? // Gercek dogum tarihi
+  status            BreedingStatus @default(PLANNED)
+  offspringCount    Int? // Yavru sayisi (dogum gerceklestiyse)
+  notes             String?
+  createdAt         DateTime       @default(now())
 
   @@index([animalId])
 }
