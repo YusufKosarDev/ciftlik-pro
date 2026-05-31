@@ -26,6 +26,9 @@ export function CropForm({ fieldId }: { fieldId: string }) {
       plantedDate: String(fd.get("plantedDate")),
       harvestDate: String(fd.get("harvestDate")),
       status: String(fd.get("status")),
+      cost: String(fd.get("cost")),
+      revenue: String(fd.get("revenue")),
+      yieldAmount: String(fd.get("yieldAmount")),
       notes: String(fd.get("notes")),
     };
 
@@ -80,6 +83,27 @@ export function CropForm({ fieldId }: { fieldId: string }) {
             Hasat Tarihi
           </label>
           <input id="charvest" name="harvestDate" type="date" className={inputClass} />
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div>
+          <label htmlFor="ccost" className="mb-1 block text-xs font-medium text-gray-600">
+            Gider (TL)
+          </label>
+          <input id="ccost" name="cost" type="number" step="0.01" min="0" className={inputClass} />
+        </div>
+        <div>
+          <label htmlFor="crev" className="mb-1 block text-xs font-medium text-gray-600">
+            Hasat Geliri (TL)
+          </label>
+          <input id="crev" name="revenue" type="number" step="0.01" min="0" className={inputClass} />
+        </div>
+        <div>
+          <label htmlFor="cyield" className="mb-1 block text-xs font-medium text-gray-600">
+            Verim (kg)
+          </label>
+          <input id="cyield" name="yieldAmount" type="number" step="0.1" min="0" className={inputClass} />
         </div>
       </div>
 

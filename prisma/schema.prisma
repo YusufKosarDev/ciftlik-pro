@@ -226,6 +226,9 @@ model Crop {
   plantedDate DateTime // Ekim tarihi
   harvestDate DateTime? // Hasat tarihi (varsa)
   status      CropStatus @default(PLANTED)
+  cost        Float? // Ekim gideri (TL)
+  revenue     Float? // Hasat geliri (TL)
+  yieldAmount Float? // Verim (kg)
   notes       String?
   createdAt   DateTime   @default(now())
 

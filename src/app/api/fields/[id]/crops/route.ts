@@ -36,6 +36,9 @@ export async function POST(
         plantedDate: new Date(data.plantedDate),
         harvestDate: data.harvestDate ? new Date(data.harvestDate) : null,
         status: data.status,
+        cost: data.cost ?? null,
+        revenue: data.revenue ?? null,
+        yieldAmount: data.yieldAmount ?? null,
         notes: data.notes || null,
       },
     });

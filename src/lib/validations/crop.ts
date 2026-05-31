@@ -3,6 +3,19 @@ import { requiredDateString, optionalDateString } from "@/lib/validations/date";
 
 export const cropStatuses = ["PLANTED", "GROWING", "HARVESTED"] as const;
 
+// Form bos birakilirsa "" gelir; bunu undefined'a cevirip opsiyonel,
+// negatif olmayan bir sayi olarak dogrularir.
+function optionalNonNegativeNumber(label: string) {
+  return z.preprocess(
+    (v) => (v === "" || v === null || v === undefined ? undefined : v),
+    z.coerce
+      .number({ message: `Gecerli bir ${label.toLowerCase()} giriniz` })
+      .min(0, `${label} negatif olamaz`)
+      .max(1000000000, `${label} cok yuksek`)
+      .optional()
+  );
+}
+
 // Ekim kaydi dogrulama semasi.
 export const cropSchema = z.object({
   name: z
@@ -13,6 +26,10 @@ export const cropSchema = z.object({
   plantedDate: requiredDateString("Ekim tarihi zorunludur"),
   harvestDate: optionalDateString(),
   status: z.enum(cropStatuses).default("PLANTED"),
+  // Ekonomik alanlar opsiyonel; bos string undefined sayilir.
+  cost: optionalNonNegativeNumber("Gider"),
+  revenue: optionalNonNegativeNumber("Gelir"),
+  yieldAmount: optionalNonNegativeNumber("Verim"),
   notes: z.string().trim().max(500).optional().or(z.literal("")),
 });
 

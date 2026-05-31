@@ -5,6 +5,11 @@ import { auth } from "@/lib/auth";
 import { canWrite } from "@/lib/authz";
 import { cropStatusLabels } from "@/lib/labels";
 import { CropForm } from "@/components/crop-form";
+import { fieldEconomics } from "@/lib/field-economics";
+
+function formatMoney(amount: number): string {
+  return amount.toLocaleString("tr-TR", { minimumFractionDigits: 2 }) + " TL";
+}
 
 const cropStatusStyles: Record<string, string> = {
   PLANTED: "bg-blue-100 text-blue-700",
@@ -46,6 +51,8 @@ export default async function TarlaDetayPage({
   const session = await auth();
   const canEdit = session ? canWrite(session.user.role, "fields") : false;
 
+  const eco = fieldEconomics(field.crops, field.area);
+
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-center justify-between">
@@ -75,6 +82,32 @@ export default async function TarlaDetayPage({
         <Row label="Notlar" value={field.notes ?? "-"} />
       </div>
 
+      {/* Ekonomik ozet */}
+      {field.crops.length > 0 && (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-xl border border-gray-200 bg-white p-4">
+            <p className="text-xs text-gray-500">Toplam Gider</p>
+            <p className="mt-1 text-lg font-bold text-red-600">{formatMoney(eco.totalCost)}</p>
+          </div>
+          <div className="rounded-xl border border-gray-200 bg-white p-4">
+            <p className="text-xs text-gray-500">Toplam Gelir</p>
+            <p className="mt-1 text-lg font-bold text-green-600">{formatMoney(eco.totalRevenue)}</p>
+          </div>
+          <div className="rounded-xl border border-gray-200 bg-white p-4">
+            <p className="text-xs text-gray-500">Net Kâr</p>
+            <p className={`mt-1 text-lg font-bold ${eco.profit >= 0 ? "text-green-600" : "text-red-600"}`}>
+              {formatMoney(eco.profit)}
+            </p>
+          </div>
+          <div className="rounded-xl border border-gray-200 bg-white p-4">
+            <p className="text-xs text-gray-500">Dönüm Başına Verim</p>
+            <p className="mt-1 text-lg font-bold text-gray-900">
+              {eco.yieldPerDonum !== null ? `${eco.yieldPerDonum.toFixed(1)} kg` : "-"}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Ekim Kayitlari */}
       <section className="space-y-4">
         <h2 className="text-lg font-bold text-gray-900">Ekim Kayitlari</h2>
@@ -92,10 +125,16 @@ export default async function TarlaDetayPage({
                   <th className="px-4 py-2 font-medium">Ekim</th>
                   <th className="px-4 py-2 font-medium">Hasat</th>
                   <th className="px-4 py-2 font-medium">Durum</th>
+                  <th className="px-4 py-2 text-right font-medium">Gider</th>
+                  <th className="px-4 py-2 text-right font-medium">Gelir</th>
+                  <th className="px-4 py-2 text-right font-medium">Kâr</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {field.crops.map((crop) => (
+                {field.crops.map((crop) => {
+                  const profit = (crop.revenue ?? 0) - (crop.cost ?? 0);
+                  const hasEco = crop.cost !== null || crop.revenue !== null;
+                  return (
                   <tr key={crop.id}>
                     <td className="px-4 py-2 font-medium text-gray-900">{crop.name}</td>
                     <td className="px-4 py-2 text-gray-700">
@@ -113,8 +152,22 @@ export default async function TarlaDetayPage({
                         {cropStatusLabels[crop.status]}
                       </span>
                     </td>
+                    <td className="px-4 py-2 text-right text-gray-700">
+                      {crop.cost !== null ? formatMoney(crop.cost) : "-"}
+                    </td>
+                    <td className="px-4 py-2 text-right text-gray-700">
+                      {crop.revenue !== null ? formatMoney(crop.revenue) : "-"}
+                    </td>
+                    <td
+                      className={`px-4 py-2 text-right font-medium ${
+                        !hasEco ? "text-gray-400" : profit >= 0 ? "text-green-600" : "text-red-600"
+                      }`}
+                    >
+                      {hasEco ? formatMoney(profit) : "-"}
+                    </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
