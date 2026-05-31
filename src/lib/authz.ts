@@ -18,6 +18,7 @@ export const writePermissions = {
   transactions: ["ADMIN", "ACCOUNTANT"], // Finans
   tasks: ["ADMIN"], // Gorev atama
   users: ["ADMIN"], // Personel yonetimi
+  structures: ["ADMIN", "WORKER"], // Yapilar (ahir/kumes/depo) ve harita konumu
 } satisfies Record<string, Role[]>;
 
 export type WriteModule = keyof typeof writePermissions;
@@ -32,22 +33,26 @@ export function canWrite(role: Role, module: WriteModule): boolean {
 const navByRole: Record<Role, string[]> = {
   ADMIN: [
     "/panel",
+    "/panel/harita",
     "/panel/hayvanlar",
     "/panel/tarlalar",
     "/panel/stok",
+    "/panel/yapilar",
     "/panel/finans",
     "/panel/gorevler",
     "/panel/personel",
   ],
   WORKER: [
     "/panel",
+    "/panel/harita",
     "/panel/hayvanlar",
     "/panel/tarlalar",
     "/panel/stok",
+    "/panel/yapilar",
     "/panel/gorevler",
   ],
-  VET: ["/panel", "/panel/hayvanlar", "/panel/gorevler"],
-  ACCOUNTANT: ["/panel", "/panel/finans", "/panel/gorevler"],
+  VET: ["/panel", "/panel/harita", "/panel/hayvanlar", "/panel/gorevler"],
+  ACCOUNTANT: ["/panel", "/panel/harita", "/panel/finans", "/panel/gorevler"],
 };
 
 // Bir rolun menude gorebilecegi yollarin kumesi.

@@ -2,6 +2,8 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
+# postinstall "prisma generate" calistirdigi icin sema install'dan once gerekli.
+COPY prisma ./prisma
 # npm install kullaniyoruz: lockfile Windows'ta uretildigi icin Linux'a ozgu
 # ikili paketleri icermez; npm ci bunlari reddeder, npm install cozer.
 RUN npm install

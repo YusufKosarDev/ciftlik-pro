@@ -139,6 +139,11 @@ User 1-N Task • Product 1-N Sale.
 - [ ] Sepet ve sipariş
 - [ ] Ödeme entegrasyonu
 
+### Faz 9 — 2D Çiftlik Haritası
+- [x] 9A: Tarla haritası (SVG; alana orantılı, ekin durumu renkli, tıkla→detay)
+- [x] 9B: Yapılar modülü (ahır/kümes/depo CRUD) ve haritada gösterimi
+- [x] 9C: Sürükle-bırak ile yerleşim düzenleme (posX/posY, rol bazlı PATCH)
+
 ---
 
 ## 7. Çalışma Prensipleri
