@@ -7,7 +7,13 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // Uygulama calisma zamani baglantisi. Serverless (Vercel) + Neon/Supabase'de
+  // bu, pooler (pgbouncer) uzerinden gelen HAVUZLANMIS baglanti olmalidir.
+  url       = env("DATABASE_URL")
+  // Migration'lar (prisma migrate) icin DOGRUDAN baglanti. Pooler migration'lari
+  // desteklemedigi icin ayri tutulur. Pooler kullanmayan ortamlarda (yerel/CI)
+  // DATABASE_URL ile ayni degeri verin.
+  directUrl = env("DIRECT_URL")
 }
 
 // Kullanici rolleri (RBAC)
