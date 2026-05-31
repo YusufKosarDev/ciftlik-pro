@@ -21,6 +21,7 @@ export default async function PanelLayout({
   // Tum olasi menu ogeleri; her rol yalnizca yetkili oldugu yollari gorur.
   const allNavItems = [
     { href: "/panel", label: "Panel" },
+    { href: "/panel/harita", label: "Harita" },
     { href: "/panel/hayvanlar", label: "Hayvanlar" },
     { href: "/panel/tarlalar", label: "Tarlalar" },
     { href: "/panel/stok", label: "Stok" },

@@ -32,6 +32,7 @@ export function canWrite(role: Role, module: WriteModule): boolean {
 const navByRole: Record<Role, string[]> = {
   ADMIN: [
     "/panel",
+    "/panel/harita",
     "/panel/hayvanlar",
     "/panel/tarlalar",
     "/panel/stok",
@@ -41,13 +42,14 @@ const navByRole: Record<Role, string[]> = {
   ],
   WORKER: [
     "/panel",
+    "/panel/harita",
     "/panel/hayvanlar",
     "/panel/tarlalar",
     "/panel/stok",
     "/panel/gorevler",
   ],
-  VET: ["/panel", "/panel/hayvanlar", "/panel/gorevler"],
-  ACCOUNTANT: ["/panel", "/panel/finans", "/panel/gorevler"],
+  VET: ["/panel", "/panel/harita", "/panel/hayvanlar", "/panel/gorevler"],
+  ACCOUNTANT: ["/panel", "/panel/harita", "/panel/finans", "/panel/gorevler"],
 };
 
 // Bir rolun menude gorebilecegi yollarin kumesi.
