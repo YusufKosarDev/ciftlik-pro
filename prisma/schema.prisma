@@ -177,6 +177,22 @@ model InventoryItem {
   notes         String?
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
+
+  feedLogs FeedLog[]
+}
+
+// Bir yem (FEED) kaleminin tuketim kaydi. Tuketim eklendiginde ilgili
+// stok kaleminin miktari dusurulur (bkz. POST /api/feed).
+model FeedLog {
+  id              String        @id @default(cuid())
+  inventoryItemId String
+  inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
+  date            DateTime // Tuketim tarihi
+  quantity        Float // Tuketilen miktar (kalemin birimiyle)
+  notes           String?
+  createdAt       DateTime      @default(now())
+
+  @@index([inventoryItemId])
 }
 
 // Ekim durumu
