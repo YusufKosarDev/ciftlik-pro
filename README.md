@@ -11,7 +11,7 @@ rol bazlı yetkilendirmeyle tek panelden yöneten tam yığın Çiftlik Yönetim
 [![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Coverage](https://img.shields.io/badge/coverage-~95%25%20(lib)-success?logo=vitest&logoColor=white)](#test--kalite)
-[![Tests](https://img.shields.io/badge/tests-86%20unit%20%2B%206%20e2e-success)](#test--kalite)
+[![Tests](https://img.shields.io/badge/tests-129%20unit%20%2B%206%20e2e-success)](#test--kalite)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 🔗 **Canlı Demo:** _yakında_ <!-- Deploy sonrası: https://... -->
@@ -30,6 +30,10 @@ rol bazlı yetkilendirmeyle tek panelden yöneten tam yığın Çiftlik Yönetim
 | ---------------------------- | ------ |
 | ![Hayvanlar](docs/screenshots/animals.png) | ![Finans](docs/screenshots/finance.png) |
 
+| Takvim (aşı/görev/hasat/doğum) | Yem Yönetimi |
+| ------------------------------ | ------------ |
+| ![Takvim](docs/screenshots/calendar.png) | ![Yem](docs/screenshots/feed.png) |
+
 **Hayvan detayı** — sağlık, aşı, süt verimi & ağırlık grafikleri, üreme ve soy:
 
 ![Hayvan detayı](docs/screenshots/animal-detail.png)
@@ -39,10 +43,14 @@ rol bazlı yetkilendirmeyle tek panelden yöneten tam yığın Çiftlik Yönetim
 - **Kimlik doğrulama & RBAC** — kayıt, giriş, rol bazlı erişim (Admin, Çalışan,
   Veteriner, Muhasebeci). Parolalar bcrypt ile hash'lenir.
 - **Hayvan takibi** — kayıt yönetimi, sağlık kayıtları, aşı takvimi (tarih
-  uyarılı), süt verimi (toplam ve ortalama özetli).
-- **Tarla yönetimi** — tarlalar, ekim/hasat kayıtları ve 2D çiftlik haritası.
-- **Stok & envanter** — yem/ilaç/ekipman takibi, kritik seviye uyarısı.
+  uyarılı), süt verimi (trend grafiği), ağırlık/büyüme takibi (grafik).
+- **Üreme & soy** — gebelik/doğum kayıtları ve yavru–anne (pedigri) bağlantısı.
+- **Tarla yönetimi** — tarlalar, ekim/hasat kayıtları, ekim başına maliyet/gelir
+  ve dönüm başına verim; 2D çiftlik haritası.
+- **Stok & yem** — yem/ilaç/ekipman takibi, kritik seviye uyarısı; yem tüketimi
+  stoğu otomatik düşürür (transactional).
 - **Finans** — gelir-gider kayıtları, net bakiye özeti, aylık grafik.
+- **Takvim** — aşı, görev, hasat ve doğumlar tek aylık takvimde.
 - **Personel & görevler** — çalışanlara görev atama, gecikme uyarısı.
 - **Dashboard** — özet kartları, kritik stok / geciken görev / yaklaşan aşı uyarıları.
 - **Aranabilir tablolar** — tüm liste modüllerinde arama, kolon sıralama ve sayfalama.
@@ -55,7 +63,7 @@ rol bazlı yetkilendirmeyle tek panelden yöneten tam yığın Çiftlik Yönetim
   (API) hem hassas okuma (sayfa) düzeyinde uygulanır.
 - **Uçtan uca tip güvenliği** — Zod şemaları hem istemci hem sunucuda doğrular;
   Prisma ile veritabanı tipleri.
-- **Test & CI/CD** — 67 birim testi (Vitest) + 6 uçtan uca test (Playwright),
+- **Test & CI/CD** — 129 birim testi (Vitest) + 6 uçtan uca test (Playwright),
   GitHub Actions'ta gerçek PostgreSQL servisiyle her PR'da çalışır.
 - **Serverless-doğru veritabanı** — pooled (`DATABASE_URL`) + direct
   (`DIRECT_URL`) ayrımıyla Vercel + Neon/Supabase'e hazır.
@@ -169,7 +177,7 @@ Seed çalıştırıldıysa:
 ## Test & Kalite
 
 - **Birim testleri (Vitest):** doğrulama şemaları, RBAC yetkilendirme,
-  finans/harita/tarih yardımcıları — `npm test` (86 test). Kapsam raporu için
+  finans/harita/tarih/takvim yardımcıları — `npm test` (129 test). Kapsam raporu için
   `npm run test:coverage` (iş mantığı `src/lib` için ~%95 satır kapsamı).
 - **Uçtan uca testler (Playwright):** kimlik doğrulama, hayvan CRUD akışı ve
   RBAC erişim engeli — `npm run test:e2e` (6 test).

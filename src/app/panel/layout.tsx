@@ -20,6 +20,7 @@ export default async function PanelLayout({
   const allNavItems = [
     { href: "/panel", label: "Panel" },
     { href: "/panel/harita", label: "Harita" },
+    { href: "/panel/takvim", label: "Takvim" },
     { href: "/panel/hayvanlar", label: "Hayvanlar" },
     { href: "/panel/tarlalar", label: "Tarlalar" },
     { href: "/panel/stok", label: "Stok" },
