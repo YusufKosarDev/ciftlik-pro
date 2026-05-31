@@ -13,12 +13,16 @@ const inputClass =
   "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500";
 const labelClass = "mb-1 block text-sm font-medium text-gray-700";
 
+type MotherOption = { id: string; tagNumber: string; name: string | null };
+
 type Props = {
   // Duzenleme modunda mevcut hayvan; ekleme modunda undefined.
   animal?: Animal;
+  // Anne secimi icin aday hayvanlar (disiler; duzenlemede kendisi haric).
+  mothers?: MotherOption[];
 };
 
-export function AnimalForm({ animal }: Props) {
+export function AnimalForm({ animal, mothers = [] }: Props) {
   const router = useRouter();
   const isEdit = Boolean(animal);
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +44,7 @@ export function AnimalForm({ animal }: Props) {
       status: String(fd.get("status")),
       imageUrl: String(fd.get("imageUrl")),
       notes: String(fd.get("notes")),
+      motherId: String(fd.get("motherId")),
     };
 
     const res = await fetch(
@@ -179,6 +184,28 @@ export function AnimalForm({ animal }: Props) {
           </select>
         </div>
       </div>
+
+      {mothers.length > 0 && (
+        <div>
+          <label htmlFor="motherId" className={labelClass}>
+            Anne (soy)
+          </label>
+          <select
+            id="motherId"
+            name="motherId"
+            defaultValue={animal?.motherId ?? ""}
+            className={inputClass}
+          >
+            <option value="">— Anne seçilmedi —</option>
+            {mothers.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.tagNumber}
+                {m.name ? ` (${m.name})` : ""}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div>
         <label htmlFor="imageUrl" className={labelClass}>

@@ -28,6 +28,8 @@ export const animalSchema = z.object({
     .optional()
     .or(z.literal("")),
   notes: z.string().trim().max(500).optional().or(z.literal("")),
+  // Soy: anne hayvanin id'si (opsiyonel). Kendine anne secme kontrolu API'de.
+  motherId: z.string().trim().optional().or(z.literal("")),
 });
 
 export type AnimalInput = z.infer<typeof animalSchema>;

@@ -95,6 +95,11 @@ export default async function HayvanDetayPage({
       vaccinations: { orderBy: { date: "desc" } },
       milkYields: { orderBy: { date: "desc" } },
       breedingRecords: { orderBy: { breedingDate: "desc" } },
+      mother: { select: { id: true, tagNumber: true, name: true } },
+      offspring: {
+        select: { id: true, tagNumber: true, name: true },
+        orderBy: { tagNumber: "asc" },
+      },
     },
   });
 
@@ -361,6 +366,48 @@ export default async function HayvanDetayPage({
             </table>
           </div>
         )}
+      </section>
+
+      {/* Soy (Pedigri) */}
+      <section className="space-y-4">
+        <h2 className="text-lg font-bold text-gray-900">Soy</h2>
+        <div className="rounded-xl border border-gray-200 bg-white p-6">
+          <Row
+            label="Anne"
+            value={
+              animal.mother ? (
+                <Link
+                  href={`/panel/hayvanlar/${animal.mother.id}`}
+                  className="text-green-700 hover:underline"
+                >
+                  {animal.mother.name ?? animal.mother.tagNumber}
+                </Link>
+              ) : (
+                "-"
+              )
+            }
+          />
+          <Row
+            label="Yavrular"
+            value={
+              animal.offspring.length === 0 ? (
+                "-"
+              ) : (
+                <span className="flex flex-wrap justify-end gap-2">
+                  {animal.offspring.map((o) => (
+                    <Link
+                      key={o.id}
+                      href={`/panel/hayvanlar/${o.id}`}
+                      className="rounded bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700 hover:underline"
+                    >
+                      {o.name ?? o.tagNumber}
+                    </Link>
+                  ))}
+                </span>
+              )
+            }
+          />
+        </div>
       </section>
     </div>
   );

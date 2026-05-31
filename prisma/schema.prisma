@@ -96,10 +96,18 @@ model Animal {
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
 
+  // Soy/pedigri: anne ayni tablodadir (self-relation). Anne silinirse
+  // yavrunun motherId'si null olur (yavru silinmez).
+  motherId  String?
+  mother    Animal?  @relation("Lineage", fields: [motherId], references: [id], onDelete: SetNull)
+  offspring Animal[] @relation("Lineage")
+
   healthRecords   HealthRecord[]
   vaccinations    Vaccination[]
   milkYields      MilkYield[]
   breedingRecords BreedingRecord[]
+
+  @@index([motherId])
 }
 
 // Bir hayvana ait saglik/tedavi kaydi

@@ -42,6 +42,14 @@ export async function PUT(
       );
     }
 
+    // Hayvan kendi annesi olamaz.
+    if (data.motherId && data.motherId === id) {
+      return NextResponse.json(
+        { error: "Bir hayvan kendi annesi olarak secilemez" },
+        { status: 400 }
+      );
+    }
+
     const animal = await prisma.animal.update({
       where: { id },
       data: {
@@ -54,6 +62,7 @@ export async function PUT(
         status: data.status,
         imageUrl: data.imageUrl || null,
         notes: data.notes || null,
+        motherId: data.motherId || null,
       },
     });
 
