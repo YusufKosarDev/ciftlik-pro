@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
+import { logAudit } from "@/lib/audit";
 import { cropSchema } from "@/lib/validations/crop";
 
 // POST /api/fields/[id]/crops -> tarlaya ekim kaydi ekler
@@ -42,6 +43,8 @@ export async function POST(
         notes: data.notes || null,
       },
     });
+
+    await logAudit(authz.session.user, "CREATE", "Crop", crop.id, crop.name);
 
     return NextResponse.json({ crop }, { status: 201 });
   } catch (error) {

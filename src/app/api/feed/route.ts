@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
+import { logAudit } from "@/lib/audit";
 import { feedSchema } from "@/lib/validations/feed";
 
 // POST /api/feed -> yem tuketim kaydi olusturur ve stok miktarini dusurur.
@@ -54,6 +55,8 @@ export async function POST(request: Request) {
         data: { quantity: { decrement: data.quantity } },
       }),
     ]);
+
+    await logAudit(authz.session.user, "CREATE", "FeedLog", log.id, `${item.name}: ${data.quantity} ${item.unit}`);
 
     return NextResponse.json({ log }, { status: 201 });
   } catch (error) {

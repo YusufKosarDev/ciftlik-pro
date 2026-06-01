@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
+import { logAudit } from "@/lib/audit";
 import { breedingSchema } from "@/lib/validations/breeding";
 
 // POST /api/animals/[id]/breeding -> hayvana ureme kaydi ekler
@@ -45,6 +46,8 @@ export async function POST(
         notes: data.notes || null,
       },
     });
+
+    await logAudit(authz.session.user, "CREATE", "BreedingRecord", record.id, record.sireTag ?? "üreme kaydı");
 
     return NextResponse.json({ record }, { status: 201 });
   } catch (error) {

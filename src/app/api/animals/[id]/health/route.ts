@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
+import { logAudit } from "@/lib/audit";
 import { healthRecordSchema } from "@/lib/validations/health";
 
 // POST /api/animals/[id]/health -> hayvana saglik kaydi ekler
@@ -39,6 +40,8 @@ export async function POST(
         notes: data.notes || null,
       },
     });
+
+    await logAudit(authz.session.user, "CREATE", "HealthRecord", record.id, record.diagnosis);
 
     return NextResponse.json({ record }, { status: 201 });
   } catch (error) {
