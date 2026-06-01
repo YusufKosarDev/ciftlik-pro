@@ -7,6 +7,8 @@ import {
   Wheat,
   LayoutDashboard,
   Map,
+  CalendarDays,
+  Sprout,
   PawPrint,
   Package,
   Warehouse,
@@ -23,9 +25,11 @@ import { cn } from "@/lib/cn";
 const icons: Record<string, React.ComponentType<{ className?: string }>> = {
   "/panel": LayoutDashboard,
   "/panel/harita": Map,
+  "/panel/takvim": CalendarDays,
   "/panel/hayvanlar": PawPrint,
   "/panel/tarlalar": Wheat,
   "/panel/stok": Package,
+  "/panel/yem": Sprout,
   "/panel/yapilar": Warehouse,
   "/panel/finans": Wallet,
   "/panel/gorevler": ListChecks,
@@ -88,10 +92,14 @@ export function PanelHeader({
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="hidden items-center gap-2 text-sm text-gray-600 sm:flex">
+          <Link
+            href="/panel/profil"
+            className="hidden items-center gap-2 text-sm text-gray-600 transition hover:text-green-700 sm:flex"
+            title="Profil"
+          >
             {userName}
             <Badge tone="green">{roleLabel}</Badge>
-          </span>
+          </Link>
           <div className="hidden sm:block">
             <LogoutButton />
           </div>
@@ -111,10 +119,14 @@ export function PanelHeader({
       {open && (
         <nav className="space-y-1 border-t border-gray-200 bg-white px-4 py-2 lg:hidden">
           <div className="mb-2 flex items-center justify-between border-b border-gray-100 pb-2 sm:hidden">
-            <span className="flex items-center gap-2 text-sm text-gray-600">
+            <Link
+              href="/panel/profil"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 text-sm text-gray-600"
+            >
               {userName}
               <Badge tone="green">{roleLabel}</Badge>
-            </span>
+            </Link>
             <LogoutButton />
           </div>
           {navItems.map((item) => {
