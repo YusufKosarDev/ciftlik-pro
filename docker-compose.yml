@@ -27,6 +27,8 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public"
+      # Pooler olmadigi icin migration'larin DIRECT_URL'i ile ayni.
+      DIRECT_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public"
     restart: "no"
 
   app:
@@ -44,6 +46,7 @@ services:
     environment:
       # Container icinden DB'ye Docker agi uzerinden baglanilir (db:5432)
       DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public"
+      DIRECT_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public"
       AUTH_SECRET: ${AUTH_SECRET}
       # Bos veritabaninda olusturulacak ilk yonetici (idempotent).
       ADMIN_EMAIL: ${ADMIN_EMAIL}
