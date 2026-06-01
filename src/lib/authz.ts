@@ -67,6 +67,14 @@ export function navHrefsFor(role: Role): Set<string> {
   return new Set(navByRole[role]);
 }
 
+// Demo (salt-okunur) hesap e-postasi. Bu hesap hicbir yazma islemi yapamaz;
+// boylece canli demoda ziyaretçiler veriyi bozamaz.
+export const DEMO_EMAIL = "demo@ciftlik.com";
+
+function isDemoUser(email: string | null | undefined): boolean {
+  return (email ?? "").toLowerCase() === DEMO_EMAIL;
+}
+
 // API rotalarinda kullanilir: oturumu dogrular ve yazma yetkisini kontrol eder.
 // Yetki varsa { session } doner; yoksa hazir bir hata yaniti ({ error }) doner.
 //
@@ -78,6 +86,15 @@ export async function authorizeWrite(module: WriteModule) {
   if (!session?.user) {
     return {
       error: NextResponse.json({ error: "Yetkisiz" }, { status: 401 }),
+    } as const;
+  }
+  // Demo hesabi salt-okunurdur.
+  if (isDemoUser(session.user.email)) {
+    return {
+      error: NextResponse.json(
+        { error: "Demo hesabı salt-okunurdur; değişiklik yapılamaz." },
+        { status: 403 }
+      ),
     } as const;
   }
   if (!canWrite(session.user.role, module)) {
@@ -95,7 +112,11 @@ export async function authorizeWrite(module: WriteModule) {
 // yoksa kullaniciyi panele yonlendirir. Yetki varsa oturumu doner.
 export async function requirePageWrite(module: WriteModule) {
   const session = await auth();
-  if (!session?.user || !canWrite(session.user.role, module)) {
+  if (
+    !session?.user ||
+    isDemoUser(session.user.email) ||
+    !canWrite(session.user.role, module)
+  ) {
     redirect("/panel");
   }
   return session;
