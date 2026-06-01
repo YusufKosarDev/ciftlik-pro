@@ -30,7 +30,10 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY package.json package-lock.json ./
 COPY prisma ./prisma
-CMD ["node", "node_modules/prisma/build/index.js", "migrate", "deploy"]
+# Once migration'lari uygula, ardindan idempotent admin bootstrap'i calistir.
+# (Tam node_modules burada oldugundan bcryptjs/@prisma/client mevcuttur;
+# standalone runner'da bunlar guvenilir cozulemiyor.)
+CMD ["sh", "-c", "node node_modules/prisma/build/index.js migrate deploy && node prisma/ensure-admin.mjs"]
 
 # --- 4. Asama: calistirma ---
 FROM node:22-alpine AS runner
@@ -52,7 +55,6 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
-# Migration'lar ayri "migrate" servisinde uygulanir. Burada (varsa) idempotent
-# admin bootstrap'i calisir (ensure-admin yalnizca @prisma/client + bcryptjs
-# kullanir; bunlar standalone ciktida mevcuttur), sonra sunucu baslar.
-CMD ["sh", "-c", "node prisma/ensure-admin.mjs && node server.js"]
+# Migration ve admin bootstrap "migrate" servisinde yapilir. Runner yalnizca
+# Next sunucusunu calistirir (standalone ciktida tum CLI bagimliliklari yoktur).
+CMD ["node", "server.js"]

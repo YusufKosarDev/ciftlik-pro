@@ -17,7 +17,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # Tek seferlik: bekleyen migration'lari uygular, sonra cikar.
+  # Tek seferlik: migration'lari uygular + idempotent admin bootstrap'i yapar, sonra cikar.
   migrate:
     build:
       context: .
@@ -29,6 +29,10 @@ services:
       DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public"
       # Pooler olmadigi icin migration'larin DIRECT_URL'i ile ayni.
       DIRECT_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public"
+      # Bos veritabaninda ilk yoneticiyi olusturmak icin (idempotent).
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ADMIN_NAME: ${ADMIN_NAME}
     restart: "no"
 
   app:
