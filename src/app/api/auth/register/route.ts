@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
+import { logAudit } from "@/lib/audit";
 import { registerSchema } from "@/lib/validations/auth";
 
 // POST /api/auth/register
@@ -43,6 +44,8 @@ export async function POST(request: Request) {
       // Parolayi asla geri dondurmuyoruz
       select: { id: true, name: true, email: true, role: true, createdAt: true },
     });
+
+    await logAudit(authz.session.user, "CREATE", "User", user.id, user.email);
 
     return NextResponse.json({ user }, { status: 201 });
   } catch (error) {

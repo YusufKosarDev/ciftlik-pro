@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
+import { logAudit } from "@/lib/audit";
 import { animalSchema } from "@/lib/validations/animal";
 
 // PUT /api/animals/[id] -> hayvani gunceller
@@ -66,6 +67,8 @@ export async function PUT(
       },
     });
 
+    await logAudit(authz.session.user, "UPDATE", "Animal", animal.id, animal.tagNumber);
+
     return NextResponse.json({ animal });
   } catch (error) {
     console.error("Hayvan guncelleme hatasi:", error);
@@ -93,6 +96,7 @@ export async function DELETE(
     }
 
     await prisma.animal.delete({ where: { id } });
+    await logAudit(authz.session.user, "DELETE", "Animal", id, existing.tagNumber);
 
     return NextResponse.json({ success: true });
   } catch (error) {

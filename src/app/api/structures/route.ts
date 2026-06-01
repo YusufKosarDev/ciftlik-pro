@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
+import { logAudit } from "@/lib/audit";
 import { structureSchema } from "@/lib/validations/structure";
 
 // POST /api/structures -> yeni yapi olusturur
@@ -26,6 +27,8 @@ export async function POST(request: Request) {
         notes: data.notes || null,
       },
     });
+
+    await logAudit(authz.session.user, "CREATE", "Structure", structure.id, structure.name);
 
     return NextResponse.json({ structure }, { status: 201 });
   } catch (error) {

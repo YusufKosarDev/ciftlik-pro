@@ -29,6 +29,7 @@ export default async function PanelLayout({
     { href: "/panel/finans", label: "Finans" },
     { href: "/panel/gorevler", label: "Görevler" },
     { href: "/panel/personel", label: "Personel" },
+    { href: "/panel/denetim", label: "Denetim" },
   ];
   const allowed = navHrefsFor(session.user.role);
   const navItems = allNavItems.filter((item) => allowed.has(item.href));

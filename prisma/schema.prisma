@@ -24,6 +24,27 @@ enum Role {
   ACCOUNTANT // Muhasebeci: finans, gelir-gider, satis
 }
 
+// Denetim kaydi islem turu
+enum AuditAction {
+  CREATE // Olusturma
+  UPDATE // Guncelleme
+  DELETE // Silme
+}
+
+// Denetim gunlugu: kim, neyi, ne zaman degistirdi (yazma islemleri).
+model AuditLog {
+  id        String      @id @default(cuid())
+  actorId   String? // Islemi yapan kullanici id'si (kullanici silinse de kayit kalir)
+  actorName String // Snapshot: kullanici adi/e-postasi
+  action    AuditAction
+  entity    String // Etkilenen varlik (orn. "Animal", "Transaction")
+  entityId  String? // Varlik id'si (varsa)
+  summary   String? // Insana okunur kisa aciklama
+  createdAt DateTime    @default(now())
+
+  @@index([createdAt])
+}
+
 // Sistemi kullanan personel
 model User {
   id        String   @id @default(cuid())

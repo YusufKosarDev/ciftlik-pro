@@ -45,6 +45,7 @@ const navByRole: Record<Role, string[]> = {
     "/panel/finans",
     "/panel/gorevler",
     "/panel/personel",
+    "/panel/denetim",
   ],
   WORKER: [
     "/panel",

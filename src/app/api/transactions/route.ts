@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
+import { logAudit } from "@/lib/audit";
 import { transactionSchema } from "@/lib/validations/transaction";
 
 // POST /api/transactions -> yeni gelir/gider kaydi olusturur
@@ -28,6 +29,14 @@ export async function POST(request: Request) {
         description: data.description || null,
       },
     });
+
+    await logAudit(
+      authz.session.user,
+      "CREATE",
+      "Transaction",
+      transaction.id,
+      `${transaction.category} (${transaction.amount})`
+    );
 
     return NextResponse.json({ transaction }, { status: 201 });
   } catch (error) {

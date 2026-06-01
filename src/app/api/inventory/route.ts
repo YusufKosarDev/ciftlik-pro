@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
+import { logAudit } from "@/lib/audit";
 import { inventorySchema } from "@/lib/validations/inventory";
 
 // POST /api/inventory -> yeni stok kalemi olusturur
@@ -29,6 +30,8 @@ export async function POST(request: Request) {
         notes: data.notes || null,
       },
     });
+
+    await logAudit(authz.session.user, "CREATE", "InventoryItem", item.id, item.name);
 
     return NextResponse.json({ item }, { status: 201 });
   } catch (error) {
