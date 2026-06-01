@@ -4,7 +4,9 @@ import { resolve } from "node:path";
 export default defineConfig({
   test: {
     environment: "node",
-    include: ["src/**/*.test.ts"],
+    globals: true, // Testing Library otomatik cleanup'i (global afterEach) icin
+    include: ["src/**/*.test.{ts,tsx}"],
+    setupFiles: ["./vitest.setup.ts"],
     coverage: {
       provider: "v8",
       reporter: ["text", "lcov"],
