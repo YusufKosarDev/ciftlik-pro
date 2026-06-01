@@ -15,10 +15,14 @@
     "db:seed-admin": "node prisma/ensure-admin.mjs",
     "db:seed-demo": "node prisma/seed-demo.mjs",
     "db:deploy": "prisma migrate deploy",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "prepare": "husky"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": "eslint --fix"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
@@ -50,6 +54,8 @@
     "@vitest/coverage-v8": "^4.1.7",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.7",
     "prisma": "^6.19.3",
     "tailwindcss": "^4",
     "tsx": "^4.20.7",
