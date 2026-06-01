@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
+import { logAudit } from "@/lib/audit";
 
 // DELETE /api/weight/[id] -> agirlik kaydini siler
 export async function DELETE(
@@ -18,6 +19,7 @@ export async function DELETE(
     }
 
     await prisma.weightRecord.delete({ where: { id } });
+    await logAudit(authz.session.user, "DELETE", "WeightRecord", id, `${existing.weightKg} kg`);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Agirlik kaydi silme hatasi:", error);

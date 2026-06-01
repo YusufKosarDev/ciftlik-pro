@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
+import { logAudit } from "@/lib/audit";
 import { milkYieldSchema } from "@/lib/validations/milk";
 
 // POST /api/animals/[id]/milk -> hayvana sut verimi kaydi ekler
@@ -37,6 +38,8 @@ export async function POST(
         notes: data.notes || null,
       },
     });
+
+    await logAudit(authz.session.user, "CREATE", "MilkYield", yield_.id, `${yield_.amount} L`);
 
     return NextResponse.json({ yield: yield_ }, { status: 201 });
   } catch (error) {

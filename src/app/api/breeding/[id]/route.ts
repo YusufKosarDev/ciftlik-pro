@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
+import { logAudit } from "@/lib/audit";
 
 // DELETE /api/breeding/[id] -> ureme kaydini siler
 export async function DELETE(
@@ -18,6 +19,7 @@ export async function DELETE(
     }
 
     await prisma.breedingRecord.delete({ where: { id } });
+    await logAudit(authz.session.user, "DELETE", "BreedingRecord", id, existing.sireTag ?? "üreme kaydı");
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Ureme kaydi silme hatasi:", error);

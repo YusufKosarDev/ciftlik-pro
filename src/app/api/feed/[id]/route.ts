@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
+import { logAudit } from "@/lib/audit";
 
 // DELETE /api/feed/[id] -> tuketim kaydini siler ve dusurulen miktari geri ekler.
 export async function DELETE(
@@ -25,6 +26,7 @@ export async function DELETE(
         data: { quantity: { increment: log.quantity } },
       }),
     ]);
+    await logAudit(authz.session.user, "DELETE", "FeedLog", id, `${log.quantity}`);
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
+import { logAudit } from "@/lib/audit";
 import { weightSchema } from "@/lib/validations/weight";
 
 // POST /api/animals/[id]/weight -> hayvana agirlik kaydi ekler
@@ -37,6 +38,8 @@ export async function POST(
         notes: data.notes || null,
       },
     });
+
+    await logAudit(authz.session.user, "CREATE", "WeightRecord", record.id, `${record.weightKg} kg`);
 
     return NextResponse.json({ record }, { status: 201 });
   } catch (error) {
