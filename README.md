@@ -14,7 +14,8 @@ rol bazlı yetkilendirmeyle tek panelden yöneten tam yığın Çiftlik Yönetim
 [![Tests](https://img.shields.io/badge/tests-151%20unit%20%2B%206%20e2e-success)](#test--kalite)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-🔗 **Canlı Demo:** _yakında_ <!-- Deploy sonrası: https://... -->
+🔗 **Canlı Demo: [ciftlik-pro.vercel.app](https://ciftlik-pro.vercel.app)**
+&nbsp;·&nbsp; Giriş için **"Demo olarak gez"** butonu (veya `demo@ciftlik.com` / `demo1234`)
 
 </div>
 
