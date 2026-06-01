@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
+import { logAudit } from "@/lib/audit";
 import { transactionSchema } from "@/lib/validations/transaction";
 
 // PUT /api/transactions/[id] -> islemi gunceller
@@ -40,6 +41,14 @@ export async function PUT(
       },
     });
 
+    await logAudit(
+      authz.session.user,
+      "UPDATE",
+      "Transaction",
+      transaction.id,
+      `${transaction.category} (${transaction.amount})`
+    );
+
     return NextResponse.json({ transaction });
   } catch (error) {
     console.error("Islem guncelleme hatasi:", error);
@@ -66,6 +75,13 @@ export async function DELETE(
     }
 
     await prisma.transaction.delete({ where: { id } });
+    await logAudit(
+      authz.session.user,
+      "DELETE",
+      "Transaction",
+      id,
+      `${existing.category} (${existing.amount})`
+    );
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Islem silme hatasi:", error);

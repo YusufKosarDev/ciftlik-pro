@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
+import { logAudit } from "@/lib/audit";
 import { taskSchema } from "@/lib/validations/task";
 
 // PUT /api/tasks/[id] -> gorevi gunceller
@@ -40,6 +41,8 @@ export async function PUT(
       },
     });
 
+    await logAudit(authz.session.user, "UPDATE", "Task", task.id, task.title);
+
     return NextResponse.json({ task });
   } catch (error) {
     console.error("Gorev guncelleme hatasi:", error);
@@ -66,6 +69,7 @@ export async function DELETE(
     }
 
     await prisma.task.delete({ where: { id } });
+    await logAudit(authz.session.user, "DELETE", "Task", id, existing.title);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Gorev silme hatasi:", error);

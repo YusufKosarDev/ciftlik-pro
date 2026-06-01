@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
+import { logAudit } from "@/lib/audit";
 import { inventorySchema } from "@/lib/validations/inventory";
 
 // PUT /api/inventory/[id] -> stok kalemini gunceller
@@ -41,6 +42,8 @@ export async function PUT(
       },
     });
 
+    await logAudit(authz.session.user, "UPDATE", "InventoryItem", item.id, item.name);
+
     return NextResponse.json({ item });
   } catch (error) {
     console.error("Stok guncelleme hatasi:", error);
@@ -67,6 +70,7 @@ export async function DELETE(
     }
 
     await prisma.inventoryItem.delete({ where: { id } });
+    await logAudit(authz.session.user, "DELETE", "InventoryItem", id, existing.name);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Stok silme hatasi:", error);

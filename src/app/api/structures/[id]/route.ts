@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
+import { logAudit } from "@/lib/audit";
 import { structureSchema } from "@/lib/validations/structure";
 import { positionSchema } from "@/lib/validations/position";
 
@@ -39,6 +40,8 @@ export async function PUT(
       },
     });
 
+    await logAudit(authz.session.user, "UPDATE", "Structure", structure.id, structure.name);
+
     return NextResponse.json({ structure });
   } catch (error) {
     console.error("Yapi guncelleme hatasi:", error);
@@ -65,6 +68,7 @@ export async function DELETE(
     }
 
     await prisma.structure.delete({ where: { id } });
+    await logAudit(authz.session.user, "DELETE", "Structure", id, existing.name);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Yapi silme hatasi:", error);

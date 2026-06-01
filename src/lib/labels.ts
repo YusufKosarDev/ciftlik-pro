@@ -8,6 +8,7 @@ import type {
   TaskStatus,
   StructureType,
   BreedingStatus,
+  AuditAction,
   Role,
 } from "@prisma/client";
 
@@ -68,6 +69,12 @@ export const structureTypeLabels: Record<StructureType, string> = {
   COOP: "Kumes",
   STORAGE: "Depo",
   OTHER: "Diger",
+};
+
+export const auditActionLabels: Record<AuditAction, string> = {
+  CREATE: "Olusturma",
+  UPDATE: "Guncelleme",
+  DELETE: "Silme",
 };
 
 export const roleLabels: Record<Role, string> = {

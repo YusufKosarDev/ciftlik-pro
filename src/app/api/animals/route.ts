@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
+import { logAudit } from "@/lib/audit";
 import { animalSchema } from "@/lib/validations/animal";
 
 // POST /api/animals -> yeni hayvan olusturur
@@ -49,6 +50,8 @@ export async function POST(request: Request) {
         motherId: data.motherId || null,
       },
     });
+
+    await logAudit(authz.session.user, "CREATE", "Animal", animal.id, animal.tagNumber);
 
     return NextResponse.json({ animal }, { status: 201 });
   } catch (error) {

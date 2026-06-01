@@ -15,6 +15,7 @@ import {
   Wallet,
   ListChecks,
   Users,
+  ClipboardList,
   Menu,
   X,
 } from "lucide-react";
@@ -34,6 +35,7 @@ const icons: Record<string, React.ComponentType<{ className?: string }>> = {
   "/panel/finans": Wallet,
   "/panel/gorevler": ListChecks,
   "/panel/personel": Users,
+  "/panel/denetim": ClipboardList,
 };
 
 type NavItem = { href: string; label: string };

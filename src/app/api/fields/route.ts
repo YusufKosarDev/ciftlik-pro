@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
+import { logAudit } from "@/lib/audit";
 import { fieldSchema } from "@/lib/validations/field";
 
 // POST /api/fields -> yeni tarla olusturur
@@ -27,6 +28,8 @@ export async function POST(request: Request) {
         notes: data.notes || null,
       },
     });
+
+    await logAudit(authz.session.user, "CREATE", "Field", field.id, field.name);
 
     return NextResponse.json({ field }, { status: 201 });
   } catch (error) {

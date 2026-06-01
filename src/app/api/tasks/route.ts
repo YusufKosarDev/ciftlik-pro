@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
+import { logAudit } from "@/lib/audit";
 import { taskSchema } from "@/lib/validations/task";
 
 // POST /api/tasks -> yeni gorev olusturur
@@ -28,6 +29,8 @@ export async function POST(request: Request) {
         dueDate: data.dueDate ? new Date(data.dueDate) : null,
       },
     });
+
+    await logAudit(authz.session.user, "CREATE", "Task", task.id, task.title);
 
     return NextResponse.json({ task }, { status: 201 });
   } catch (error) {

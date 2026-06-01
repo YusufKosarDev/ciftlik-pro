@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
+import { logAudit } from "@/lib/audit";
 import { fieldSchema } from "@/lib/validations/field";
 import { positionSchema } from "@/lib/validations/position";
 
@@ -40,6 +41,8 @@ export async function PUT(
       },
     });
 
+    await logAudit(authz.session.user, "UPDATE", "Field", field.id, field.name);
+
     return NextResponse.json({ field });
   } catch (error) {
     console.error("Tarla guncelleme hatasi:", error);
@@ -66,6 +69,7 @@ export async function DELETE(
     }
 
     await prisma.field.delete({ where: { id } });
+    await logAudit(authz.session.user, "DELETE", "Field", id, existing.name);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Tarla silme hatasi:", error);
