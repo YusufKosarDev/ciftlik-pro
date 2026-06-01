@@ -51,6 +51,28 @@ export async function PUT(
       );
     }
 
+    // Dongu engelle: secilen anne, bu hayvanin soyundan (alt nesil) biri olamaz.
+    // Annenin ata zincirini yukari yuruyup bu hayvana ulasiyor muyuz, bakariz.
+    if (data.motherId) {
+      let cursor: string | null = data.motherId;
+      const seen = new Set<string>();
+      while (cursor && !seen.has(cursor)) {
+        if (cursor === id) {
+          return NextResponse.json(
+            { error: "Secilen anne bu hayvanin soyundan; bu ataama dongu olusturur" },
+            { status: 400 }
+          );
+        }
+        seen.add(cursor);
+        const parent: { motherId: string | null } | null =
+          await prisma.animal.findUnique({
+            where: { id: cursor },
+            select: { motherId: true },
+          });
+        cursor = parent?.motherId ?? null;
+      }
+    }
+
     const animal = await prisma.animal.update({
       where: { id },
       data: {
