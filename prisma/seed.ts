@@ -16,14 +16,17 @@ async function main() {
   await prisma.field.deleteMany();
   await prisma.user.deleteMany();
 
-  // Kullanicilar
+  // Kullanicilar (seed kullanicilari "mevcut" sayilir; hos geldin turunu
+  // gormus kabul edilir -> onboardedAt dolu)
   const passwordHash = await bcrypt.hash("sifre1234", 10);
+  const now = new Date();
   const admin = await prisma.user.create({
     data: {
       name: "Yonetici",
       email: "admin@ciftlik.com",
       password: passwordHash,
       role: "ADMIN",
+      onboardedAt: now,
     },
   });
   const worker = await prisma.user.create({
@@ -32,6 +35,7 @@ async function main() {
       email: "ahmet@ciftlik.com",
       password: passwordHash,
       role: "WORKER",
+      onboardedAt: now,
     },
   });
   await prisma.user.create({
@@ -40,6 +44,7 @@ async function main() {
       email: "vet@ciftlik.com",
       password: passwordHash,
       role: "VET",
+      onboardedAt: now,
     },
   });
 
