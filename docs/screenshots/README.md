@@ -3,6 +3,7 @@
 README'de kullanılan görseller (admin hesabı + örnek/demo veriyle, çalışan
 uygulamadan Playwright ile alındı):
 
+- `onboarding.png` — Hoş geldin turu (ilk girişte role özel, çok adımlı modal)
 - `dashboard.png` — Panel ana sayfası (özet kartları + aylık grafik + uyarılar)
 - `map.png` — 2D çiftlik haritası (tarlalar + yapılar)
 - `animals.png` — Hayvanlar listesi (aranabilir/sıralanabilir tablo)

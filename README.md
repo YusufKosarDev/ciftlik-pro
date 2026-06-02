@@ -23,6 +23,10 @@ rol bazlı yetkilendirmeyle tek panelden yöneten tam yığın Çiftlik Yönetim
 
 ## 📸 Ekran Görüntüleri
 
+**Hoş geldin turu** — ilk girişte role özel, çok adımlı tanıtım:
+
+![Hoş geldin turu](docs/screenshots/onboarding.png)
+
 | Panel (Dashboard) | 2D Çiftlik Haritası |
 | ----------------- | ------------------- |
 | ![Dashboard](docs/screenshots/dashboard.png) | ![Harita](docs/screenshots/map.png) |
