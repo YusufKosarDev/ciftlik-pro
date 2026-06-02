@@ -41,8 +41,9 @@ rol bazlı yetkilendirmeyle tek panelden yöneten tam yığın Çiftlik Yönetim
 
 ## ✨ Özellikler
 
-- **Kimlik doğrulama & RBAC** — kayıt, giriş, rol bazlı erişim (Admin, Çalışan,
-  Veteriner, Muhasebeci). Parolalar bcrypt ile hash'lenir.
+- **Kimlik doğrulama & RBAC** — giriş ve rol bazlı erişim (Admin, Çalışan,
+  Veteriner, Muhasebeci); yeni personeli yalnızca Admin oluşturur (herkese açık
+  kayıt yoktur). Parolalar bcrypt ile hash'lenir.
 - **Hayvan takibi** — kayıt yönetimi, sağlık kayıtları, aşı takvimi (tarih
   uyarılı), süt verimi (trend grafiği), ağırlık/büyüme takibi (grafik).
 - **Üreme & soy** — gebelik/doğum kayıtları ve yavru–anne (pedigri) bağlantısı.

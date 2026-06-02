@@ -27,8 +27,8 @@ export const authConfig = {
         return isLoggedIn;
       }
 
-      // Giris yapmis kullanici giris/kayit sayfalarina giderse panele yonlendir
-      if (isLoggedIn && (pathname === "/giris" || pathname === "/kayit")) {
+      // Giris yapmis kullanici giris sayfasina giderse panele yonlendir
+      if (isLoggedIn && pathname === "/giris") {
         return Response.redirect(new URL("/panel", request.nextUrl));
       }
 

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Wheat, Mail, Lock, Sprout, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -134,13 +133,6 @@ export default function GirisPage() {
         <p className="mt-2 text-center text-xs text-gray-400">
           Kayıt gerektirmez · örnek verilerle inceleyin
         </p>
-
-        <div className="mt-6 text-center text-sm text-gray-500">
-          Hesabınız yok mu?{" "}
-          <Link href="/kayit" className="font-semibold text-green-700 hover:underline">
-            Kayıt Ol
-          </Link>
-        </div>
       </div>
     </main>
   );
