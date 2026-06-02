@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { roleLabels } from "@/lib/labels";
 import { PasswordChangeForm } from "@/components/password-change-form";
+import { RestartTourButton } from "@/components/restart-tour-button";
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -31,6 +32,8 @@ export default async function ProfilPage() {
       </div>
 
       <PasswordChangeForm />
+
+      <RestartTourButton />
     </div>
   );
 }

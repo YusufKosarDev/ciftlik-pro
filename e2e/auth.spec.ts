@@ -44,7 +44,8 @@ test("yeni bir kullanici kaydolup giris yapabilir", async ({ page }) => {
   await page.getByLabel("Ad Soyad").fill("Yeni Kullanici");
   await page.getByLabel("E-posta").fill(randomEmail);
   await page.getByLabel("Parola").fill("sifre1234");
-  await page.getByLabel("Rol").selectOption("ADMIN");
+  // exact:true gerekli; aksi halde "Rol" alt dizesi "Parola" alanini da yakalar.
+  await page.getByLabel("Rol", { exact: true }).selectOption("ADMIN");
   await page.getByRole("button", { name: "Kayıt Ol" }).click();
 
   // Kayit basarili olunca giris sayfasina yonlendirmeli
