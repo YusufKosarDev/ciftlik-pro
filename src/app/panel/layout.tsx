@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { PanelHeader } from "@/components/panel-header";
 import { OnboardingModal } from "@/components/onboarding-modal";
 import { roleLabels } from "@/lib/labels";
@@ -36,13 +35,10 @@ export default async function PanelLayout({
   const allowed = navHrefsFor(session.user.role);
   const navItems = allNavItems.filter((item) => allowed.has(item.href));
 
-  // Hos geldin turu: kullanici turu henuz tamamlamadiysa (onboardedAt == null)
-  // ilk panel girisinde modal gosterilir.
-  const dbUser = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { onboardedAt: true },
-  });
-  const showOnboarding = !dbUser?.onboardedAt;
+  // Hos geldin turu: kullanici turu henuz tamamlamadiysa modal gosterilir.
+  // Durum JWT'den okunur (her gezinmede ekstra DB sorgusu yok); tur tamamlaninca
+  // OnboardingModal useSession().update ile token'i tazeler.
+  const showOnboarding = !session.user.onboarded;
 
   return (
     <div className="min-h-screen bg-gray-50">

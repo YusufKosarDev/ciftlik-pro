@@ -35,11 +35,17 @@ export const authConfig = {
       return true;
     },
 
-    // Giris yapildiginda kullanicinin id ve rolunu token'a yaziyoruz.
-    jwt({ token, user }) {
+    // Giris yapildiginda kullanicinin id, rol ve onboarding durumunu token'a yaziyoruz.
+    // "update" tetikleyicisi (useSession().update) ile onboarding durumu DB sorgusu
+    // olmadan tazelenir (tur tamamlaninca true, sifirlaninca false).
+    jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id as string;
         token.role = user.role;
+        token.onboarded = user.onboarded ?? false;
+      }
+      if (trigger === "update" && typeof session?.onboarded === "boolean") {
+        token.onboarded = session.onboarded;
       }
       return token;
     },
@@ -48,6 +54,7 @@ export const authConfig = {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as Role;
+        session.user.onboarded = Boolean(token.onboarded);
       }
       return session;
     },

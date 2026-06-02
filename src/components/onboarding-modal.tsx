@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import type { Role } from "@prisma/client";
 import {
   ArrowLeft,
@@ -70,6 +71,7 @@ export function OnboardingModal({
   role: Role;
 }) {
   const router = useRouter();
+  const { update } = useSession();
   const [open, setOpen] = useState(true);
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
@@ -180,12 +182,15 @@ export function OnboardingModal({
     setSaving(true);
     try {
       await fetch("/api/profile/onboarding", { method: "POST" });
+      // Oturum token'indaki onboarding durumunu tazele (ekstra DB sorgusu olmadan
+      // panel layout artik modali gostermez).
+      await update({ onboarded: true });
     } catch {
       // Sessizce gec: tur tekrar gosterilse de kullaniciyi engellemeyelim.
     }
     setOpen(false);
     router.refresh();
-  }, [router]);
+  }, [router, update]);
 
   // Esc ile kapatma + arka plan kaydirmayi engelleme.
   useEffect(() => {

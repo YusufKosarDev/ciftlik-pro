@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 import { passwordChangeSchema } from "@/lib/validations/password";
 
 // PUT /api/profile/password -> giris yapmis kullanicinin kendi parolasini degistirir.
@@ -37,6 +38,8 @@ export async function PUT(request: Request) {
       where: { id: user.id },
       data: { password: passwordHash },
     });
+
+    await logAudit(session.user, "UPDATE", "User", user.id, "Parola degistirildi");
 
     return NextResponse.json({ success: true });
   } catch (error) {
