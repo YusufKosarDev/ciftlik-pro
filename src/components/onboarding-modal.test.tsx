@@ -9,8 +9,15 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh, push: vi.fn() }),
 }));
 
+// next-auth oturum guncellemesini mock'la (finish -> update({onboarded:true})).
+const update = vi.fn();
+vi.mock("next-auth/react", () => ({
+  useSession: () => ({ update }),
+}));
+
 beforeEach(() => {
   refresh.mockClear();
+  update.mockClear();
   // Tamamlama isteklerini yakalamak icin fetch'i mock'la.
   vi.stubGlobal(
     "fetch",
@@ -55,6 +62,7 @@ describe("OnboardingModal", () => {
     await waitFor(() => {
       expect(screen.queryByText("Adım 1 / 5")).not.toBeInTheDocument();
     });
+    expect(update).toHaveBeenCalledWith({ onboarded: true });
     expect(refresh).toHaveBeenCalled();
   });
 

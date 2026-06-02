@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,18 +11,23 @@ import { Button } from "@/components/ui/button";
 // yeniler; boylece tur modali tekrar gosterilir.
 export function RestartTourButton() {
   const router = useRouter();
+  const { update } = useSession();
   const [loading, setLoading] = useState(false);
 
   async function handleClick() {
     setLoading(true);
     const res = await fetch("/api/profile/onboarding", { method: "DELETE" });
-    setLoading(false);
 
     if (!res.ok) {
+      setLoading(false);
       const data = await res.json().catch(() => null);
       toast.error(data?.error ?? "İşlem başarısız, lütfen tekrar deneyin");
       return;
     }
+
+    // Token'i tazele ki panel layout turu yeniden gostersin.
+    await update({ onboarded: false });
+    setLoading(false);
 
     toast.success("Tanıtım turu yeniden başlatıldı.");
     router.push("/panel");
