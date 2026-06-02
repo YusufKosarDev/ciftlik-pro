@@ -23,6 +23,10 @@ rol bazlı yetkilendirmeyle tek panelden yöneten tam yığın Çiftlik Yönetim
 
 ## 📸 Ekran Görüntüleri
 
+**Canlı demo** — panel, hayvanlar, hayvan detayı, harita, yem ve takvim arasında kısa tur:
+
+![Canlı demo](docs/screenshots/demo.gif)
+
 **Hoş geldin turu** — ilk girişte role özel, çok adımlı tanıtım:
 
 ![Hoş geldin turu](docs/screenshots/onboarding.png)
