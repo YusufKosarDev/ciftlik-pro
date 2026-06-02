@@ -24,3 +24,55 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Onboarding (hos geldin turu) animasyonlari */
+@keyframes onboarding-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes onboarding-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes onboarding-step-in {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.onboarding-overlay {
+  animation: onboarding-overlay-in 0.2s ease-out;
+}
+
+.onboarding-panel {
+  animation: onboarding-panel-in 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.onboarding-step {
+  animation: onboarding-step-in 0.3s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .onboarding-overlay,
+  .onboarding-panel,
+  .onboarding-step {
+    animation: none;
+  }
+}

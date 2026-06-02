@@ -52,6 +52,7 @@ model User {
   email     String   @unique
   password  String // Parolanin hash'lenmis hali saklanir, asla duz metin degil
   role      Role     @default(WORKER)
+  onboardedAt DateTime? // Hos geldin turunu tamamladigi an (null ise tur gosterilir)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
