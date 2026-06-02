@@ -91,6 +91,30 @@ flowchart LR
 - **Auth.js (NextAuth v5)** — JWT oturum; edge-uyumlu proxy ile rota koruması.
 - **Prisma** — tek `PrismaClient` örneği (singleton).
 
+## 🔐 Güvenlik & RBAC
+
+Yetkilendirme tek merkezden yönetilir (`src/lib/authz.ts`) ve **iki katmanda**
+uygulanır: yazma uçları `authorizeWrite` ile, hassas/forma dayalı sayfalar ise
+`requirePageWrite` / `requirePageView` ile korunur. **Okuma** giriş yapmış her
+kullanıcıya açıktır; **yazma** ise role göre kısıtlanır:
+
+| Rol           | Yazma yetkisi                                                        |
+| ------------- | ------------------------------------------------------------------- |
+| **Admin**     | Tüm modüller + personel yönetimi + denetim günlüğü                  |
+| **Çalışan**   | Hayvan, süt, ağırlık, tarla/ekim, stok/yem, yapılar, üreme         |
+| **Veteriner** | Sağlık & aşı, üreme, ağırlık                                        |
+| **Muhasebeci**| Finans (gelir-gider)                                                |
+
+Sertleştirme önlemleri:
+
+- **Herkese açık kayıt yoktur** — yeni personeli yalnızca Admin oluşturur
+  (`/api/auth/register`); ziyaretçiler salt-okunur **"Demo olarak gez"** ile gezer.
+- **Demo hesabı salt-okunurdur** — hiçbir yazma işlemi yapamaz (canlı demoda veri korunur).
+- **Parolalar bcrypt** ile hash'lenir; düz metin asla saklanmaz/dönülmez.
+- **Çift taraflı doğrulama** — Zod şemaları hem istemcide hem her yazma ucunda sunucuda çalışır.
+- **Denetim günlüğü** — her yazma işlemi (kim / ne / ne zaman) `AuditLog`'a kaydedilir.
+- **Korumalı cron** — bildirim ucu `CRON_SECRET` ile `Authorization` başlığı doğrular.
+
 ## 🛠️ Teknolojiler
 
 - [Next.js 16](https://nextjs.org/) (App Router) + TypeScript
