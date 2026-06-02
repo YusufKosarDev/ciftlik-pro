@@ -33,3 +33,31 @@ test("hatali parola ile giris reddedilir", async ({ page }) => {
   // Giris sayfasinda kalmali ve hata gostermeli
   await expect(page.getByText("E-posta veya parola hatalı")).toBeVisible();
 });
+
+test("yeni bir kullanici kaydolup giris yapabilir", async ({ page }) => {
+  const randomEmail = `user_${Date.now()}@ciftlik.com`;
+
+  await page.goto("/giris");
+  await page.getByRole("link", { name: "Kayıt Ol" }).click();
+
+  await expect(page).toHaveURL(/\/kayit/);
+  await page.getByLabel("Ad Soyad").fill("Yeni Kullanici");
+  await page.getByLabel("E-posta").fill(randomEmail);
+  await page.getByLabel("Parola").fill("sifre1234");
+  await page.getByLabel("Rol").selectOption("ADMIN");
+  await page.getByRole("button", { name: "Kayıt Ol" }).click();
+
+  // Kayit basarili olunca giris sayfasina yonlendirmeli
+  await expect(page).toHaveURL(/\/giris/);
+  await expect(page.getByText("Hesabınız oluşturuldu. Giriş yapabilirsiniz.")).toBeVisible();
+
+  // Simdi giris yapmayi deneyelim
+  await page.getByLabel("E-posta").fill(randomEmail);
+  await page.getByLabel("Parola").fill("sifre1234");
+  await page.getByRole("button", { name: "Giriş Yap" }).click();
+
+  // Panele ulasmali
+  await expect(page).toHaveURL(/\/panel/);
+  await expect(page.getByRole("heading", { name: "Panel" })).toBeVisible();
+});
+
