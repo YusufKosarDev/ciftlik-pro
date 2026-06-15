@@ -28,12 +28,22 @@ export function categoryBreakdown(transactions: ReportTransaction[]): {
   return { income: toSorted(acc.INCOME), expense: toSorted(acc.EXPENSE) };
 }
 
-// Tek bir CSV alanini kacisla (virgul, tirnak veya yeni satir varsa tirnakla).
+// Tek bir CSV alanini guvenli hale getirir.
+// 1) Formul enjeksiyonu: Excel/LibreOffice, = + - @ (veya tab/CR) ile baslayan
+//    hucreleri formul olarak yorumlar. category/description kullanici girdisi
+//    oldugu icin basina tek tirnak ekleyip notrlestiriyoruz. (Tutar alani
+//    dogrulamada negatif olamadigi icin "-" ile baslamaz; bu yuzden sayisal
+//    sutunlar bozulmaz.)
+// 2) Kacis: virgul, tirnak veya yeni satir varsa alani tirnakla sarariz.
 function csvField(value: string): string {
-  if (/[",\n]/.test(value)) {
-    return `"${value.replace(/"/g, '""')}"`;
+  let v = value;
+  if (/^[=+\-@\t\r]/.test(v)) {
+    v = "'" + v;
   }
-  return value;
+  if (/[",\n]/.test(v)) {
+    return `"${v.replace(/"/g, '""')}"`;
+  }
+  return v;
 }
 
 function isoDate(date: Date): string {

@@ -40,4 +40,27 @@ describe("toCsv", () => {
     expect(line).toContain('"Yem, premium"');
     expect(line).toContain('"a""b"');
   });
+
+  it("formul enjeksiyonunu notrlestirir (= + - @ ile baslayan alanlar)", () => {
+    const csv = toCsv([
+      {
+        type: "INCOME",
+        amount: 10,
+        category: "=SUM(A1:A2)",
+        date: new Date("2026-01-01"),
+        description: "@cmd",
+      },
+    ]);
+    const line = csv.split("\n")[1];
+    // Tehlikeli alanlarin basina tek tirnak eklenir.
+    expect(line).toContain("'=SUM(A1:A2)");
+    expect(line).toContain("'@cmd");
+  });
+
+  it("negatif olmayan tutar sutununu bozmaz", () => {
+    const csv = toCsv([
+      { type: "EXPENSE", amount: 2000, category: "Yem", date: new Date("2026-01-01") },
+    ]);
+    expect(csv.split("\n")[1]).toBe("2026-01-01,Gider,Yem,2000,");
+  });
 });
