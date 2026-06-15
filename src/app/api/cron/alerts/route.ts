@@ -11,11 +11,19 @@ import { sendEmail } from "@/lib/email";
 // dogrulanir. (Vercel Cron, CRON_SECRET tanimliysa bu basligi otomatik ekler.)
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
-  if (secret) {
-    const authHeader = request.headers.get("authorization");
-    if (authHeader !== `Bearer ${secret}`) {
-      return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
-    }
+
+  // CRON_SECRET tanimli degilse endpoint'i hicbir zaman acik birakmayiz.
+  if (!secret) {
+    console.error("CRON_SECRET ortam degiskeni tanimli degil. Endpoint devre disi.");
+    return NextResponse.json(
+      { error: "Sunucu yapilandirmasi eksik: CRON_SECRET ayarlanmamis" },
+      { status: 500 }
+    );
+  }
+
+  const authHeader = request.headers.get("authorization");
+  if (authHeader !== `Bearer ${secret}`) {
+    return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
   }
 
   try {

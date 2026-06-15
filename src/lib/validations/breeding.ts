@@ -21,6 +21,16 @@ export const breedingSchema = z.object({
       .optional()
   ),
   notes: z.string().trim().max(500).optional().or(z.literal("")),
-});
+})
+  .refine(
+    // Tahmini dogum tarihi tohumlama tarihinden once olamaz.
+    (d) => !d.expectedBirthDate || new Date(d.expectedBirthDate) >= new Date(d.breedingDate),
+    { message: "Tahmini dogum tarihi tohumlama tarihinden once olamaz", path: ["expectedBirthDate"] }
+  )
+  .refine(
+    // Gercek dogum tarihi tohumlama tarihinden once olamaz.
+    (d) => !d.actualBirthDate || new Date(d.actualBirthDate) >= new Date(d.breedingDate),
+    { message: "Gercek dogum tarihi tohumlama tarihinden once olamaz", path: ["actualBirthDate"] }
+  );
 
 export type BreedingInput = z.infer<typeof breedingSchema>;

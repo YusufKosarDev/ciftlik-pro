@@ -4,6 +4,10 @@ import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { feedSchema } from "@/lib/validations/feed";
 
+// Atomik stok dusumu sirasinda yetersiz stok durumunu isaretlemek icin
+// kullanilan ozel hata. $transaction icinde firlatilirsa islem geri alinir.
+class InsufficientStockError extends Error {}
+
 // POST /api/feed -> yem tuketim kaydi olusturur ve stok miktarini dusurur.
 // Kayit olusturma + stok dusumu tek transaction'da yapilir.
 export async function POST(request: Request) {
@@ -41,20 +45,42 @@ export async function POST(request: Request) {
       );
     }
 
-    const [log] = await prisma.$transaction([
-      prisma.feedLog.create({
-        data: {
-          inventoryItemId: data.inventoryItemId,
-          date: new Date(data.date),
-          quantity: data.quantity,
-          notes: data.notes || null,
-        },
-      }),
-      prisma.inventoryItem.update({
-        where: { id: data.inventoryItemId },
-        data: { quantity: { decrement: data.quantity } },
-      }),
-    ]);
+    // Stok dusumu, yaris kosulunu (TOCTOU) onlemek icin ATOMIK yapilir:
+    // updateMany yalnizca quantity >= talep oldugunda gunceller. Iki eszamanli
+    // istek olsa bile stok asla eksiye dusmez. count === 0 ise tx geri alinir.
+    let log;
+    try {
+      log = await prisma.$transaction(async (tx) => {
+        const updated = await tx.inventoryItem.updateMany({
+          where: { id: data.inventoryItemId, quantity: { gte: data.quantity } },
+          data: { quantity: { decrement: data.quantity } },
+        });
+        if (updated.count === 0) {
+          throw new InsufficientStockError();
+        }
+        return tx.feedLog.create({
+          data: {
+            inventoryItemId: data.inventoryItemId,
+            date: new Date(data.date),
+            quantity: data.quantity,
+            notes: data.notes || null,
+          },
+        });
+      });
+    } catch (err) {
+      if (err instanceof InsufficientStockError) {
+        // Esnek erisim sirasinda baska bir istek stogu tuketmis olabilir.
+        const fresh = await prisma.inventoryItem.findUnique({
+          where: { id: data.inventoryItemId },
+          select: { quantity: true, unit: true },
+        });
+        return NextResponse.json(
+          { error: `Yetersiz stok: mevcut ${fresh?.quantity ?? 0} ${fresh?.unit ?? item.unit}` },
+          { status: 400 }
+        );
+      }
+      throw err;
+    }
 
     await logAudit(authz.session.user, "CREATE", "FeedLog", log.id, `${item.name}: ${data.quantity} ${item.unit}`);
 

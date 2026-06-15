@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { canWrite } from "@/lib/authz";
 import { cropStatusLabels } from "@/lib/labels";
 import { CropForm } from "@/components/crop-form";
+import { DeleteButton } from "@/components/delete-button";
 import { fieldEconomics } from "@/lib/field-economics";
 
 function formatMoney(amount: number): string {
@@ -121,13 +122,14 @@ export default async function TarlaDetayPage({
             <table className="w-full text-left text-sm">
               <thead className="border-b border-gray-200 bg-gray-50 text-gray-600">
                 <tr>
-                  <th className="px-4 py-2 font-medium">Urun</th>
+                  <th className="px-4 py-2 font-medium">Ürün</th>
                   <th className="px-4 py-2 font-medium">Ekim</th>
                   <th className="px-4 py-2 font-medium">Hasat</th>
                   <th className="px-4 py-2 font-medium">Durum</th>
                   <th className="px-4 py-2 text-right font-medium">Gider</th>
                   <th className="px-4 py-2 text-right font-medium">Gelir</th>
                   <th className="px-4 py-2 text-right font-medium">Kâr</th>
+                  {canEdit && <th className="px-4 py-2 text-right font-medium">İşlem</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -165,6 +167,23 @@ export default async function TarlaDetayPage({
                     >
                       {hasEco ? formatMoney(profit) : "-"}
                     </td>
+                    {canEdit && (
+                      <td className="px-4 py-2 text-right">
+                        <div className="flex items-center justify-end gap-3">
+                          <Link
+                            href={`/panel/tarlalar/${field.id}/ekim/${crop.id}/duzenle`}
+                            className="text-sm font-medium text-green-600 hover:underline"
+                          >
+                            Düzenle
+                          </Link>
+                          <DeleteButton
+                            endpoint={`/api/fields/${field.id}/crops/${crop.id}`}
+                            itemLabel={crop.name}
+                            kind="Ekim kaydı"
+                          />
+                        </div>
+                      </td>
+                    )}
                   </tr>
                   );
                 })}

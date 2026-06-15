@@ -31,6 +31,10 @@ export const cropSchema = z.object({
   revenue: optionalNonNegativeNumber("Gelir"),
   yieldAmount: optionalNonNegativeNumber("Verim"),
   notes: z.string().trim().max(500).optional().or(z.literal("")),
-});
+}).refine(
+  // Hasat tarihi doluysa ekim tarihinden once olamaz.
+  (d) => !d.harvestDate || new Date(d.harvestDate) >= new Date(d.plantedDate),
+  { message: "Hasat tarihi ekim tarihinden once olamaz", path: ["harvestDate"] }
+);
 
 export type CropInput = z.infer<typeof cropSchema>;
