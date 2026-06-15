@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { DEMO_EMAIL } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { passwordChangeSchema } from "@/lib/validations/password";
 
@@ -11,6 +12,15 @@ export async function PUT(request: Request) {
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+    }
+
+    // Demo hesabi salt-okunurdur; parolasini degistiremez. Aksi halde bir demo
+    // ziyaretcisi parolayi degistirip diger ziyaretcileri demodan kilitleyebilir.
+    if ((session.user.email ?? "").toLowerCase() === DEMO_EMAIL) {
+      return NextResponse.json(
+        { error: "Demo hesabı salt-okunurdur; parola değiştirilemez." },
+        { status: 403 }
+      );
     }
 
     const body = await request.json();
