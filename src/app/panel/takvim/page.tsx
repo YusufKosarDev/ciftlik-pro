@@ -42,7 +42,10 @@ export default async function TakvimPage({
       select: { id: true, name: true, harvestDate: true, field: { select: { id: true, name: true } } },
     }),
     prisma.breedingRecord.findMany({
-      where: { expectedBirthDate: { gte: start, lt: end } },
+      where: {
+        expectedBirthDate: { gte: start, lt: end },
+        status: { in: ["PLANNED", "PREGNANT"] },
+      },
       select: { id: true, expectedBirthDate: true, animal: { select: { id: true, tagNumber: true, name: true } } },
     }),
   ]);

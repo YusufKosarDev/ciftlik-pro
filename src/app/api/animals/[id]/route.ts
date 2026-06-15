@@ -71,6 +71,27 @@ export async function PUT(
           });
         cursor = parent?.motherId ?? null;
       }
+
+      // Anne cinsiyet + tur dogrulamasi
+      const mother = await prisma.animal.findUnique({
+        where: { id: data.motherId },
+        select: { gender: true, species: true },
+      });
+      if (!mother) {
+        return NextResponse.json({ error: "Secilen anne hayvan bulunamadi" }, { status: 404 });
+      }
+      if (mother.gender !== "FEMALE") {
+        return NextResponse.json(
+          { error: "Anne olarak yalnizca disi hayvan secilebilir" },
+          { status: 400 }
+        );
+      }
+      if (mother.species !== data.species) {
+        return NextResponse.json(
+          { error: "Anne ve yavru ayni turden olmalidir" },
+          { status: 400 }
+        );
+      }
     }
 
     const animal = await prisma.animal.update({
