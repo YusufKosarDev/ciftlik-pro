@@ -11,7 +11,7 @@ rol bazlı yetkilendirmeyle tek panelden yöneten tam yığın Çiftlik Yönetim
 [![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Coverage](https://img.shields.io/badge/coverage-~95%25%20(lib)-success?logo=vitest&logoColor=white)](#test--kalite)
-[![Tests](https://img.shields.io/badge/tests-156%20unit%20%2B%206%20e2e-success)](#test--kalite)
+[![Tests](https://img.shields.io/badge/tests-169%20unit%20%2B%207%20e2e-success)](#test--kalite)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 🔗 **Canlı Demo: [ciftlik-pro.vercel.app](https://ciftlik-pro.vercel.app)**
@@ -75,7 +75,7 @@ rol bazlı yetkilendirmeyle tek panelden yöneten tam yığın Çiftlik Yönetim
   (API) hem hassas okuma (sayfa) düzeyinde uygulanır.
 - **Uçtan uca tip güvenliği** — Zod şemaları hem istemci hem sunucuda doğrular;
   Prisma ile veritabanı tipleri.
-- **Test & CI/CD** — 156 birim/bileşen testi (Vitest + Testing Library) + 6 uçtan uca test (Playwright),
+- **Test & CI/CD** — 169 birim/bileşen testi (Vitest + Testing Library) + 7 uçtan uca test (Playwright),
   GitHub Actions'ta gerçek PostgreSQL servisiyle her PR'da çalışır.
 - **Serverless-doğru veritabanı** — pooled (`DATABASE_URL`) + direct
   (`DIRECT_URL`) ayrımıyla Vercel + Neon/Supabase'e hazır.
@@ -214,10 +214,10 @@ Seed çalıştırıldıysa:
 
 - **Birim testleri (Vitest):** doğrulama şemaları, RBAC yetkilendirme,
   finans/harita/tarih/takvim yardımcıları + UI bileşenleri (Testing Library:
-  Badge/Button/EmptyState/DataTable/OnboardingModal) — `npm test` (156 test). Kapsam raporu için
+  Badge/Button/EmptyState/DataTable/OnboardingModal) — `npm test` (169 test). Kapsam raporu için
   `npm run test:coverage` (iş mantığı `src/lib` için ~%95 satır kapsamı).
 - **Uçtan uca testler (Playwright):** kimlik doğrulama, hayvan CRUD akışı ve
-  RBAC erişim engeli — `npm run test:e2e` (6 test).
+  RBAC erişim engeli — `npm run test:e2e` (7 test).
 - **CI (GitHub Actions):** her push/PR'da iki paralel job —
   `build` (tsc + ESLint + Vitest + üretim derlemesi) ve
   `e2e` (gerçek PostgreSQL servisi + seed + Playwright).
