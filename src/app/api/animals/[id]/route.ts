@@ -94,6 +94,20 @@ export async function PUT(
       }
     }
 
+    // Tur degisiyorsa, bu hayvanin mevcut yavrulariyla tutarsizlik olusmamali.
+    // (Anne ve yavru ayni turden olmali; yavrular bu hayvani anne gosteriyor.)
+    if (data.species !== existing.species) {
+      const mismatchedOffspring = await prisma.animal.count({
+        where: { motherId: id, species: { not: data.species } },
+      });
+      if (mismatchedOffspring > 0) {
+        return NextResponse.json(
+          { error: "Bu hayvanin yavrulari farkli turden; tur degistirilemez" },
+          { status: 400 }
+        );
+      }
+    }
+
     const animal = await prisma.animal.update({
       where: { id },
       data: {
