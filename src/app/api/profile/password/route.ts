@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { DEMO_EMAIL } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { passwordChangeSchema } from "@/lib/validations/password";
+import { hashPassword } from "@/lib/password-hash";
 
 // PUT /api/profile/password -> giris yapmis kullanicinin kendi parolasini degistirir.
 export async function PUT(request: Request) {
@@ -43,7 +44,7 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: "Mevcut parola hatali" }, { status: 400 });
     }
 
-    const passwordHash = await bcrypt.hash(newPassword, 10);
+    const passwordHash = await hashPassword(newPassword);
     await prisma.user.update({
       where: { id: user.id },
       data: { password: passwordHash },

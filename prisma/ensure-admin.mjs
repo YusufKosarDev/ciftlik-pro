@@ -40,7 +40,8 @@ async function main() {
     return;
   }
 
-  const passwordHash = await bcrypt.hash(password, 10);
+  // Maliyet 12: src/lib/password-hash.ts BCRYPT_COST ile ayni.
+  const passwordHash = await bcrypt.hash(password, 12);
   await prisma.user.create({
     data: { name, email, password: passwordHash, role: "ADMIN" },
   });

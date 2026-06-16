@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { registerSchema } from "@/lib/validations/auth";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
+import { hashPassword } from "@/lib/password-hash";
 
 // POST /api/auth/register
 // Yeni kullanici kaydi olusturur (sadece ADMIN).
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     }
 
     // 3) Parolayi hash'le (duz metin asla saklanmaz)
-    const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash = await hashPassword(password);
 
     // 4) Kullaniciyi olustur
     const user = await prisma.user.create({

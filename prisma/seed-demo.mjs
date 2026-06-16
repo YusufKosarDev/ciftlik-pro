@@ -22,7 +22,8 @@ function daysAgo(n) {
 
 async function main() {
   // 1) Demo kullanici (WORKER) — varsa dokunma
-  const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
+  // Maliyet 12: src/lib/password-hash.ts BCRYPT_COST ile ayni.
+  const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 12);
   const demo = await prisma.user.upsert({
     where: { email: DEMO_EMAIL },
     update: {},

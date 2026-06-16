@@ -18,7 +18,8 @@ async function main() {
 
   // Kullanicilar (seed kullanicilari "mevcut" sayilir; hos geldin turunu
   // gormus kabul edilir -> onboardedAt dolu)
-  const passwordHash = await bcrypt.hash("sifre1234", 10);
+  // Maliyet 12: src/lib/password-hash.ts BCRYPT_COST ile ayni.
+  const passwordHash = await bcrypt.hash("sifre1234", 12);
   const now = new Date();
   const admin = await prisma.user.create({
     data: {
