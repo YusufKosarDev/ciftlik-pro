@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
   // Uygulama calisma zamani baglantisi. Serverless (Vercel) + Neon/Supabase'de
   // bu, pooler (pgbouncer) uzerinden gelen HAVUZLANMIS baglanti olmalidir.
   url       = env("DATABASE_URL")
@@ -47,14 +47,14 @@ model AuditLog {
 
 // Sistemi kullanan personel
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String // Parolanin hash'lenmis hali saklanir, asla duz metin degil
-  role      Role     @default(WORKER)
+  id          String    @id @default(cuid())
+  name        String
+  email       String    @unique
+  password    String // Parolanin hash'lenmis hali saklanir, asla duz metin degil
+  role        Role      @default(WORKER)
   onboardedAt DateTime? // Hos geldin turunu tamamladigi an (null ise tur gosterilir)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   tasks Task[]
 }
@@ -79,6 +79,8 @@ model Task {
   updatedAt    DateTime   @updatedAt
 
   @@index([assignedToId])
+  // Takvim/dashboard/cron son tarih araligi sorgulari icin.
+  @@index([dueDate])
 }
 
 // Hayvan turleri
@@ -105,18 +107,18 @@ enum AnimalStatus {
 
 // Ciftlikteki hayvanlar
 model Animal {
-  id         String        @id @default(cuid())
-  tagNumber  String        @unique // Kulak kupesi numarasi (benzersiz)
-  name       String? // Istege bagli isim/lakap
-  species    AnimalSpecies
-  breed      String? // Cins/irk (orn. Holstein)
-  gender     AnimalGender
-  birthDate  DateTime?
-  status     AnimalStatus  @default(ACTIVE)
-  imageUrl   String? // Hayvan gorseli (dis URL)
-  notes      String? // Serbest notlar
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
+  id        String        @id @default(cuid())
+  tagNumber String        @unique // Kulak kupesi numarasi (benzersiz)
+  name      String? // Istege bagli isim/lakap
+  species   AnimalSpecies
+  breed     String? // Cins/irk (orn. Holstein)
+  gender    AnimalGender
+  birthDate DateTime?
+  status    AnimalStatus  @default(ACTIVE)
+  imageUrl  String? // Hayvan gorseli (dis URL)
+  notes     String? // Serbest notlar
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 
   // Soy/pedigri: anne ayni tablodadir (self-relation). Anne silinirse
   // yavrunun motherId'si null olur (yavru silinmez).
@@ -159,6 +161,8 @@ model Vaccination {
   createdAt DateTime  @default(now())
 
   @@index([animalId])
+  // Yaklasan asi araligi sorgulari (takvim/dashboard/cron) icin.
+  @@index([nextDate])
 }
 
 // Finansal islem turu
@@ -255,6 +259,8 @@ model Crop {
   createdAt   DateTime   @default(now())
 
   @@index([fieldId])
+  // Takvimde hasat tarihi araligi sorgulari icin.
+  @@index([harvestDate])
 }
 
 // Bir hayvanin gunluk sut verimi kaydi
@@ -306,6 +312,8 @@ model BreedingRecord {
   createdAt         DateTime       @default(now())
 
   @@index([animalId])
+  // Takvimde tahmini dogum tarihi araligi sorgulari icin.
+  @@index([expectedBirthDate])
 }
 
 // Yapi turleri (2D harita uzerinde gosterilen tesisler)
