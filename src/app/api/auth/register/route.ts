@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { registerSchema } from "@/lib/validations/auth";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 // POST /api/auth/register
 // Yeni kullanici kaydi olusturur (sadece ADMIN).
@@ -12,6 +13,16 @@ export async function POST(request: Request) {
     // 0) Sadece ADMIN yeni kullanici olusturabilir
     const authz = await authorizeWrite("users");
     if ("error" in authz) return authz.error;
+
+    // Hiz siniri: kazara/kotuye toplu olusturmayi onlemek icin IP basina
+    // 5 dakikada en fazla 10 kayit.
+    const rl = rateLimit(`register:${clientIp(request)}`, 10, 5 * 60 * 1000);
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: "Cok fazla istek. Lutfen biraz sonra tekrar deneyin." },
+        { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } }
+      );
+    }
 
     const body = await request.json();
 
