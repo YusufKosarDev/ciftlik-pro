@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   Search,
   ChevronUp,
@@ -11,95 +12,96 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
+import type { ListState } from "@/lib/list-query";
 
 export type Column<T> = {
   key: string;
   header: string;
   cell: (row: T) => React.ReactNode;
-  // sortValue verilirse kolon basligi tiklanarak siralanabilir.
-  sortValue?: (row: T) => string | number;
+  // sortKey verilirse kolon basligi tiklanarak siralanabilir; bu anahtar URL'e
+  // (?sort) yazilir ve sunucu tarafinda orderBy'a cevrilir.
+  sortKey?: string;
   className?: string;
   headerClassName?: string;
 };
 
-// Arama + siralama + sayfalama iceren, yeniden kullanilabilir istemci tablosu.
+// Sunucu-tarafi sayfalama/arama/siralama icin URL-gudumlu sunum tablosu.
+// Veri (`data`) zaten sunucuda sayfalanmis/filtrelenmis gelir; bu bilesen yalniz
+// gosterir ve etkilesimleri URL searchParams'a yansitir (router.replace).
 export function DataTable<T extends { id: string }>({
   data,
   columns,
-  searchableText,
+  list,
+  searchable = false,
   searchPlaceholder = "Ara...",
-  pageSize = 10,
   emptyState,
 }: {
   data: T[];
   columns: Column<T>[];
-  searchableText?: (row: T) => string;
+  list: ListState;
+  searchable?: boolean;
   searchPlaceholder?: string;
-  pageSize?: number;
   emptyState?: React.ReactNode;
 }) {
-  const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<{ key: string; dir: "asc" | "desc" } | null>(null);
-  const [page, setPage] = useState(0);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  const filtered = useMemo(() => {
-    let rows = data;
-    if (query.trim() && searchableText) {
-      const q = query.toLowerCase();
-      rows = rows.filter((r) => searchableText(r).toLowerCase().includes(q));
-    }
-    if (sort) {
-      const col = columns.find((c) => c.key === sort.key);
-      if (col?.sortValue) {
-        const getVal = col.sortValue;
-        rows = [...rows].sort((a, b) => {
-          const av = getVal(a);
-          const bv = getVal(b);
-          if (av < bv) return sort.dir === "asc" ? -1 : 1;
-          if (av > bv) return sort.dir === "asc" ? 1 : -1;
-          return 0;
-        });
+  // URL parametrelerini gunceller; bos/null degerler kaldirilir. scroll:false ile
+  // sayfa basina kaymayi onleriz.
+  const updateParams = useCallback(
+    (updates: Record<string, string | number | null>) => {
+      const params = new URLSearchParams(searchParams.toString());
+      for (const [key, value] of Object.entries(updates)) {
+        if (value === null || value === "") params.delete(key);
+        else params.set(key, String(value));
       }
-    }
-    return rows;
-  }, [data, query, sort, columns, searchableText]);
+      const qs = params.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    },
+    [router, pathname, searchParams]
+  );
 
-  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const current = Math.min(page, pageCount - 1);
-  const pageRows = filtered.slice(current * pageSize, current * pageSize + pageSize);
+  // Arama: yerel girdi durumu + debounce ile URL'e yansitma.
+  const [term, setTerm] = useState(list.q);
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      if (term.trim() !== list.q) {
+        updateParams({ q: term.trim() || null, page: null });
+      }
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [term, list.q, updateParams]);
+
+  const pageCount = Math.max(1, Math.ceil(list.total / list.pageSize));
 
   function toggleSort(key: string) {
-    setPage(0);
-    setSort((s) =>
-      s?.key === key
-        ? s.dir === "asc"
-          ? { key, dir: "desc" }
-          : null
-        : { key, dir: "asc" }
-    );
+    const dir = list.sort === key && list.dir === "asc" ? "desc" : "asc";
+    updateParams({ sort: key, dir, page: null });
+  }
+
+  function goToPage(p: number) {
+    updateParams({ page: p <= 1 ? null : p });
   }
 
   return (
     <div className="space-y-3">
-      {searchableText && (
+      {searchable && (
         <div className="relative max-w-xs">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <Input
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setPage(0);
-            }}
+            value={term}
+            onChange={(e) => setTerm(e.target.value)}
             placeholder={searchPlaceholder}
             className="pl-9"
           />
         </div>
       )}
 
-      {filtered.length === 0 ? (
-        query.trim() ? (
+      {data.length === 0 ? (
+        list.q.trim() ? (
           <p className="rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center text-sm text-gray-500">
-            “{query}” ile eşleşen kayıt bulunamadı.
+            “{list.q}” ile eşleşen kayıt bulunamadı.
           </p>
         ) : (
           emptyState ?? (
@@ -119,14 +121,14 @@ export function DataTable<T extends { id: string }>({
                       key={col.key}
                       className={cn("px-4 py-3 font-medium", col.headerClassName)}
                     >
-                      {col.sortValue ? (
+                      {col.sortKey ? (
                         <button
-                          onClick={() => toggleSort(col.key)}
+                          onClick={() => toggleSort(col.sortKey!)}
                           className="inline-flex items-center gap-1 transition hover:text-gray-900"
                         >
                           {col.header}
-                          {sort?.key === col.key ? (
-                            sort.dir === "asc" ? (
+                          {list.sort === col.sortKey ? (
+                            list.dir === "asc" ? (
                               <ChevronUp className="h-3.5 w-3.5" />
                             ) : (
                               <ChevronDown className="h-3.5 w-3.5" />
@@ -143,7 +145,7 @@ export function DataTable<T extends { id: string }>({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {pageRows.map((row) => (
+                {data.map((row) => (
                   <tr key={row.id} className="hover:bg-gray-50">
                     {columns.map((col) => (
                       <td key={col.key} className={cn("px-4 py-3", col.className)}>
@@ -158,22 +160,22 @@ export function DataTable<T extends { id: string }>({
 
           {pageCount > 1 && (
             <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>{filtered.length} kayıt</span>
+              <span>{list.total} kayıt</span>
               <div className="flex items-center gap-2">
                 <button
-                  disabled={current === 0}
-                  onClick={() => setPage(current - 1)}
+                  disabled={list.page <= 1}
+                  onClick={() => goToPage(list.page - 1)}
                   className="rounded-lg border border-gray-300 p-1.5 transition hover:bg-gray-50 disabled:opacity-40"
                   aria-label="Önceki sayfa"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
                 <span>
-                  {current + 1} / {pageCount}
+                  {list.page} / {pageCount}
                 </span>
                 <button
-                  disabled={current >= pageCount - 1}
-                  onClick={() => setPage(current + 1)}
+                  disabled={list.page >= pageCount}
+                  onClick={() => goToPage(list.page + 1)}
                   className="rounded-lg border border-gray-300 p-1.5 transition hover:bg-gray-50 disabled:opacity-40"
                   aria-label="Sonraki sayfa"
                 >

@@ -7,19 +7,22 @@ import { DataTable, type Column } from "@/components/data-table";
 import { DeleteButton } from "@/components/delete-button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { buttonVariants } from "@/components/ui/button";
+import type { ListState } from "@/lib/list-query";
 
 export function FieldsTable({
   fields,
   canEdit,
+  list,
 }: {
   fields: Field[];
   canEdit: boolean;
+  list: ListState;
 }) {
   const columns: Column<Field>[] = [
     {
       key: "name",
       header: "Ad",
-      sortValue: (f) => f.name,
+      sortKey: "name",
       cell: (f) => (
         <Link
           href={`/panel/tarlalar/${f.id}`}
@@ -32,13 +35,13 @@ export function FieldsTable({
     {
       key: "area",
       header: "Alan (dönüm)",
-      sortValue: (f) => f.area,
+      sortKey: "area",
       cell: (f) => f.area,
     },
     {
       key: "location",
       header: "Konum",
-      sortValue: (f) => f.location ?? "",
+      sortKey: "location",
       cell: (f) => f.location ?? "-",
     },
   ];
@@ -67,7 +70,8 @@ export function FieldsTable({
     <DataTable
       data={fields}
       columns={columns}
-      searchableText={(f) => `${f.name} ${f.location ?? ""}`}
+      list={list}
+      searchable
       searchPlaceholder="Ad veya konum ara..."
       emptyState={
         <EmptyState

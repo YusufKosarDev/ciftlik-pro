@@ -17,20 +17,23 @@ test("admin hayvan ekleyip duzenleyip silebilir", async ({ page }) => {
   await page.getByRole("button", { name: "Kaydet" }).click();
   await expect(page).toHaveURL(/\/panel\/hayvanlar$/);
 
-  // 2) Tabloda arama ile bul
+  // 2) Tabloda arama ile bul. Arama sunucu tarafinda (debounce'lu) calistigi
+  //    icin, etkilesimleri tag iceren SATIRA kapsayarak liste daralmadan once
+  //    coklu eslesmeyi (strict-mode hatasi) onleriz.
   await page.getByPlaceholder(SEARCH).fill(tag);
-  await expect(page.getByRole("cell", { name: tag })).toBeVisible();
+  const row = page.getByRole("row").filter({ hasText: tag });
+  await expect(row.getByRole("cell", { name: tag })).toBeVisible();
 
-  // 3) Duzenleme: adi degistir (aranan tek satirin Duzenle linki)
-  await page.getByRole("link", { name: "Düzenle" }).click();
+  // 3) Duzenleme: adi degistir (aranan satirin Duzenle linki)
+  await row.getByRole("link", { name: "Düzenle" }).click();
   await expect(page).toHaveURL(/\/duzenle$/);
   await page.getByLabel("Ad").fill("Test Hayvan Guncel");
   await page.getByRole("button", { name: "Kaydet" }).click();
   await expect(page).toHaveURL(/\/panel\/hayvanlar$/);
 
-  // 4) Silme: arama + onay dialogu
+  // 4) Silme: arama + onay dialogu (yine satira kapsayarak)
   await page.getByPlaceholder(SEARCH).fill(tag);
-  await page.getByRole("button", { name: "Sil" }).click();
+  await page.getByRole("row").filter({ hasText: tag }).getByRole("button", { name: "Sil" }).click();
   const dialog = page.getByRole("alertdialog");
   await expect(dialog).toBeVisible();
   await dialog.getByRole("button", { name: "Sil" }).click();

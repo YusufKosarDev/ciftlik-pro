@@ -1,19 +1,51 @@
 import Link from "next/link";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { canWrite } from "@/lib/authz";
+import { parseListParams, type ListState } from "@/lib/list-query";
 import { buttonVariants } from "@/components/ui/button";
 import { InventoryTable } from "@/components/tables/inventory-table";
 
-export default async function StokPage() {
-  const items = await prisma.inventoryItem.findMany({
-    orderBy: { createdAt: "desc" },
+export default async function StokPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const { page, q, sort, dir, skip, take } = parseListParams(await searchParams, {
+    sortableKeys: ["name", "category", "quantity", "criticalLevel"],
+    defaultSort: "createdAt",
+    defaultDir: "desc",
   });
 
-  const criticalCount = items.filter((i) => i.quantity <= i.criticalLevel).length;
+  const where: Prisma.InventoryItemWhereInput = q
+    ? {
+        OR: [
+          { name: { contains: q, mode: "insensitive" } },
+          { notes: { contains: q, mode: "insensitive" } },
+        ],
+      }
+    : {};
 
-  const session = await auth();
+  // Kritik sayim kolon-kolon karsilastirma gerektirir (quantity <= criticalLevel);
+  // Prisma standart where ile yapamaz, bu yuzden DB-tarafi COUNT (tum kayitlari
+  // bellege cekmeden) kullaniyoruz.
+  const [items, total, session, criticalRows] = await Promise.all([
+    prisma.inventoryItem.findMany({
+      where,
+      orderBy: { [sort]: dir } as Prisma.InventoryItemOrderByWithRelationInput,
+      skip,
+      take,
+    }),
+    prisma.inventoryItem.count({ where }),
+    auth(),
+    prisma.$queryRaw<{ count: number }[]>`
+      SELECT COUNT(*)::int AS count FROM "InventoryItem" WHERE "quantity" <= "criticalLevel"`,
+  ]);
+
+  const criticalCount = criticalRows[0]?.count ?? 0;
   const canEdit = session ? canWrite(session.user.role, "inventory") : false;
+  const list: ListState = { total, page, pageSize: take, q, sort, dir };
 
   return (
     <div className="space-y-6">
@@ -23,7 +55,7 @@ export default async function StokPage() {
             <span>📦</span> Stok & Envanter
           </h1>
           <p className="text-sm text-gray-500">
-            Toplam {items.length} kalem
+            Toplam {total} kalem
             {criticalCount > 0 && (
               <span className="ml-2 text-red-600">
                 · {criticalCount} kalem kritik seviyede
@@ -38,7 +70,7 @@ export default async function StokPage() {
         )}
       </div>
 
-      <InventoryTable items={items} canEdit={canEdit} />
+      <InventoryTable items={items} canEdit={canEdit} list={list} />
     </div>
   );
 }

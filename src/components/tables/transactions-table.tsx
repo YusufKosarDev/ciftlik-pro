@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { transactionTypeLabels } from "@/lib/labels";
+import type { ListState } from "@/lib/list-query";
 
 function formatDate(d: Date) {
   return new Date(d).toLocaleDateString("tr-TR");
@@ -20,32 +21,34 @@ function formatMoney(a: number) {
 export function TransactionsTable({
   transactions,
   canEdit,
+  list,
 }: {
   transactions: Transaction[];
   canEdit: boolean;
+  list: ListState;
 }) {
   const columns: Column<Transaction>[] = [
     {
       key: "date",
       header: "Tarih",
-      sortValue: (t) => new Date(t.date).getTime(),
+      sortKey: "date",
       cell: (t) => formatDate(t.date),
     },
     {
       key: "type",
       header: "Tür",
-      sortValue: (t) => t.type,
+      sortKey: "type",
       cell: (t) => (
         <Badge tone={t.type === "INCOME" ? "green" : "red"}>
           {transactionTypeLabels[t.type]}
         </Badge>
       ),
     },
-    { key: "category", header: "Kategori", sortValue: (t) => t.category, cell: (t) => t.category },
+    { key: "category", header: "Kategori", sortKey: "category", cell: (t) => t.category },
     {
       key: "amount",
       header: "Tutar",
-      sortValue: (t) => t.amount,
+      sortKey: "amount",
       headerClassName: "text-right",
       className: "text-right",
       cell: (t) => (
@@ -89,7 +92,8 @@ export function TransactionsTable({
     <DataTable
       data={transactions}
       columns={columns}
-      searchableText={(t) => `${t.category} ${transactionTypeLabels[t.type]}`}
+      list={list}
+      searchable
       searchPlaceholder="Kategori ara..."
       emptyState={
         <EmptyState

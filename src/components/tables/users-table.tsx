@@ -6,6 +6,7 @@ import { DataTable, type Column } from "@/components/data-table";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { roleLabels } from "@/lib/labels";
+import type { ListState } from "@/lib/list-query";
 
 // Personel listesi parolayi icermez; yalnizca gosterilen alanlar.
 export type UserRow = {
@@ -20,30 +21,30 @@ function formatDate(date: Date) {
   return new Date(date).toLocaleDateString("tr-TR");
 }
 
-export function UsersTable({ users }: { users: UserRow[] }) {
+export function UsersTable({ users, list }: { users: UserRow[]; list: ListState }) {
   const columns: Column<UserRow>[] = [
     {
       key: "name",
       header: "Ad",
-      sortValue: (u) => u.name,
+      sortKey: "name",
       cell: (u) => <span className="font-medium text-gray-900">{u.name}</span>,
     },
     {
       key: "email",
       header: "E-posta",
-      sortValue: (u) => u.email,
+      sortKey: "email",
       cell: (u) => <span className="text-gray-700">{u.email}</span>,
     },
     {
       key: "role",
       header: "Rol",
-      sortValue: (u) => roleLabels[u.role],
+      sortKey: "role",
       cell: (u) => <Badge tone="green">{roleLabels[u.role]}</Badge>,
     },
     {
       key: "createdAt",
       header: "Kayıt",
-      sortValue: (u) => new Date(u.createdAt).getTime(),
+      sortKey: "createdAt",
       cell: (u) => <span className="text-gray-500">{formatDate(u.createdAt)}</span>,
     },
   ];
@@ -52,8 +53,9 @@ export function UsersTable({ users }: { users: UserRow[] }) {
     <DataTable
       data={users}
       columns={columns}
-      searchableText={(u) => `${u.name} ${u.email} ${roleLabels[u.role]}`}
-      searchPlaceholder="Ad, e-posta veya rol ara..."
+      list={list}
+      searchable
+      searchPlaceholder="Ad veya e-posta ara..."
       emptyState={
         <EmptyState icon={<Users className="h-6 w-6" />} title="Henüz personel yok" />
       }

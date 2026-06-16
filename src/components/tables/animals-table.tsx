@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { speciesLabels, genderLabels, statusLabels } from "@/lib/labels";
+import type { ListState } from "@/lib/list-query";
 
 const statusTone = {
   ACTIVE: "green",
@@ -19,15 +20,17 @@ const statusTone = {
 export function AnimalsTable({
   animals,
   canEdit,
+  list,
 }: {
   animals: Animal[];
   canEdit: boolean;
+  list: ListState;
 }) {
   const columns: Column<Animal>[] = [
     {
       key: "tagNumber",
       header: "Kulak No",
-      sortValue: (a) => a.tagNumber,
+      sortKey: "tagNumber",
       cell: (a) => (
         <Link
           href={`/panel/hayvanlar/${a.id}`}
@@ -37,18 +40,18 @@ export function AnimalsTable({
         </Link>
       ),
     },
-    { key: "name", header: "Ad", sortValue: (a) => a.name ?? "", cell: (a) => a.name ?? "-" },
+    { key: "name", header: "Ad", sortKey: "name", cell: (a) => a.name ?? "-" },
     {
       key: "species",
       header: "Tür",
-      sortValue: (a) => speciesLabels[a.species],
+      sortKey: "species",
       cell: (a) => speciesLabels[a.species],
     },
     { key: "gender", header: "Cinsiyet", cell: (a) => genderLabels[a.gender] },
     {
       key: "status",
       header: "Durum",
-      sortValue: (a) => a.status,
+      sortKey: "status",
       cell: (a) => <Badge tone={statusTone[a.status]}>{statusLabels[a.status]}</Badge>,
     },
   ];
@@ -81,7 +84,8 @@ export function AnimalsTable({
     <DataTable
       data={animals}
       columns={columns}
-      searchableText={(a) => `${a.tagNumber} ${a.name ?? ""} ${a.breed ?? ""}`}
+      list={list}
+      searchable
       searchPlaceholder="Kulak no, ad veya ırk ara..."
       emptyState={
         <EmptyState

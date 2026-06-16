@@ -9,25 +9,28 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { structureTypeLabels } from "@/lib/labels";
+import type { ListState } from "@/lib/list-query";
 
 export function StructuresTable({
   structures,
   canEdit,
+  list,
 }: {
   structures: Structure[];
   canEdit: boolean;
+  list: ListState;
 }) {
   const columns: Column<Structure>[] = [
     {
       key: "name",
       header: "Ad",
-      sortValue: (s) => s.name,
+      sortKey: "name",
       cell: (s) => <span className="font-medium text-gray-900">{s.name}</span>,
     },
     {
       key: "type",
       header: "Tür",
-      sortValue: (s) => structureTypeLabels[s.type],
+      sortKey: "type",
       cell: (s) => <Badge tone="amber">{structureTypeLabels[s.type]}</Badge>,
     },
     {
@@ -61,7 +64,8 @@ export function StructuresTable({
     <DataTable
       data={structures}
       columns={columns}
-      searchableText={(s) => `${s.name} ${structureTypeLabels[s.type]}`}
+      list={list}
+      searchable
       searchPlaceholder="Ad veya tür ara..."
       emptyState={
         <EmptyState

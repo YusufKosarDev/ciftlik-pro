@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { taskStatusLabels } from "@/lib/labels";
+import type { ListState } from "@/lib/list-query";
 
 // Listeleme sayfasi atanan kisinin adini da iceren bir gorev tipi kullanir.
 export type TaskRow = Task & { assignedTo: { name: string } | null };
@@ -32,27 +33,29 @@ function isOverdue(dueDate: Date | null, status: string) {
 export function TasksTable({
   tasks,
   canEdit,
+  list,
 }: {
   tasks: TaskRow[];
   canEdit: boolean;
+  list: ListState;
 }) {
   const columns: Column<TaskRow>[] = [
     {
       key: "title",
       header: "Başlık",
-      sortValue: (t) => t.title,
+      sortKey: "title",
       cell: (t) => <span className="font-medium text-gray-900">{t.title}</span>,
     },
     {
       key: "assignedTo",
       header: "Atanan",
-      sortValue: (t) => t.assignedTo?.name ?? "",
+      sortKey: "assignedTo",
       cell: (t) => t.assignedTo?.name ?? "-",
     },
     {
       key: "dueDate",
       header: "Son Tarih",
-      sortValue: (t) => (t.dueDate ? new Date(t.dueDate).getTime() : 0),
+      sortKey: "dueDate",
       cell: (t) => {
         const overdue = isOverdue(t.dueDate, t.status);
         return (
@@ -70,7 +73,7 @@ export function TasksTable({
     {
       key: "status",
       header: "Durum",
-      sortValue: (t) => t.status,
+      sortKey: "status",
       cell: (t) => <Badge tone={statusTone[t.status]}>{taskStatusLabels[t.status]}</Badge>,
     },
   ];
@@ -99,7 +102,8 @@ export function TasksTable({
     <DataTable
       data={tasks}
       columns={columns}
-      searchableText={(t) => `${t.title} ${t.assignedTo?.name ?? ""}`}
+      list={list}
+      searchable
       searchPlaceholder="Başlık veya atanan ara..."
       emptyState={
         <EmptyState

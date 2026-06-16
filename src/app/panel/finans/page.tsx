@@ -1,9 +1,10 @@
 import Link from "next/link";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { canWrite, requirePageView } from "@/lib/authz";
+import { parseListParams, type ListState } from "@/lib/list-query";
 import { buttonVariants } from "@/components/ui/button";
 import { TransactionsTable } from "@/components/tables/transactions-table";
-import { categoryBreakdown } from "@/lib/finance-report";
 
 function formatMoney(amount: number): string {
   return amount.toLocaleString("tr-TR", { minimumFractionDigits: 2 }) + " TL";
@@ -39,25 +40,60 @@ function BreakdownList({
   );
 }
 
-export default async function FinansPage() {
+export default async function FinansPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   // Finans hassas veridir: yalnizca menusunde finans gorunen roller
   // (ADMIN, ACCOUNTANT) bu sayfayi acabilir. Digerleri panele yonlenir.
   const session = await requirePageView("/panel/finans");
 
-  const transactions = await prisma.transaction.findMany({
-    orderBy: { date: "desc" },
+  const { page, q, sort, dir, skip, take } = parseListParams(await searchParams, {
+    sortableKeys: ["date", "type", "category", "amount"],
+    defaultSort: "date",
+    defaultDir: "desc",
   });
 
-  const totalIncome = transactions
-    .filter((t) => t.type === "INCOME")
-    .reduce((sum, t) => sum + t.amount, 0);
-  const totalExpense = transactions
-    .filter((t) => t.type === "EXPENSE")
-    .reduce((sum, t) => sum + t.amount, 0);
+  const where: Prisma.TransactionWhereInput = q
+    ? {
+        OR: [
+          { category: { contains: q, mode: "insensitive" } },
+          { description: { contains: q, mode: "insensitive" } },
+        ],
+      }
+    : {};
+
+  // Tablo: aranan/sayfalanan kayitlar. Ozet ve kategori kirilimi ise TUM
+  // islemler uzerinden DB'de gruplanir (bellege cekmeden) — arama/sayfadan bagimsiz.
+  const [transactions, total, grouped] = await Promise.all([
+    prisma.transaction.findMany({
+      where,
+      orderBy: { [sort]: dir } as Prisma.TransactionOrderByWithRelationInput,
+      skip,
+      take,
+    }),
+    prisma.transaction.count({ where }),
+    prisma.transaction.groupBy({
+      by: ["type", "category"],
+      _sum: { amount: true },
+      orderBy: { _sum: { amount: "desc" } },
+    }),
+  ]);
+
+  const income = grouped
+    .filter((g) => g.type === "INCOME")
+    .map((g) => ({ category: g.category, total: g._sum.amount ?? 0 }));
+  const expense = grouped
+    .filter((g) => g.type === "EXPENSE")
+    .map((g) => ({ category: g.category, total: g._sum.amount ?? 0 }));
+
+  const totalIncome = income.reduce((s, r) => s + r.total, 0);
+  const totalExpense = expense.reduce((s, r) => s + r.total, 0);
   const balance = totalIncome - totalExpense;
 
   const canEdit = canWrite(session.user.role, "transactions");
-  const breakdown = categoryBreakdown(transactions);
+  const list: ListState = { total, page, pageSize: take, q, sort, dir };
 
   return (
     <div className="space-y-6">
@@ -109,14 +145,14 @@ export default async function FinansPage() {
       </div>
 
       {/* Kategori kirilimi */}
-      {transactions.length > 0 && (
+      {grouped.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2">
-          <BreakdownList title="Gelir — Kategori Kırılımı" rows={breakdown.income} tone="green" />
-          <BreakdownList title="Gider — Kategori Kırılımı" rows={breakdown.expense} tone="red" />
+          <BreakdownList title="Gelir — Kategori Kırılımı" rows={income} tone="green" />
+          <BreakdownList title="Gider — Kategori Kırılımı" rows={expense} tone="red" />
         </div>
       )}
 
-      <TransactionsTable transactions={transactions} canEdit={canEdit} />
+      <TransactionsTable transactions={transactions} canEdit={canEdit} list={list} />
     </div>
   );
 }

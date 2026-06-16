@@ -9,31 +9,34 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { inventoryCategoryLabels } from "@/lib/labels";
+import type { ListState } from "@/lib/list-query";
 
 export function InventoryTable({
   items,
   canEdit,
+  list,
 }: {
   items: InventoryItem[];
   canEdit: boolean;
+  list: ListState;
 }) {
   const columns: Column<InventoryItem>[] = [
     {
       key: "name",
       header: "Kalem",
-      sortValue: (i) => i.name,
+      sortKey: "name",
       cell: (i) => <span className="font-medium text-gray-900">{i.name}</span>,
     },
     {
       key: "category",
       header: "Kategori",
-      sortValue: (i) => inventoryCategoryLabels[i.category],
+      sortKey: "category",
       cell: (i) => inventoryCategoryLabels[i.category],
     },
     {
       key: "quantity",
       header: "Miktar",
-      sortValue: (i) => i.quantity,
+      sortKey: "quantity",
       cell: (i) => {
         const isCritical = i.quantity <= i.criticalLevel;
         return (
@@ -51,7 +54,7 @@ export function InventoryTable({
     {
       key: "criticalLevel",
       header: "Kritik",
-      sortValue: (i) => i.criticalLevel,
+      sortKey: "criticalLevel",
       cell: (i) => (
         <span className="text-gray-500">
           {i.criticalLevel} {i.unit}
@@ -88,7 +91,8 @@ export function InventoryTable({
     <DataTable
       data={items}
       columns={columns}
-      searchableText={(i) => `${i.name} ${inventoryCategoryLabels[i.category]}`}
+      list={list}
+      searchable
       searchPlaceholder="Kalem veya kategori ara..."
       emptyState={
         <EmptyState
