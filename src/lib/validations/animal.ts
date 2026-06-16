@@ -20,11 +20,15 @@ export const animalSchema = z.object({
   // Form'dan tarih bos veya "YYYY-MM-DD" gelir.
   birthDate: optionalDateString(),
   status: z.enum(animalStatuses).default("ACTIVE"),
+  // Gorsel yalnizca http(s) URL olabilir. ".url()" tek basina javascript:,
+  // data:, file: gibi semalari da gecerli sayar; bu yuzden semayi acikca
+  // http/https ile sinirliyoruz (CSP img-src ile uyumlu).
   imageUrl: z
     .string()
     .trim()
     .url("Gecerli bir URL giriniz")
     .max(500)
+    .refine((u) => /^https?:\/\//i.test(u), "URL http:// veya https:// ile baslamalidir")
     .optional()
     .or(z.literal("")),
   notes: z.string().trim().max(500).optional().or(z.literal("")),
