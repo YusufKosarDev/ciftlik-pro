@@ -21,6 +21,39 @@ rol bazlı yetkilendirmeyle tek panelden yöneten tam yığın Çiftlik Yönetim
 
 ---
 
+## 🌍 English Summary
+
+**Çiftlik Pro** is a full-stack **Farm Management System (ERP)** that runs a farm's
+entire operation — animals, fields, inventory, finance, tasks and staff — from a
+single role-based dashboard. _(The detailed documentation below is in Turkish.)_
+
+**Highlights**
+
+- **Auth & RBAC** — Auth.js (NextAuth v5) with four roles (Admin, Worker, Vet,
+  Accountant), enforced centrally (`src/lib/authz.ts`) on both write APIs and
+  sensitive pages. No public sign-up; visitors explore via a read-only demo.
+- **Domain modules** — animal tracking (health, vaccinations, milk yield, weight,
+  breeding & lineage), fields & crops with per-crop economics, inventory/feed with
+  transactional stock deduction, finance, calendar, tasks, a 2D farm map, and an
+  onboarding tour.
+- **Security hardening** — HTTP security headers (CSP/HSTS/…), brute-force rate
+  limiting on login/register, bcrypt (cost 12), `http(s)`-only image URLs, audited
+  failed logins, and a full write **audit log**.
+- **Performance** — server-side pagination/search/sort (DB `where`/`orderBy`/
+  `skip`/`take` + `count`) with date-range indexes, finance aggregates via
+  `groupBy`, and lazy-loaded charts (`next/dynamic`).
+- **Quality** — end-to-end type safety (Zod + Prisma), **200+ unit/component tests**
+  (Vitest + Testing Library) and **7 e2e tests** (Playwright), run on every PR in CI
+  against a real PostgreSQL service.
+
+**Stack:** Next.js 16 (App Router, RSC) · TypeScript · PostgreSQL + Prisma 6 ·
+Auth.js · Tailwind CSS · Zod · Recharts · Vitest + Playwright · Docker · Vercel.
+
+🔗 **Live demo:** [ciftlik-pro.vercel.app](https://ciftlik-pro.vercel.app) — use the
+**"Demo olarak gez"** (Browse as demo) button, or `demo@ciftlik.com` / `demo1234`.
+
+---
+
 ## 📸 Ekran Görüntüleri
 
 **Canlı demo** — panel, hayvanlar, hayvan detayı, harita, yem ve takvim arasında kısa tur:
