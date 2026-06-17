@@ -74,7 +74,7 @@ export function TransactionsTable({
         <div className="flex items-center justify-end gap-4">
           <Link
             href={`/panel/finans/${t.id}/duzenle`}
-            className="text-sm font-medium text-green-600 hover:underline"
+            className="text-sm font-medium text-green-600 dark:text-green-400 hover:underline"
           >
             Düzenle
           </Link>

@@ -13,8 +13,8 @@ function formatMoney(amount: number): string {
 }
 
 const cropStatusStyles: Record<string, string> = {
-  PLANTED: "bg-blue-100 text-blue-700",
-  GROWING: "bg-green-100 text-green-700",
+  PLANTED: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400",
+  GROWING: "bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400",
   HARVESTED: "bg-muted text-muted-foreground",
 };
 
@@ -172,7 +172,7 @@ export default async function TarlaDetayPage({
                         <div className="flex items-center justify-end gap-3">
                           <Link
                             href={`/panel/tarlalar/${field.id}/ekim/${crop.id}/duzenle`}
-                            className="text-sm font-medium text-green-600 hover:underline"
+                            className="text-sm font-medium text-green-600 dark:text-green-400 hover:underline"
                           >
                             Düzenle
                           </Link>

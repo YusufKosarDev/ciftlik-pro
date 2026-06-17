@@ -62,7 +62,7 @@ export default function GirisPage() {
     <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-700 via-green-600 to-emerald-800 p-4">
       <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-8 shadow-xl">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-green-700">
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400">
             <Wheat className="h-7 w-7" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">Çiftlik Pro</h1>
@@ -103,7 +103,7 @@ export default function GirisPage() {
           </div>
 
           {error && (
-            <p className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+            <p className="flex items-center gap-2 rounded-lg bg-red-50 dark:bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-400">
               <AlertCircle className="h-4 w-4 shrink-0" />
               {error}
             </p>

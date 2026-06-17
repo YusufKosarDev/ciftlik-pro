@@ -54,7 +54,7 @@ export default async function YemPage() {
               >
                 {i.quantity} {i.unit}
                 {isCritical && (
-                  <span className="ml-2 rounded bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+                  <span className="ml-2 rounded bg-red-100 dark:bg-red-500/15 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-400">
                     Kritik
                   </span>
                 )}

@@ -272,11 +272,11 @@ export function FarmMap({
       </div>
 
       {error && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
+        <p className="rounded-lg bg-red-50 dark:bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-400">{error}</p>
       )}
 
       <div
-        className={`overflow-hidden rounded-xl border bg-green-50/40 ${
+        className={`overflow-hidden rounded-xl border bg-green-50/40 dark:bg-green-500/5 ${
           editing ? "border-green-400 ring-1 ring-green-300" : "border-border"
         }`}
       >

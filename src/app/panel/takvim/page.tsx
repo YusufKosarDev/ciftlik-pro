@@ -13,9 +13,9 @@ import {
 const WEEKDAYS = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
 
 const kindStyles: Record<CalendarEvent["kind"], string> = {
-  vaccination: "bg-yellow-100 text-yellow-800",
-  task: "bg-blue-100 text-blue-800",
-  harvest: "bg-green-100 text-green-800",
+  vaccination: "bg-yellow-100 text-yellow-800 dark:bg-yellow-500/15 dark:text-yellow-400",
+  task: "bg-blue-100 text-blue-800 dark:bg-blue-500/15 dark:text-blue-400",
+  harvest: "bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-400",
   birth: "bg-pink-100 text-pink-800",
 };
 

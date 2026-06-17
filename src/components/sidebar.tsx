@@ -109,7 +109,7 @@ export function Sidebar({
                       className={cn(
                         "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition",
                         active
-                          ? "bg-green-50 text-green-700"
+                          ? "bg-green-50 text-green-700 dark:bg-green-500/15 dark:text-green-400"
                           : "text-muted-foreground hover:bg-muted hover:text-foreground"
                       )}
                     >
@@ -117,7 +117,7 @@ export function Sidebar({
                         <Icon
                           className={cn(
                             "h-[18px] w-[18px] shrink-0 transition",
-                            active ? "text-green-600" : "text-muted-foreground group-hover:text-muted-foreground"
+                            active ? "text-green-600 dark:text-green-400" : "text-muted-foreground group-hover:text-muted-foreground"
                           )}
                         />
                       )}
@@ -137,7 +137,7 @@ export function Sidebar({
           <Link
             href="/panel/profil"
             onClick={onNavigate}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-green-100 text-sm font-semibold text-green-700"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-green-100 text-sm font-semibold text-green-700 dark:bg-green-500/15 dark:text-green-400"
             title="Profil"
           >
             {initials(userName)}

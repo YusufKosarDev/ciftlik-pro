@@ -17,14 +17,14 @@ import { weightStats, weightSeries } from "@/lib/weight-stats";
 
 const breedingStatusStyles: Record<string, string> = {
   PLANNED: "bg-muted text-foreground",
-  PREGNANT: "bg-blue-100 text-blue-700",
-  BORN: "bg-green-100 text-green-700",
-  FAILED: "bg-red-100 text-red-700",
+  PREGNANT: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400",
+  BORN: "bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400",
+  FAILED: "bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400",
 };
 
 const statusStyles: Record<string, string> = {
-  ACTIVE: "bg-green-100 text-green-700",
-  SOLD: "bg-yellow-100 text-yellow-700",
+  ACTIVE: "bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400",
+  SOLD: "bg-yellow-100 text-yellow-700 dark:bg-yellow-500/15 dark:text-yellow-400",
   DECEASED: "bg-muted text-muted-foreground",
 };
 
@@ -61,14 +61,14 @@ function nextVaccineBadge(nextDate: Date | null): React.ReactNode {
 
   if (diffDays < 0) {
     return (
-      <span className="rounded bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+      <span className="rounded bg-red-100 dark:bg-red-500/15 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-400">
         {label} (gecti)
       </span>
     );
   }
   if (diffDays <= 30) {
     return (
-      <span className="rounded bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-700">
+      <span className="rounded bg-yellow-100 dark:bg-yellow-500/15 px-2 py-0.5 text-xs font-medium text-yellow-700 dark:text-yellow-400">
         {label} ({diffDays} gun kaldi)
       </span>
     );
@@ -468,7 +468,7 @@ export default async function HayvanDetayPage({
               animal.mother ? (
                 <Link
                   href={`/panel/hayvanlar/${animal.mother.id}`}
-                  className="text-green-700 hover:underline"
+                  className="text-green-700 dark:text-green-400 hover:underline"
                 >
                   {animal.mother.name ?? animal.mother.tagNumber}
                 </Link>
@@ -488,7 +488,7 @@ export default async function HayvanDetayPage({
                     <Link
                       key={o.id}
                       href={`/panel/hayvanlar/${o.id}`}
-                      className="rounded bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700 hover:underline"
+                      className="rounded bg-green-50 dark:bg-green-500/15 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400 dark:text-green-400 hover:underline"
                     >
                       {o.name ?? o.tagNumber}
                     </Link>

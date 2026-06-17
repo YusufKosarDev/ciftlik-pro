@@ -11,8 +11,8 @@ const buttonVariants = cva(
         secondary: "border border-border bg-card text-foreground hover:bg-muted",
         ghost: "text-foreground hover:bg-muted",
         danger: "bg-red-600 text-white hover:bg-red-700",
-        outline: "border border-green-600 text-green-700 hover:bg-green-50",
-        link: "text-green-700 underline-offset-4 hover:underline",
+        outline: "border border-green-600 text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-500/10",
+        link: "text-green-700 underline-offset-4 hover:underline dark:text-green-400",
       },
       size: {
         sm: "h-8 px-3 text-sm",
