@@ -1,12 +1,24 @@
 "use client";
 
-import { useState } from "react";
-import { Sidebar, type NavItem } from "@/components/sidebar";
+import { useMemo, useState } from "react";
+import { Sidebar, navIcons, type NavItem } from "@/components/sidebar";
 import { Topbar } from "@/components/topbar";
+import { CommandPalette, type CommandItem } from "@/components/command-palette";
+import { Plus } from "lucide-react";
+
+// "Oluştur" kisayollari: ilgili modulun menude (yetkili) olmasi kosuluyla gosterilir.
+const createDefs: { need: string; label: string; href: string }[] = [
+  { need: "/panel/hayvanlar", label: "Yeni Hayvan", href: "/panel/hayvanlar/yeni" },
+  { need: "/panel/tarlalar", label: "Yeni Tarla", href: "/panel/tarlalar/yeni" },
+  { need: "/panel/stok", label: "Yeni Stok Kalemi", href: "/panel/stok/yeni" },
+  { need: "/panel/finans", label: "Yeni İşlem", href: "/panel/finans/yeni" },
+  { need: "/panel/gorevler", label: "Yeni Görev", href: "/panel/gorevler/yeni" },
+  { need: "/panel/yapilar", label: "Yeni Yapı", href: "/panel/yapilar/yeni" },
+];
 
 // Panel duzeni: solda sabit sidebar (masaustu) / cekmece (mobil) + ust bar +
-// icerik. Mobil cekmece durumu burada (client) tutulur; layout sunucu bileseni
-// oldugundan veri prop olarak gelir.
+// icerik. Mobil cekmece ve komut paleti durumu burada (client) tutulur; layout
+// sunucu bileseni oldugundan veri prop olarak gelir.
 export function PanelShell({
   navItems,
   userName,
@@ -19,6 +31,31 @@ export function PanelShell({
   children: React.ReactNode;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [cmdOpen, setCmdOpen] = useState(false);
+
+  // Komut listesi: once "Oluştur" eylemleri, sonra "Git" (sayfalar).
+  const commands = useMemo<CommandItem[]>(() => {
+    const allowed = new Set(navItems.map((i) => i.href));
+    const creates: CommandItem[] = createDefs
+      .filter((d) => allowed.has(d.need))
+      .map((d) => ({
+        id: d.href,
+        label: d.label,
+        group: "Oluştur",
+        href: d.href,
+        keywords: "ekle yeni oluştur",
+        Icon: Plus,
+      }));
+    const navs: CommandItem[] = navItems.map((i) => ({
+      id: i.href,
+      label: i.label,
+      group: "Git",
+      href: i.href,
+      keywords: "sayfa git",
+      Icon: navIcons[i.href],
+    }));
+    return [...creates, ...navs];
+  }, [navItems]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -48,9 +85,20 @@ export function PanelShell({
 
       {/* Icerik kolonu */}
       <div className="lg:pl-64">
-        <Topbar navItems={navItems} onMenu={() => setMobileOpen(true)} />
+        <Topbar
+          navItems={navItems}
+          onMenu={() => setMobileOpen(true)}
+          onOpenCommand={() => setCmdOpen(true)}
+        />
         <main className="mx-auto max-w-6xl p-4 sm:p-6">{children}</main>
       </div>
+
+      <CommandPalette
+        key={cmdOpen ? "cmd-open" : "cmd-closed"}
+        open={cmdOpen}
+        onOpenChange={setCmdOpen}
+        commands={commands}
+      />
     </div>
   );
 }

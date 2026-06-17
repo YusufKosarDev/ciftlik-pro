@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 
-const icons: Record<string, React.ComponentType<{ className?: string }>> = {
+export const navIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   "/panel": LayoutDashboard,
   "/panel/harita": MapIcon,
   "/panel/takvim": CalendarDays,
@@ -99,7 +99,7 @@ export function Sidebar({
               </p>
               <div className="space-y-0.5">
                 {items.map((href) => {
-                  const Icon = icons[href];
+                  const Icon = navIcons[href];
                   const active = isActive(href);
                   return (
                     <Link

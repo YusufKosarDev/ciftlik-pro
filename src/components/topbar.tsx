@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Menu } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 import type { NavItem } from "@/components/sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -18,9 +18,11 @@ function titleFor(pathname: string, navItems: NavItem[]): string {
 export function Topbar({
   navItems,
   onMenu,
+  onOpenCommand,
 }: {
   navItems: NavItem[];
   onMenu: () => void;
+  onOpenCommand: () => void;
 }) {
   const pathname = usePathname();
   const title = titleFor(pathname, navItems);
@@ -35,7 +37,18 @@ export function Topbar({
         <Menu className="h-5 w-5" />
       </button>
       <h1 className="text-sm font-semibold text-foreground">{title}</h1>
-      <div className="ml-auto flex items-center gap-1">
+      <div className="ml-auto flex items-center gap-2">
+        <button
+          onClick={onOpenCommand}
+          className="flex items-center gap-2 rounded-lg border border-border px-2.5 py-1.5 text-xs text-muted-foreground transition hover:bg-muted"
+          aria-label="Komut paletini aç"
+        >
+          <Search className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Ara...</span>
+          <kbd className="hidden rounded border border-border px-1 py-0.5 text-[10px] sm:inline">
+            ⌘K
+          </kbd>
+        </button>
         <ThemeToggle />
       </div>
     </header>
