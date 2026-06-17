@@ -29,17 +29,23 @@ export default async function SatisPage({
     ? {
         OR: [
           { item: { contains: q, mode: "insensitive" } },
-          { customer: { contains: q, mode: "insensitive" } },
+          { customer: { name: { contains: q, mode: "insensitive" } } },
         ],
       }
     : {};
 
+  // Musteri adina gore siralama iliskili tablo uzerinden yapilir.
+  const orderBy = (
+    sort === "customer" ? { customer: { name: dir } } : { [sort]: dir }
+  ) as Prisma.SaleOrderByWithRelationInput;
+
   const [sales, total, totalAgg] = await Promise.all([
     prisma.sale.findMany({
       where,
-      orderBy: { [sort]: dir } as Prisma.SaleOrderByWithRelationInput,
+      orderBy,
       skip,
       take,
+      include: { customer: { select: { name: true } } },
     }),
     prisma.sale.count({ where }),
     // Tum zamanlarin toplam satis tutari (arama/sayfadan bagimsiz).

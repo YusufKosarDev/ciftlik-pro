@@ -9,6 +9,9 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { buttonVariants } from "@/components/ui/button";
 import type { ListState } from "@/lib/list-query";
 
+// Liste, satisa bagli musterinin adini da iceren bir tip kullanir.
+export type SaleRow = Sale & { customer: { name: string } | null };
+
 function formatDate(d: Date) {
   return new Date(d).toLocaleDateString("tr-TR");
 }
@@ -21,11 +24,11 @@ export function SalesTable({
   canEdit,
   list,
 }: {
-  sales: Sale[];
+  sales: SaleRow[];
   canEdit: boolean;
   list: ListState;
 }) {
-  const columns: Column<Sale>[] = [
+  const columns: Column<SaleRow>[] = [
     { key: "date", header: "Tarih", sortKey: "date", cell: (s) => formatDate(s.date) },
     {
       key: "item",
@@ -33,7 +36,7 @@ export function SalesTable({
       sortKey: "item",
       cell: (s) => <span className="font-medium text-foreground">{s.item}</span>,
     },
-    { key: "customer", header: "Müşteri", sortKey: "customer", cell: (s) => s.customer ?? "-" },
+    { key: "customer", header: "Müşteri", sortKey: "customer", cell: (s) => s.customer?.name ?? "-" },
     {
       key: "quantity",
       header: "Miktar",

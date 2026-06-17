@@ -30,12 +30,25 @@ export async function PUT(
     }
 
     const data = parsed.data;
+
+    let customerName: string | null = null;
+    if (data.customerId) {
+      const customer = await prisma.customer.findUnique({
+        where: { id: data.customerId },
+        select: { name: true },
+      });
+      if (!customer) {
+        return NextResponse.json({ error: "Secilen musteri bulunamadi" }, { status: 400 });
+      }
+      customerName = customer.name;
+    }
+
     const txData = {
       type: "INCOME" as const,
       amount: data.amount,
       category: "Satış",
       date: new Date(data.date),
-      description: saleDescription(data.item, data.customer),
+      description: saleDescription(data.item, customerName),
     };
 
     const sale = await prisma.$transaction(async (tx) => {
@@ -51,7 +64,7 @@ export async function PUT(
         where: { id },
         data: {
           item: data.item,
-          customer: data.customer || null,
+          customerId: data.customerId || null,
           quantity: data.quantity ?? null,
           unit: data.unit || null,
           amount: data.amount,

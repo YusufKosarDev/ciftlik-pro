@@ -339,19 +339,34 @@ model Structure {
   updatedAt DateTime      @updatedAt
 }
 
+// Musteri (alici). Satislar opsiyonel olarak bir musteriye baglanir.
+model Customer {
+  id        String   @id @default(cuid())
+  name      String // Musteri adi / unvani
+  phone     String?
+  email     String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sales Sale[]
+}
+
 // Satis kaydi. Olusturuldugunda otomatik bir gelir (INCOME) islemi uretilir ve
 // transactionId ile baglanir; boylece satislar finansa otomatik yansir.
 model Sale {
-  id            String   @id @default(cuid())
+  id            String    @id @default(cuid())
   item          String // Satilan (serbest metin: "Sut 100L", "Inek TR-001")
-  customer      String? // Musteri adi (serbest)
+  customerId    String? // Musteri (opsiyonel)
+  customer      Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
   quantity      Float? // Miktar (opsiyonel)
   unit          String? // Birim (kg, litre, adet...)
   amount        Float // Toplam tutar (TL)
   date          DateTime // Satis tarihi
   notes         String?
-  transactionId String?  @unique // Otomatik olusturulan gelir isleminin id'si
-  createdAt     DateTime @default(now())
+  transactionId String?   @unique // Otomatik olusturulan gelir isleminin id'si
+  createdAt     DateTime  @default(now())
 
   @@index([date])
+  @@index([customerId])
 }

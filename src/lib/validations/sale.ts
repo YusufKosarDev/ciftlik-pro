@@ -8,7 +8,7 @@ export const saleSchema = z.object({
     .trim()
     .min(1, "Satilan urun/hayvan zorunludur")
     .max(120, "En fazla 120 karakter olabilir"),
-  customer: z.string().trim().max(80).optional().or(z.literal("")),
+  customerId: z.string().trim().optional().or(z.literal("")),
   // Bos string -> undefined; aksi halde pozitif sayiya cevrilir.
   quantity: z.preprocess(
     (v) => (v === "" || v == null ? undefined : v),

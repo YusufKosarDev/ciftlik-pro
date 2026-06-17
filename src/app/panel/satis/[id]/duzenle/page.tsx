@@ -11,7 +11,10 @@ export default async function SatisDuzenlePage({
   await requirePageWrite("sales");
 
   const { id } = await params;
-  const sale = await prisma.sale.findUnique({ where: { id } });
+  const [sale, customers] = await Promise.all([
+    prisma.sale.findUnique({ where: { id } }),
+    prisma.customer.findMany({ select: { id: true, name: true }, orderBy: { name: "asc" } }),
+  ]);
   if (!sale) {
     notFound();
   }
@@ -19,7 +22,7 @@ export default async function SatisDuzenlePage({
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <h1 className="text-2xl font-bold text-foreground">Satışı Düzenle</h1>
-      <SaleForm sale={sale} />
+      <SaleForm sale={sale} customers={customers} />
     </div>
   );
 }

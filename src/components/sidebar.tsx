@@ -17,6 +17,7 @@ import {
   Users,
   ClipboardList,
   ShoppingCart,
+  Contact,
   LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
@@ -32,6 +33,7 @@ export const navIcons: Record<string, React.ComponentType<{ className?: string }
   "/panel/yapilar": Warehouse,
   "/panel/finans": Wallet,
   "/panel/satis": ShoppingCart,
+  "/panel/musteriler": Contact,
   "/panel/gorevler": ListChecks,
   "/panel/personel": Users,
   "/panel/denetim": ClipboardList,
@@ -45,7 +47,7 @@ const sections: { title: string; hrefs: string[] }[] = [
     title: "Operasyon",
     hrefs: ["/panel/hayvanlar", "/panel/tarlalar", "/panel/stok", "/panel/yem", "/panel/yapilar"],
   },
-  { title: "Yonetim", hrefs: ["/panel/finans", "/panel/satis", "/panel/gorevler", "/panel/personel", "/panel/denetim"] },
+  { title: "Yonetim", hrefs: ["/panel/finans", "/panel/satis", "/panel/musteriler", "/panel/gorevler", "/panel/personel", "/panel/denetim"] },
 ];
 
 export type NavItem = { href: string; label: string };

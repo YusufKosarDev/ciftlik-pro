@@ -26,6 +26,20 @@ export async function POST(request: Request) {
     }
 
     const data = parsed.data;
+
+    // Musteri (opsiyonel): verildiyse mevcut olmali; adi islem aciklamasinda kullanilir.
+    let customerName: string | null = null;
+    if (data.customerId) {
+      const customer = await prisma.customer.findUnique({
+        where: { id: data.customerId },
+        select: { name: true },
+      });
+      if (!customer) {
+        return NextResponse.json({ error: "Secilen musteri bulunamadi" }, { status: 400 });
+      }
+      customerName = customer.name;
+    }
+
     const sale = await prisma.$transaction(async (tx) => {
       const transaction = await tx.transaction.create({
         data: {
@@ -33,13 +47,13 @@ export async function POST(request: Request) {
           amount: data.amount,
           category: "Satış",
           date: new Date(data.date),
-          description: saleDescription(data.item, data.customer),
+          description: saleDescription(data.item, customerName),
         },
       });
       return tx.sale.create({
         data: {
           item: data.item,
-          customer: data.customer || null,
+          customerId: data.customerId || null,
           quantity: data.quantity ?? null,
           unit: data.unit || null,
           amount: data.amount,

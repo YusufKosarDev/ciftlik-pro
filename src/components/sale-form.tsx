@@ -12,7 +12,13 @@ const inputClass =
   "w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500";
 const labelClass = "mb-1 block text-sm font-medium text-foreground";
 
-export function SaleForm({ sale }: { sale?: Sale }) {
+export function SaleForm({
+  sale,
+  customers,
+}: {
+  sale?: Sale;
+  customers: { id: string; name: string }[];
+}) {
   const router = useRouter();
   const isEdit = Boolean(sale);
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +32,7 @@ export function SaleForm({ sale }: { sale?: Sale }) {
     const fd = new FormData(e.currentTarget);
     const payload = {
       item: String(fd.get("item")),
-      customer: String(fd.get("customer")),
+      customerId: String(fd.get("customerId")),
       quantity: String(fd.get("quantity")),
       unit: String(fd.get("unit")),
       amount: String(fd.get("amount")),
@@ -75,17 +81,22 @@ export function SaleForm({ sale }: { sale?: Sale }) {
         </div>
 
         <div>
-          <label htmlFor="customer" className={labelClass}>
+          <label htmlFor="customerId" className={labelClass}>
             Müşteri
           </label>
-          <input
-            id="customer"
-            name="customer"
-            type="text"
-            placeholder="Alıcı adı (opsiyonel)"
-            defaultValue={sale?.customer ?? ""}
+          <select
+            id="customerId"
+            name="customerId"
+            defaultValue={sale?.customerId ?? ""}
             className={inputClass}
-          />
+          >
+            <option value="">— (yok)</option>
+            {customers.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div>
