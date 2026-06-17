@@ -138,9 +138,10 @@ User 1-N Task • Product 1-N Sale.
 - [x] Satış modülü — satış kaydı; her satış otomatik **gelir işlemi** üretir
       (transactional, "Satış" kategorisi → finansa yansır)
 - [x] Müşteri (Customer) yönetimi — CRUD + müşteri bazlı satış raporu (detay sayfası)
-- [ ] Müşteri tarafı vitrin (ileride)
-- [ ] Sepet ve sipariş (ileride)
-- [ ] Ödeme entegrasyonu (ileride)
+- [x] Müşteri tarafı vitrin — herkese açık katalog (`/magaza`, aktif ürünler)
+- [x] Sipariş (ödemesiz) — rate-limit'li genel uç (fiyat/ad snapshot) + admin
+      sipariş yönetimi (durum: bekliyor/onaylandı/iptal)
+- [ ] Çok ürünlü sepet ve ödeme entegrasyonu (ileride; gerçek sağlayıcı anahtarı ister)
 
 ### Faz 9 — 2D Çiftlik Haritası
 - [x] 9A: Tarla haritası (SVG; alana orantılı, ekin durumu renkli, tıkla→detay)
@@ -159,6 +160,11 @@ User 1-N Task • Product 1-N Sale.
 - [x] Dark mode (semantik renk token'ları + tema değiştirici)
 - [x] Komut paleti (⌘K) — hızlı gezinme + eylemler
 - [x] Dashboard gerçek "bu ay" trend göstergeleri; tablo cilası
+
+### Faz 12 — Çok Dillilik (i18n)
+- [x] next-intl altyapısı (routing'siz; NEXT_LOCALE cookie, varsayılan TR)
+- [x] TR/EN mesaj katalogları + dil değiştirici; giriş ekranı iki dilli
+- [ ] Panel string'lerinin kademeli çevirisi (altyapı hazır)
 
 ---
 
