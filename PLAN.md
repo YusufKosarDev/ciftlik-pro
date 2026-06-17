@@ -125,7 +125,7 @@ User 1-N Task • Product 1-N Sale.
       (`lib/authz.ts`); menü ve form sayfaları role göre gizlenir/korunur
 
 ### Faz 6 — Test
-- [x] Vitest ile birim testleri (12 test)
+- [x] Vitest ile birim/bileşen testleri (230+ test)
 - [x] Playwright ile uçtan uca testler (giriş akışı, koruma)
 
 ### Faz 7 — Docker & CI/CD
@@ -134,15 +134,31 @@ User 1-N Task • Product 1-N Sale.
 - [x] Başlangıçta migration + idempotent ilk admin bootstrap
 - [x] GitHub Actions ile CI (typecheck + lint + birim + üretim derlemesi + e2e)
 
-### Faz 8 — (Opsiyonel) E-ticaret Genişletme
-- [ ] Müşteri tarafı vitrin
-- [ ] Sepet ve sipariş
-- [ ] Ödeme entegrasyonu
+### Faz 8 — Satış & Müşteri (E-ticaret temeli)
+- [x] Satış modülü — satış kaydı; her satış otomatik **gelir işlemi** üretir
+      (transactional, "Satış" kategorisi → finansa yansır)
+- [x] Müşteri (Customer) yönetimi — CRUD + müşteri bazlı satış raporu (detay sayfası)
+- [ ] Müşteri tarafı vitrin (ileride)
+- [ ] Sepet ve sipariş (ileride)
+- [ ] Ödeme entegrasyonu (ileride)
 
 ### Faz 9 — 2D Çiftlik Haritası
 - [x] 9A: Tarla haritası (SVG; alana orantılı, ekin durumu renkli, tıkla→detay)
 - [x] 9B: Yapılar modülü (ahır/kümes/depo CRUD) ve haritada gösterimi
 - [x] 9C: Sürükle-bırak ile yerleşim düzenleme (posX/posY, rol bazlı PATCH)
+
+### Faz 10 — Üretim Sertleştirme (güvenlik & performans)
+- [x] HTTP güvenlik başlıkları (CSP, HSTS, X-Frame-Options, …)
+- [x] Brute-force hız sınırı (giriş/kayıt) + başarısız giriş denetimi
+- [x] bcrypt maliyet 12, `http(s)`-only görsel URL doğrulaması
+- [x] Sunucu-tarafı sayfalama/arama/sıralama (tüm listeler) + DB index'leri
+- [x] Recharts/görsel tembel yükleme; finans toplamları `groupBy` ile
+
+### Faz 11 — Modern Arayüz
+- [x] Sol sidebar düzeni + slim üst bar
+- [x] Dark mode (semantik renk token'ları + tema değiştirici)
+- [x] Komut paleti (⌘K) — hızlı gezinme + eylemler
+- [x] Dashboard gerçek "bu ay" trend göstergeleri; tablo cilası
 
 ---
 
