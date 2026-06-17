@@ -156,11 +156,16 @@ export default async function HayvanDetayPage({
       </div>
 
       {animal.imageUrl && (
-        // Dis URL kullandigimiz icin normal img kullaniyoruz (next/image domain ayari gerektirmez).
+        // Gorsel keyfi bir dis https URL'i oldugundan next/image kullanmiyoruz
+        // (keyfi host'lari optimize etmek remotePatterns: hostname '**' gerektirir
+        // ve optimizer'i acik-proxy/SSRF yuzeyine acar). Bunun yerine plain img'i
+        // lazy yukluyoruz; konteyner sabit yukseklikli oldugundan layout shift olmaz.
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={animal.imageUrl}
           alt={animal.name ?? animal.tagNumber}
+          loading="lazy"
+          decoding="async"
           className="h-56 w-full rounded-xl border border-gray-200 object-cover"
         />
       )}
