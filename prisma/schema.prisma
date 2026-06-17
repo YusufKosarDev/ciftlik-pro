@@ -338,3 +338,20 @@ model Structure {
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 }
+
+// Satis kaydi. Olusturuldugunda otomatik bir gelir (INCOME) islemi uretilir ve
+// transactionId ile baglanir; boylece satislar finansa otomatik yansir.
+model Sale {
+  id            String   @id @default(cuid())
+  item          String // Satilan (serbest metin: "Sut 100L", "Inek TR-001")
+  customer      String? // Musteri adi (serbest)
+  quantity      Float? // Miktar (opsiyonel)
+  unit          String? // Birim (kg, litre, adet...)
+  amount        Float // Toplam tutar (TL)
+  date          DateTime // Satis tarihi
+  notes         String?
+  transactionId String?  @unique // Otomatik olusturulan gelir isleminin id'si
+  createdAt     DateTime @default(now())
+
+  @@index([date])
+}

@@ -18,6 +18,7 @@ export const writePermissions = {
   fields: ["ADMIN", "WORKER"], // Tarla ve ekim
   inventory: ["ADMIN", "WORKER"], // Stok / envanter
   transactions: ["ADMIN", "ACCOUNTANT"], // Finans
+  sales: ["ADMIN", "ACCOUNTANT"], // Satis (gelir olarak finansa yansir)
   tasks: ["ADMIN"], // Gorev atama
   users: ["ADMIN"], // Personel yonetimi
   structures: ["ADMIN", "WORKER"], // Yapilar (ahir/kumes/depo) ve harita konumu
@@ -43,6 +44,7 @@ const navByRole: Record<Role, string[]> = {
     "/panel/yem",
     "/panel/yapilar",
     "/panel/finans",
+    "/panel/satis",
     "/panel/gorevler",
     "/panel/personel",
     "/panel/denetim",
@@ -59,7 +61,7 @@ const navByRole: Record<Role, string[]> = {
     "/panel/gorevler",
   ],
   VET: ["/panel", "/panel/harita", "/panel/takvim", "/panel/hayvanlar", "/panel/gorevler"],
-  ACCOUNTANT: ["/panel", "/panel/harita", "/panel/takvim", "/panel/finans", "/panel/gorevler"],
+  ACCOUNTANT: ["/panel", "/panel/harita", "/panel/takvim", "/panel/finans", "/panel/satis", "/panel/gorevler"],
 };
 
 // Bir rolun menude gorebilecegi yollarin kumesi.

@@ -1,0 +1,74 @@
+import Link from "next/link";
+import type { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+import { canWrite, requirePageView } from "@/lib/authz";
+import { parseListParams, type ListState } from "@/lib/list-query";
+import { buttonVariants } from "@/components/ui/button";
+import { SalesTable } from "@/components/tables/sales-table";
+
+function formatMoney(amount: number): string {
+  return amount.toLocaleString("tr-TR", { minimumFractionDigits: 2 }) + " TL";
+}
+
+export default async function SatisPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  // Satis ticari/finansal veridir: yalnizca menusunde gorunen roller (ADMIN,
+  // ACCOUNTANT) acabilir.
+  const session = await requirePageView("/panel/satis");
+
+  const { page, q, sort, dir, skip, take } = parseListParams(await searchParams, {
+    sortableKeys: ["date", "item", "customer", "amount"],
+    defaultSort: "date",
+    defaultDir: "desc",
+  });
+
+  const where: Prisma.SaleWhereInput = q
+    ? {
+        OR: [
+          { item: { contains: q, mode: "insensitive" } },
+          { customer: { contains: q, mode: "insensitive" } },
+        ],
+      }
+    : {};
+
+  const [sales, total, totalAgg] = await Promise.all([
+    prisma.sale.findMany({
+      where,
+      orderBy: { [sort]: dir } as Prisma.SaleOrderByWithRelationInput,
+      skip,
+      take,
+    }),
+    prisma.sale.count({ where }),
+    // Tum zamanlarin toplam satis tutari (arama/sayfadan bagimsiz).
+    prisma.sale.aggregate({ _sum: { amount: true } }),
+  ]);
+
+  const canEdit = canWrite(session.user.role, "sales");
+  const list: ListState = { total, page, pageSize: take, q, sort, dir };
+  const totalAmount = totalAgg._sum.amount ?? 0;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
+            <span>🛒</span> Satış
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Toplam {total} kayıt · {formatMoney(totalAmount)} ciro
+          </p>
+        </div>
+        {canEdit && (
+          <Link href="/panel/satis/yeni" className={buttonVariants({ size: "sm" })}>
+            + Yeni Satış
+          </Link>
+        )}
+      </div>
+
+      <SalesTable sales={sales} canEdit={canEdit} list={list} />
+    </div>
+  );
+}
