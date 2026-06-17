@@ -34,14 +34,16 @@ single role-based dashboard. _(The detailed documentation below is in Turkish.)_
   sensitive pages. No public sign-up; visitors explore via a read-only demo.
 - **Domain modules** — animal tracking (health, vaccinations, milk yield, weight,
   breeding & lineage), fields & crops with per-crop economics, inventory/feed with
-  transactional stock deduction, finance, calendar, tasks, a 2D farm map, and an
-  onboarding tour.
+  transactional stock deduction, finance, sales (auto-posted to finance as income),
+  calendar, tasks, a 2D farm map, and an onboarding tour.
 - **Security hardening** — HTTP security headers (CSP/HSTS/…), brute-force rate
   limiting on login/register, bcrypt (cost 12), `http(s)`-only image URLs, audited
   failed logins, and a full write **audit log**.
 - **Performance** — server-side pagination/search/sort (DB `where`/`orderBy`/
   `skip`/`take` + `count`) with date-range indexes, finance aggregates via
   `groupBy`, and lazy-loaded charts (`next/dynamic`).
+- **Modern UI** — sidebar layout, dark mode (semantic color tokens), a ⌘K command
+  palette, dashboard trend deltas, and an accessible component system.
 - **Quality** — end-to-end type safety (Zod + Prisma), **200+ unit/component tests**
   (Vitest + Testing Library) and **7 e2e tests** (Playwright), run on every PR in CI
   against a real PostgreSQL service.
@@ -93,9 +95,14 @@ Auth.js · Tailwind CSS · Zod · Recharts · Vitest + Playwright · Docker · V
 - **Stok & yem** — yem/ilaç/ekipman takibi, kritik seviye uyarısı; yem tüketimi
   stoğu otomatik düşürür (transactional).
 - **Finans** — gelir-gider kayıtları, net bakiye özeti, aylık grafik.
+- **Satış** — ürün/hayvan satış kayıtları (müşteri, miktar, tutar); her satış
+  otomatik olarak **gelir işlemi** üretip finansa yansır (transactional).
 - **Takvim** — aşı, görev, hasat ve doğumlar tek aylık takvimde.
 - **Personel & görevler** — çalışanlara görev atama, gecikme uyarısı.
-- **Dashboard** — özet kartları, kritik stok / geciken görev / yaklaşan aşı uyarıları.
+- **Dashboard** — özet kartları (gerçek "bu ay" trend göstergeleriyle), kritik
+  stok / geciken görev / yaklaşan aşı uyarıları.
+- **Modern arayüz** — sol sidebar düzeni, dark mode (tema değiştirici), `⌘K`
+  komut paleti (hızlı gezinme + eylem) ve `cva` tabanlı tasarım sistemi.
 - **Hoş geldin turu (onboarding)** — ilk panel girişinde role özel, çok adımlı
   tanıtım modal'ı; Profil'den istenildiğinde yeniden başlatılabilir.
 - **Aranabilir tablolar** — tüm liste modüllerinde **sunucu-tarafı (DB)** arama,
@@ -151,7 +158,7 @@ kullanıcıya açıktır; **yazma** ise role göre kısıtlanır:
 | **Admin**     | Tüm modüller + personel yönetimi + denetim günlüğü                  |
 | **Çalışan**   | Hayvan, süt, ağırlık, tarla/ekim, stok/yem, yapılar, üreme         |
 | **Veteriner** | Sağlık & aşı, üreme, ağırlık                                        |
-| **Muhasebeci**| Finans (gelir-gider)                                                |
+| **Muhasebeci**| Finans (gelir-gider), Satış                                         |
 
 Sertleştirme önlemleri:
 
