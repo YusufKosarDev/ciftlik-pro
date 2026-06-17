@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { PanelHeader } from "@/components/panel-header";
+import { PanelShell } from "@/components/panel-shell";
 import { OnboardingModal } from "@/components/onboarding-modal";
 import { roleLabels } from "@/lib/labels";
 import { navHrefsFor } from "@/lib/authz";
@@ -41,19 +41,20 @@ export default async function PanelLayout({
   const showOnboarding = !session.user.onboarded;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <PanelHeader
+    <>
+      <PanelShell
         userName={session.user.name ?? ""}
         roleLabel={roleLabels[session.user.role]}
         navItems={navItems}
-      />
-      <main className="mx-auto max-w-6xl p-4 sm:p-6">{children}</main>
+      >
+        {children}
+      </PanelShell>
       {showOnboarding && (
         <OnboardingModal
           userName={session.user.name ?? ""}
           role={session.user.role}
         />
       )}
-    </div>
+    </>
   );
 }

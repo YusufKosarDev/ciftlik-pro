@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { PawPrint, Wheat, Wallet, ListChecks } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { buildMonthlyFinance } from "@/lib/finance";
 import { MonthlyFinanceChart } from "@/components/monthly-finance-chart";
+import { cn } from "@/lib/cn";
 
 function formatMoney(amount: number): string {
   return amount.toLocaleString("tr-TR", { minimumFractionDigits: 2 }) + " TL";
@@ -13,30 +15,44 @@ function formatDate(date: Date): string {
 }
 
 // Ozet kart bileseni
+const statTones = {
+  green: "bg-green-50 text-green-600",
+  amber: "bg-amber-50 text-amber-600",
+  sky: "bg-sky-50 text-sky-600",
+  violet: "bg-violet-50 text-violet-600",
+} as const;
+
 function StatCard({
   href,
   label,
   value,
-  icon,
-  valueClass = "text-gray-900",
+  Icon,
+  tone = "green",
+  valueClass = "text-slate-900",
 }: {
   href: string;
   label: string;
   value: string;
-  icon: string;
+  Icon: React.ComponentType<{ className?: string }>;
+  tone?: keyof typeof statTones;
   valueClass?: string;
 }) {
   return (
     <Link
       href={href}
-      className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-5 transition hover:border-green-400 hover:shadow-md"
+      className="group flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
     >
-      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-green-50 text-2xl">
-        {icon}
+      <span
+        className={cn(
+          "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition group-hover:scale-105",
+          statTones[tone]
+        )}
+      >
+        <Icon className="h-6 w-6" />
       </span>
-      <div>
-        <p className="text-sm text-gray-500">{label}</p>
-        <p className={`mt-0.5 text-2xl font-bold ${valueClass}`}>{value}</p>
+      <div className="min-w-0">
+        <p className="text-sm text-slate-500">{label}</p>
+        <p className={`mt-0.5 text-2xl font-bold tabular-nums ${valueClass}`}>{value}</p>
       </div>
     </Link>
   );
@@ -146,26 +162,30 @@ export default async function PanelPage() {
           href="/panel/hayvanlar"
           label="Aktif Hayvan"
           value={String(animalCount)}
-          icon="🐮"
+          Icon={PawPrint}
+          tone="green"
         />
         <StatCard
           href="/panel/tarlalar"
           label="Tarla"
           value={String(fieldCount)}
-          icon="🌾"
+          Icon={Wheat}
+          tone="amber"
         />
         <StatCard
           href="/panel/finans"
           label="Net Bakiye"
           value={formatMoney(balance)}
-          icon="💰"
+          Icon={Wallet}
+          tone="sky"
           valueClass={balance >= 0 ? "text-green-600" : "text-red-600"}
         />
         <StatCard
           href="/panel/gorevler"
           label="Acik Gorev"
           value={String(pendingTasks)}
-          icon="✅"
+          Icon={ListChecks}
+          tone="violet"
         />
       </div>
 
