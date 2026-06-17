@@ -382,7 +382,7 @@ model Product {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  orders Order[]
+  orderItems OrderItem[]
 }
 
 // Siparis durumu
@@ -392,22 +392,43 @@ enum OrderStatus {
   CANCELLED // Iptal
 }
 
-// Magazadan verilen (odemesiz) siparis. Tek urun + miktar; fiyat/ad anlik
-// snapshot olarak saklanir (urun sonradan degisse de siparis bozulmaz).
+// Odeme durumu (gercek odeme yapilandirildiysa kullanilir).
+enum PaymentStatus {
+  UNPAID // Odemesiz / beklemede
+  PAID // Odendi
+}
+
+// Magazadan verilen (odemesiz olabilen) siparis. Cok kalemlidir (OrderItem).
 model Order {
-  id            String      @id @default(cuid())
-  productId     String? // Iliskili urun (silinirse null; snapshot kalir)
-  product       Product?    @relation(fields: [productId], references: [id], onDelete: SetNull)
-  productName   String // Snapshot: urun adi
-  unitPrice     Float // Snapshot: birim fiyat
-  quantity      Float // Adet/miktar
-  total         Float // unitPrice * quantity
+  id            String        @id @default(cuid())
   customerName  String // Siparis veren ad
   customerPhone String? // Iletisim (opsiyonel)
   note          String?
-  status        OrderStatus @default(PENDING)
-  createdAt     DateTime    @default(now())
+  total         Float // Kalemlerin toplami (snapshot)
+  status        OrderStatus   @default(PENDING)
+  paymentStatus PaymentStatus @default(UNPAID)
+  paymentRef    String? // Odeme saglayici referansi (orn. Stripe session id)
+  createdAt     DateTime      @default(now())
+
+  items OrderItem[]
 
   @@index([createdAt])
   @@index([status])
+}
+
+// Bir siparisteki tek urun satiri. Fiyat/ad anlik snapshot olarak saklanir
+// (urun sonradan degisse/silinse de siparis bozulmaz).
+model OrderItem {
+  id          String   @id @default(cuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String? // Iliskili urun (silinirse null; snapshot kalir)
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productName String // Snapshot: urun adi
+  unitPrice   Float // Snapshot: birim fiyat
+  quantity    Float // Adet/miktar
+  lineTotal   Float // unitPrice * quantity
+
+  @@index([orderId])
+  @@index([productId])
 }

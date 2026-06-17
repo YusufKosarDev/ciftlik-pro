@@ -1,13 +1,17 @@
 import { z } from "zod";
 
-// Magaza siparis (odemesiz) dogrulama semasi. Herkese acik uctan gelir; bu yuzden
-// hem istemci hem sunucuda dogrulanir.
-export const orderSchema = z.object({
-  productId: z.string().trim().min(1, "Urun seciniz"),
+// Magaza siparisi (cok kalemli, odemesiz olabilir) dogrulama semasi. Herkese acik
+// uctan gelir; hem istemci hem sunucuda dogrulanir.
+export const orderItemSchema = z.object({
+  productId: z.string().trim().min(1, "Urun secimi gecersiz"),
   quantity: z.coerce
     .number({ message: "Gecerli bir miktar giriniz" })
     .positive("Miktar 0'dan buyuk olmalidir")
     .max(100000, "Miktar cok yuksek"),
+});
+
+export const orderSchema = z.object({
+  items: z.array(orderItemSchema).min(1, "Sepet bos"),
   customerName: z
     .string()
     .trim()

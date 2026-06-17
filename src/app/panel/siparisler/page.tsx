@@ -20,8 +20,8 @@ export default async function SiparislerPage({
   const where: Prisma.OrderWhereInput = q
     ? {
         OR: [
-          { productName: { contains: q, mode: "insensitive" } },
           { customerName: { contains: q, mode: "insensitive" } },
+          { items: { some: { productName: { contains: q, mode: "insensitive" } } } },
         ],
       }
     : {};
@@ -32,6 +32,7 @@ export default async function SiparislerPage({
       orderBy: { [sort]: dir } as Prisma.OrderOrderByWithRelationInput,
       skip,
       take,
+      include: { items: { select: { productName: true, quantity: true } } },
     }),
     prisma.order.count({ where }),
     prisma.order.count({ where: { status: "PENDING" } }),

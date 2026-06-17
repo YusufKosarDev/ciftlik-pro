@@ -39,7 +39,7 @@ export async function PATCH(
       "UPDATE",
       "Order",
       order.id,
-      `${order.productName} -> ${order.status}`
+      `${order.customerName} -> ${order.status}`
     );
 
     return NextResponse.json({ order });
@@ -68,7 +68,7 @@ export async function DELETE(
     }
 
     await prisma.order.delete({ where: { id } });
-    await logAudit(authz.session.user, "DELETE", "Order", id, existing.productName);
+    await logAudit(authz.session.user, "DELETE", "Order", id, existing.customerName);
 
     return NextResponse.json({ success: true });
   } catch (error) {

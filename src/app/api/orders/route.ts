@@ -3,12 +3,11 @@ import { prisma } from "@/lib/prisma";
 import { orderSchema } from "@/lib/validations/order";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 
-// POST /api/orders -> HERKESE ACIK magaza siparisi (odemesiz). Kimlik gerektirmez;
-// bu yuzden hiz siniri + dogrulama + urun aktiflik kontrolu uygulanir. Fiyat/ad
-// snapshot olarak saklanir.
+// POST /api/orders -> HERKESE ACIK magaza siparisi (cok kalemli, odemesiz).
+// Kimlik gerektirmez; hiz siniri + dogrulama + urun aktiflik kontrolu uygulanir.
+// Fiyat/ad her kalem icin snapshot olarak saklanir.
 export async function POST(request: Request) {
   try {
-    // Spam/kotuye kullanima karsi: IP basina 5 dakikada en fazla 10 siparis.
     const rl = rateLimit(`order:${clientIp(request)}`, 10, 5 * 60 * 1000);
     if (!rl.success) {
       return NextResponse.json(
@@ -27,26 +26,40 @@ export async function POST(request: Request) {
     }
 
     const data = parsed.data;
-    const product = await prisma.product.findUnique({ where: { id: data.productId } });
-    if (!product || !product.active) {
+
+    // Sepetteki tum urunleri tek sorguda cek; hepsi mevcut ve aktif olmali.
+    const productIds = [...new Set(data.items.map((i) => i.productId))];
+    const products = await prisma.product.findMany({
+      where: { id: { in: productIds }, active: true },
+    });
+    const byId = new Map(products.map((p) => [p.id, p]));
+    if (data.items.some((i) => !byId.has(i.productId))) {
       return NextResponse.json(
-        { error: "Urun bulunamadi veya satista degil" },
+        { error: "Sepette satista olmayan bir urun var" },
         { status: 400 }
       );
     }
 
-    const total = product.price * data.quantity;
+    const itemsData = data.items.map((i) => {
+      const p = byId.get(i.productId)!;
+      return {
+        productId: p.id,
+        productName: p.name,
+        unitPrice: p.price,
+        quantity: i.quantity,
+        lineTotal: p.price * i.quantity,
+      };
+    });
+    const total = itemsData.reduce((sum, it) => sum + it.lineTotal, 0);
+
     const order = await prisma.order.create({
       data: {
-        productId: product.id,
-        productName: product.name,
-        unitPrice: product.price,
-        quantity: data.quantity,
-        total,
         customerName: data.customerName,
         customerPhone: data.customerPhone || null,
         note: data.note || null,
+        total,
         status: "PENDING",
+        items: { create: itemsData },
       },
     });
 

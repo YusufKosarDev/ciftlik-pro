@@ -9,6 +9,9 @@ import { OrderActions } from "@/components/order-actions";
 import { orderStatusLabels } from "@/lib/labels";
 import type { ListState } from "@/lib/list-query";
 
+// Liste, siparisin kalemlerini (urun adi + miktar) da iceren bir tip kullanir.
+export type OrderRow = Order & { items: { productName: string; quantity: number }[] };
+
 function formatDate(d: Date) {
   return new Date(d).toLocaleDateString("tr-TR");
 }
@@ -27,20 +30,24 @@ export function OrdersTable({
   canEdit,
   list,
 }: {
-  orders: Order[];
+  orders: OrderRow[];
   canEdit: boolean;
   list: ListState;
 }) {
-  const columns: Column<Order>[] = [
+  const columns: Column<OrderRow>[] = [
     { key: "createdAt", header: "Tarih", sortKey: "createdAt", cell: (o) => formatDate(o.createdAt) },
     {
       key: "product",
-      header: "Ürün",
-      cell: (o) => (
-        <span className="font-medium text-foreground">
-          {o.productName} <span className="text-muted-foreground">× {o.quantity}</span>
-        </span>
-      ),
+      header: "Ürünler",
+      cell: (o) => {
+        const first = o.items[0];
+        const label = first
+          ? o.items.length === 1
+            ? `${first.productName} × ${first.quantity}`
+            : `${first.productName} +${o.items.length - 1} kalem`
+          : "-";
+        return <span className="font-medium text-foreground">{label}</span>;
+      },
     },
     {
       key: "customer",
