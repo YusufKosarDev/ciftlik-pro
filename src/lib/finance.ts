@@ -1,4 +1,10 @@
-import type { MonthlyFinance } from "@/components/monthly-finance-chart";
+// Aylik gelir-gider grafik verisi. (Grafik bileseni bu tipi buradan alir;
+// boylece lib -> bilesen ters bagimliligi olmaz.)
+export type MonthlyFinance = {
+  month: string; // Orn. "Ara 2025"
+  gelir: number;
+  gider: number;
+};
 
 const MONTH_NAMES = [
   "Oca", "Sub", "Mar", "Nis", "May", "Haz",
