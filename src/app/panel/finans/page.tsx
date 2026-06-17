@@ -20,15 +20,15 @@ function BreakdownList({
   tone: "green" | "red";
 }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5">
-      <h3 className="mb-3 font-semibold text-gray-900">{title}</h3>
+    <div className="rounded-xl border border-border bg-card p-5">
+      <h3 className="mb-3 font-semibold text-foreground">{title}</h3>
       {rows.length === 0 ? (
-        <p className="text-sm text-gray-400">Kayit yok.</p>
+        <p className="text-sm text-muted-foreground">Kayit yok.</p>
       ) : (
         <ul className="space-y-2 text-sm">
           {rows.map((r) => (
             <li key={r.category} className="flex justify-between">
-              <span className="text-gray-700">{r.category}</span>
+              <span className="text-foreground">{r.category}</span>
               <span className={`font-medium ${tone === "green" ? "text-green-600" : "text-red-600"}`}>
                 {formatMoney(r.total)}
               </span>
@@ -98,7 +98,7 @@ export default async function FinansPage({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900">
+        <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
           <span>💰</span> Finans
         </h1>
         <div className="flex items-center gap-2">
@@ -120,20 +120,20 @@ export default async function FinansPage({
 
       {/* Ozet kartlari */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <p className="text-sm text-gray-500">Toplam Gelir</p>
+        <div className="rounded-xl border border-border bg-card p-5">
+          <p className="text-sm text-muted-foreground">Toplam Gelir</p>
           <p className="mt-1 text-xl font-bold text-green-600">
             {formatMoney(totalIncome)}
           </p>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <p className="text-sm text-gray-500">Toplam Gider</p>
+        <div className="rounded-xl border border-border bg-card p-5">
+          <p className="text-sm text-muted-foreground">Toplam Gider</p>
           <p className="mt-1 text-xl font-bold text-red-600">
             {formatMoney(totalExpense)}
           </p>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <p className="text-sm text-gray-500">Net Bakiye</p>
+        <div className="rounded-xl border border-border bg-card p-5">
+          <p className="text-sm text-muted-foreground">Net Bakiye</p>
           <p
             className={`mt-1 text-xl font-bold ${
               balance >= 0 ? "text-green-600" : "text-red-600"

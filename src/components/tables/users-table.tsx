@@ -27,13 +27,13 @@ export function UsersTable({ users, list }: { users: UserRow[]; list: ListState 
       key: "name",
       header: "Ad",
       sortKey: "name",
-      cell: (u) => <span className="font-medium text-gray-900">{u.name}</span>,
+      cell: (u) => <span className="font-medium text-foreground">{u.name}</span>,
     },
     {
       key: "email",
       header: "E-posta",
       sortKey: "email",
-      cell: (u) => <span className="text-gray-700">{u.email}</span>,
+      cell: (u) => <span className="text-foreground">{u.email}</span>,
     },
     {
       key: "role",
@@ -45,7 +45,7 @@ export function UsersTable({ users, list }: { users: UserRow[]; list: ListState 
       key: "createdAt",
       header: "Kayıt",
       sortKey: "createdAt",
-      cell: (u) => <span className="text-gray-500">{formatDate(u.createdAt)}</span>,
+      cell: (u) => <span className="text-muted-foreground">{formatDate(u.createdAt)}</span>,
     },
   ];
 

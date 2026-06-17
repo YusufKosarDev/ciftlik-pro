@@ -16,8 +16,8 @@ import type { MonthlyFinance } from "@/lib/finance";
 // boylece recharts paketi yalnizca grafik ekranda ihtiyac duyuldugunda in/calisir.
 export function MonthlyFinanceChartImpl({ data }: { data: MonthlyFinance[] }) {
   return (
-    <div className="h-72 w-full rounded-xl border border-gray-200 bg-white p-5">
-      <h3 className="mb-4 font-semibold text-gray-900">
+    <div className="h-72 w-full rounded-xl border border-border bg-card p-5">
+      <h3 className="mb-4 font-semibold text-foreground">
         Aylik Gelir - Gider (son 6 ay)
       </h3>
       <ResponsiveContainer width="100%" height="85%">

@@ -15,7 +15,7 @@ function formatMoney(amount: number): string {
 const cropStatusStyles: Record<string, string> = {
   PLANTED: "bg-blue-100 text-blue-700",
   GROWING: "bg-green-100 text-green-700",
-  HARVESTED: "bg-gray-200 text-gray-600",
+  HARVESTED: "bg-muted text-muted-foreground",
 };
 
 function formatDate(date: Date | null): string {
@@ -25,9 +25,9 @@ function formatDate(date: Date | null): string {
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex justify-between border-b border-gray-100 py-2 last:border-0">
-      <span className="text-sm text-gray-500">{label}</span>
-      <span className="text-sm font-medium text-gray-900">{value}</span>
+    <div className="flex justify-between border-b border-border py-2 last:border-0">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="text-sm font-medium text-foreground">{value}</span>
     </div>
   );
 }
@@ -58,11 +58,11 @@ export default async function TarlaDetayPage({
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{field.name}</h1>
-          <p className="text-sm text-gray-500">{field.area} donum</p>
+          <h1 className="text-2xl font-bold text-foreground">{field.name}</h1>
+          <p className="text-sm text-muted-foreground">{field.area} donum</p>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/panel/tarlalar" className="text-sm text-gray-500 hover:underline">
+          <Link href="/panel/tarlalar" className="text-sm text-muted-foreground hover:underline">
             &larr; Listeye don
           </Link>
           {canEdit && (
@@ -76,7 +76,7 @@ export default async function TarlaDetayPage({
         </div>
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white p-6">
+      <div className="rounded-xl border border-border bg-card p-6">
         <Row label="Tarla Adi" value={field.name} />
         <Row label="Alan" value={`${field.area} donum`} />
         <Row label="Konum" value={field.location ?? "-"} />
@@ -86,23 +86,23 @@ export default async function TarlaDetayPage({
       {/* Ekonomik ozet */}
       {field.crops.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-xl border border-gray-200 bg-white p-4">
-            <p className="text-xs text-gray-500">Toplam Gider</p>
+          <div className="rounded-xl border border-border bg-card p-4">
+            <p className="text-xs text-muted-foreground">Toplam Gider</p>
             <p className="mt-1 text-lg font-bold text-red-600">{formatMoney(eco.totalCost)}</p>
           </div>
-          <div className="rounded-xl border border-gray-200 bg-white p-4">
-            <p className="text-xs text-gray-500">Toplam Gelir</p>
+          <div className="rounded-xl border border-border bg-card p-4">
+            <p className="text-xs text-muted-foreground">Toplam Gelir</p>
             <p className="mt-1 text-lg font-bold text-green-600">{formatMoney(eco.totalRevenue)}</p>
           </div>
-          <div className="rounded-xl border border-gray-200 bg-white p-4">
-            <p className="text-xs text-gray-500">Net Kâr</p>
+          <div className="rounded-xl border border-border bg-card p-4">
+            <p className="text-xs text-muted-foreground">Net Kâr</p>
             <p className={`mt-1 text-lg font-bold ${eco.profit >= 0 ? "text-green-600" : "text-red-600"}`}>
               {formatMoney(eco.profit)}
             </p>
           </div>
-          <div className="rounded-xl border border-gray-200 bg-white p-4">
-            <p className="text-xs text-gray-500">Dönüm Başına Verim</p>
-            <p className="mt-1 text-lg font-bold text-gray-900">
+          <div className="rounded-xl border border-border bg-card p-4">
+            <p className="text-xs text-muted-foreground">Dönüm Başına Verim</p>
+            <p className="mt-1 text-lg font-bold text-foreground">
               {eco.yieldPerDonum !== null ? `${eco.yieldPerDonum.toFixed(1)} kg` : "-"}
             </p>
           </div>
@@ -111,16 +111,16 @@ export default async function TarlaDetayPage({
 
       {/* Ekim Kayitlari */}
       <section className="space-y-4">
-        <h2 className="text-lg font-bold text-gray-900">Ekim Kayitlari</h2>
+        <h2 className="text-lg font-bold text-foreground">Ekim Kayitlari</h2>
 
         {canEdit && <CropForm fieldId={field.id} />}
 
         {field.crops.length === 0 ? (
-          <p className="text-sm text-gray-500">Henuz ekim kaydi yok.</p>
+          <p className="text-sm text-muted-foreground">Henuz ekim kaydi yok.</p>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+          <div className="overflow-hidden rounded-xl border border-border bg-card">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-gray-200 bg-gray-50 text-gray-600">
+              <thead className="border-b border-border bg-muted text-muted-foreground">
                 <tr>
                   <th className="px-4 py-2 font-medium">Ürün</th>
                   <th className="px-4 py-2 font-medium">Ekim</th>
@@ -132,17 +132,17 @@ export default async function TarlaDetayPage({
                   {canEdit && <th className="px-4 py-2 text-right font-medium">İşlem</th>}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-border">
                 {field.crops.map((crop) => {
                   const profit = (crop.revenue ?? 0) - (crop.cost ?? 0);
                   const hasEco = crop.cost !== null || crop.revenue !== null;
                   return (
                   <tr key={crop.id}>
-                    <td className="px-4 py-2 font-medium text-gray-900">{crop.name}</td>
-                    <td className="px-4 py-2 text-gray-700">
+                    <td className="px-4 py-2 font-medium text-foreground">{crop.name}</td>
+                    <td className="px-4 py-2 text-foreground">
                       {formatDate(crop.plantedDate)}
                     </td>
-                    <td className="px-4 py-2 text-gray-700">
+                    <td className="px-4 py-2 text-foreground">
                       {formatDate(crop.harvestDate)}
                     </td>
                     <td className="px-4 py-2">
@@ -154,15 +154,15 @@ export default async function TarlaDetayPage({
                         {cropStatusLabels[crop.status]}
                       </span>
                     </td>
-                    <td className="px-4 py-2 text-right text-gray-700">
+                    <td className="px-4 py-2 text-right text-foreground">
                       {crop.cost !== null ? formatMoney(crop.cost) : "-"}
                     </td>
-                    <td className="px-4 py-2 text-right text-gray-700">
+                    <td className="px-4 py-2 text-right text-foreground">
                       {crop.revenue !== null ? formatMoney(crop.revenue) : "-"}
                     </td>
                     <td
                       className={`px-4 py-2 text-right font-medium ${
-                        !hasEco ? "text-gray-400" : profit >= 0 ? "text-green-600" : "text-red-600"
+                        !hasEco ? "text-muted-foreground" : profit >= 0 ? "text-green-600" : "text-red-600"
                       }`}
                     >
                       {hasEco ? formatMoney(profit) : "-"}

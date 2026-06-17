@@ -51,10 +51,10 @@ export default async function StokPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900">
+          <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
             <span>📦</span> Stok & Envanter
           </h1>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Toplam {total} kalem
             {criticalCount > 0 && (
               <span className="ml-2 text-red-600">

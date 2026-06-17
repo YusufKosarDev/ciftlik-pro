@@ -86,24 +86,24 @@ export default async function TakvimPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900">
+          <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
             <span>📅</span> Takvim
           </h1>
-          <p className="text-sm text-gray-500">{events.length} olay · aşı, görev, hasat, doğum</p>
+          <p className="text-sm text-muted-foreground">{events.length} olay · aşı, görev, hasat, doğum</p>
         </div>
         <div className="flex items-center gap-2">
           <Link
             href={`/panel/takvim?ay=${prev}`}
-            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50"
+            className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted"
           >
             ‹ Önceki
           </Link>
-          <span className="min-w-36 text-center text-sm font-semibold text-gray-900">
+          <span className="min-w-36 text-center text-sm font-semibold text-foreground">
             {monthTitle(year, month)}
           </span>
           <Link
             href={`/panel/takvim?ay=${next}`}
-            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50"
+            className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted"
           >
             Sonraki ›
           </Link>
@@ -111,15 +111,15 @@ export default async function TakvimPage({
       </div>
 
       {/* Renk lejandi */}
-      <div className="flex flex-wrap gap-3 text-xs text-gray-600">
+      <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
         <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-yellow-300" /> Aşı</span>
         <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-blue-300" /> Görev</span>
         <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-green-300" /> Hasat</span>
         <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-pink-300" /> Doğum</span>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-        <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50 text-center text-xs font-medium text-gray-600">
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <div className="grid grid-cols-7 border-b border-border bg-muted text-center text-xs font-medium text-muted-foreground">
           {WEEKDAYS.map((d) => (
             <div key={d} className="px-2 py-2">{d}</div>
           ))}
@@ -130,8 +130,8 @@ export default async function TakvimPage({
             return (
               <div
                 key={day.key}
-                className={`min-h-24 border-b border-r border-gray-100 p-1.5 ${
-                  day.inMonth ? "bg-white" : "bg-gray-50/60"
+                className={`min-h-24 border-b border-r border-border p-1.5 ${
+                  day.inMonth ? "bg-card" : "bg-muted/60"
                 }`}
               >
                 <div
@@ -139,8 +139,8 @@ export default async function TakvimPage({
                     day.isToday
                       ? "mx-auto flex h-5 w-5 items-center justify-center rounded-full bg-green-600 font-bold text-white"
                       : day.inMonth
-                        ? "text-gray-700"
-                        : "text-gray-400"
+                        ? "text-foreground"
+                        : "text-muted-foreground"
                   }`}
                 >
                   {day.date.getDate()}

@@ -29,10 +29,10 @@ export default async function YemPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900">
+        <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
           <span>🌾</span> Yem Yönetimi
         </h1>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted-foreground">
           {feedItems.length} yem kalemi
           {criticalCount > 0 && (
             <span className="ml-2 text-red-600">· {criticalCount} kritik seviyede</span>
@@ -45,11 +45,11 @@ export default async function YemPage() {
         {feedItems.map((i) => {
           const isCritical = i.quantity <= i.criticalLevel;
           return (
-            <div key={i.id} className="rounded-xl border border-gray-200 bg-white p-4">
-              <p className="font-medium text-gray-900">{i.name}</p>
+            <div key={i.id} className="rounded-xl border border-border bg-card p-4">
+              <p className="font-medium text-foreground">{i.name}</p>
               <p
                 className={`mt-1 text-lg font-bold ${
-                  isCritical ? "text-red-600" : "text-gray-900"
+                  isCritical ? "text-red-600" : "text-foreground"
                 }`}
               >
                 {i.quantity} {i.unit}
@@ -67,7 +67,7 @@ export default async function YemPage() {
       {/* Tuketim formu */}
       {canEdit &&
         (feedItems.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-gray-300 bg-white p-6 text-center text-sm text-gray-500">
+          <p className="rounded-xl border border-dashed border-border bg-card p-6 text-center text-sm text-muted-foreground">
             Önce Stok bölümünden FEED kategorisinde bir kalem ekleyin.
           </p>
         ) : (
@@ -76,13 +76,13 @@ export default async function YemPage() {
 
       {/* Son tuketimler */}
       <section className="space-y-3">
-        <h2 className="text-lg font-bold text-gray-900">Son Tüketimler</h2>
+        <h2 className="text-lg font-bold text-foreground">Son Tüketimler</h2>
         {logs.length === 0 ? (
-          <p className="text-sm text-gray-500">Henuz tuketim kaydi yok.</p>
+          <p className="text-sm text-muted-foreground">Henuz tuketim kaydi yok.</p>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+          <div className="overflow-hidden rounded-xl border border-border bg-card">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-gray-200 bg-gray-50 text-gray-600">
+              <thead className="border-b border-border bg-muted text-muted-foreground">
                 <tr>
                   <th className="px-4 py-2 font-medium">Tarih</th>
                   <th className="px-4 py-2 font-medium">Yem</th>
@@ -91,17 +91,17 @@ export default async function YemPage() {
                   {canEdit && <th className="px-4 py-2 text-right font-medium">İşlem</th>}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-border">
                 {logs.map((l) => (
                   <tr key={l.id}>
-                    <td className="px-4 py-2 text-gray-700">{formatDate(l.date)}</td>
-                    <td className="px-4 py-2 font-medium text-gray-900">
+                    <td className="px-4 py-2 text-foreground">{formatDate(l.date)}</td>
+                    <td className="px-4 py-2 font-medium text-foreground">
                       {l.inventoryItem.name}
                     </td>
-                    <td className="px-4 py-2 text-gray-700">
+                    <td className="px-4 py-2 text-foreground">
                       {l.quantity} {l.inventoryItem.unit}
                     </td>
-                    <td className="px-4 py-2 text-gray-700">{l.notes ?? "-"}</td>
+                    <td className="px-4 py-2 text-foreground">{l.notes ?? "-"}</td>
                     {canEdit && (
                       <td className="px-4 py-2 text-right">
                         <DeleteButton

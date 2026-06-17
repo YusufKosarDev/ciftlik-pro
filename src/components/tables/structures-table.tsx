@@ -25,7 +25,7 @@ export function StructuresTable({
       key: "name",
       header: "Ad",
       sortKey: "name",
-      cell: (s) => <span className="font-medium text-gray-900">{s.name}</span>,
+      cell: (s) => <span className="font-medium text-foreground">{s.name}</span>,
     },
     {
       key: "type",
@@ -36,7 +36,7 @@ export function StructuresTable({
     {
       key: "notes",
       header: "Not",
-      cell: (s) => <span className="text-gray-500">{s.notes ?? "-"}</span>,
+      cell: (s) => <span className="text-muted-foreground">{s.notes ?? "-"}</span>,
     },
   ];
 

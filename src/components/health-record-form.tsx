@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
 const inputClass =
-  "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500";
+  "w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500";
 
 export function HealthRecordForm({ animalId }: { animalId: string }) {
   const router = useRouter();
@@ -47,28 +47,28 @@ export function HealthRecordForm({ animalId }: { animalId: string }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-lg bg-gray-50 p-4">
+    <form onSubmit={handleSubmit} className="space-y-3 rounded-lg bg-muted p-4">
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label htmlFor="date" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="date" className="mb-1 block text-xs font-medium text-muted-foreground">
             Tarih *
           </label>
           <input id="date" name="date" type="date" required className={inputClass} />
         </div>
         <div>
-          <label htmlFor="diagnosis" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="diagnosis" className="mb-1 block text-xs font-medium text-muted-foreground">
             Teshis *
           </label>
           <input id="diagnosis" name="diagnosis" type="text" required className={inputClass} />
         </div>
         <div>
-          <label htmlFor="treatment" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="treatment" className="mb-1 block text-xs font-medium text-muted-foreground">
             Tedavi
           </label>
           <input id="treatment" name="treatment" type="text" className={inputClass} />
         </div>
         <div>
-          <label htmlFor="notes" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="notes" className="mb-1 block text-xs font-medium text-muted-foreground">
             Not
           </label>
           <input id="notes" name="notes" type="text" className={inputClass} />

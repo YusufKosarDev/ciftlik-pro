@@ -83,15 +83,15 @@ export function OnboardingModal({
       icon: Wheat,
       title: "Çiftlik Pro'ya Hoş Geldin",
       body: (
-        <div className="space-y-3 text-gray-600">
-          <p className="text-lg font-medium text-gray-800">Merhaba {firstName} 👋</p>
+        <div className="space-y-3 text-muted-foreground">
+          <p className="text-lg font-medium text-foreground">Merhaba {firstName} 👋</p>
           <p>
             Çiftliğinin tüm operasyonlarını — hayvan, tarla, stok, finans ve
             görevleri — tek panelden yönet. Hadi sana hızlıca etrafı gösterelim.
           </p>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Bu tur yalnızca birkaç saniye sürer; istersen{" "}
-            <span className="font-medium text-gray-700">Geç</span>’e basabilirsin.
+            <span className="font-medium text-foreground">Geç</span>’e basabilirsin.
           </p>
         </div>
       ),
@@ -104,11 +104,11 @@ export function OnboardingModal({
           {moduleCards.map((m) => (
             <div
               key={m.title}
-              className="flex flex-col gap-1.5 rounded-xl border border-gray-200 bg-gray-50/60 p-3"
+              className="flex flex-col gap-1.5 rounded-xl border border-border bg-muted/60 p-3"
             >
               <m.icon className="h-5 w-5 text-green-600" aria-hidden />
-              <span className="font-semibold text-gray-800">{m.title}</span>
-              <span className="text-xs text-gray-500">{m.desc}</span>
+              <span className="font-semibold text-foreground">{m.title}</span>
+              <span className="text-xs text-muted-foreground">{m.desc}</span>
             </div>
           ))}
         </div>
@@ -124,7 +124,7 @@ export function OnboardingModal({
               <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-100">
                 <h.icon className="h-4 w-4 text-green-700" aria-hidden />
               </span>
-              <span className="text-gray-700">{h.text}</span>
+              <span className="text-foreground">{h.text}</span>
             </li>
           ))}
         </ul>
@@ -134,13 +134,13 @@ export function OnboardingModal({
       icon: MapIcon,
       title: "Harita & Takvim",
       body: (
-        <div className="space-y-4 text-gray-600">
+        <div className="space-y-4 text-muted-foreground">
           <div className="flex items-start gap-3">
             <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-100">
               <MapIcon className="h-4 w-4 text-green-700" aria-hidden />
             </span>
             <p>
-              <span className="font-semibold text-gray-800">2D Çiftlik Haritası</span>{" "}
+              <span className="font-semibold text-foreground">2D Çiftlik Haritası</span>{" "}
               — tarlaları ve yapıları (ahır, kümes, depo) tek bakışta gör.
             </p>
           </div>
@@ -149,7 +149,7 @@ export function OnboardingModal({
               <CalendarDays className="h-4 w-4 text-green-700" aria-hidden />
             </span>
             <p>
-              <span className="font-semibold text-gray-800">Takvim</span> — aşı,
+              <span className="font-semibold text-foreground">Takvim</span> — aşı,
               görev, hasat ve doğumlar tek aylık görünümde toplanır.
             </p>
           </div>
@@ -160,13 +160,13 @@ export function OnboardingModal({
       icon: CheckCircle2,
       title: "Hazırsın! 🎉",
       body: (
-        <div className="space-y-3 text-gray-600">
+        <div className="space-y-3 text-muted-foreground">
           <p>
             Artık başlamaya hazırsın. Panelden istediğin modüle geçebilir, üst
             menüden hızlıca gezinebilirsin.
           </p>
-          <p className="text-sm text-gray-500">
-            Bu turu istediğin zaman <span className="font-medium text-gray-700">Profil</span>{" "}
+          <p className="text-sm text-muted-foreground">
+            Bu turu istediğin zaman <span className="font-medium text-foreground">Profil</span>{" "}
             sayfasından yeniden başlatabilirsin.
           </p>
         </div>
@@ -216,19 +216,19 @@ export function OnboardingModal({
       aria-modal="true"
       aria-labelledby="onboarding-title"
     >
-      <div className="onboarding-panel w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl">
+      <div className="onboarding-panel w-full max-w-lg overflow-hidden rounded-2xl bg-card shadow-2xl">
         {/* Markali baslik */}
         <div className="relative bg-gradient-to-br from-green-600 to-emerald-500 px-6 py-7 text-white">
           <button
             type="button"
             onClick={finish}
             aria-label="Turu kapat"
-            className="absolute right-4 top-4 rounded-lg p-1 text-white/80 transition hover:bg-white/20 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            className="absolute right-4 top-4 rounded-lg p-1 text-white/80 transition hover:bg-card/20 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
           >
             <X className="h-5 w-5" />
           </button>
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/20">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-card/20">
               <current.icon className="h-6 w-6" aria-hidden />
             </span>
             <div>
@@ -250,7 +250,7 @@ export function OnboardingModal({
         </div>
 
         {/* Alt cubuk: ilerleme + gezinme */}
-        <div className="flex items-center justify-between border-t border-gray-100 px-6 py-4">
+        <div className="flex items-center justify-between border-t border-border px-6 py-4">
           <div className="flex items-center gap-2">
             {steps.map((_, i) => (
               <button
@@ -261,7 +261,7 @@ export function OnboardingModal({
                 onClick={() => setStep(i)}
                 className={cn(
                   "h-2 rounded-full transition-all",
-                  i === step ? "w-6 bg-green-600" : "w-2 bg-gray-300 hover:bg-gray-400"
+                  i === step ? "w-6 bg-green-600" : "w-2 bg-muted-foreground/40 hover:bg-muted-foreground/70"
                 )}
               />
             ))}
@@ -285,7 +285,7 @@ export function OnboardingModal({
                 size="sm"
                 onClick={finish}
                 disabled={saving}
-                className="text-gray-500"
+                className="text-muted-foreground"
               >
                 Geç
               </Button>

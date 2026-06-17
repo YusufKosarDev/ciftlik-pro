@@ -216,7 +216,7 @@ export function FarmMap({
     <div className="space-y-3">
       {/* Arac cubugu + renk aciklamasi */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-3 text-xs text-gray-600">
+        <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
           {(Object.keys(statusLabels) as CropMapStatus[]).map((s) => (
             <span key={s} className="flex items-center gap-1.5">
               <span
@@ -242,19 +242,19 @@ export function FarmMap({
             {!editing ? (
               <button
                 onClick={startEdit}
-                className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted"
               >
                 🖉 Yerlesimi duzenle
               </button>
             ) : (
               <>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-muted-foreground">
                   Surukleyip birakin {movedCount > 0 && `· ${movedCount} degisiklik`}
                 </span>
                 <button
                   onClick={cancelEdit}
                   disabled={saving}
-                  className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-60"
+                  className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted disabled:opacity-60"
                 >
                   Iptal
                 </button>
@@ -277,7 +277,7 @@ export function FarmMap({
 
       <div
         className={`overflow-hidden rounded-xl border bg-green-50/40 ${
-          editing ? "border-green-400 ring-1 ring-green-300" : "border-gray-200"
+          editing ? "border-green-400 ring-1 ring-green-300" : "border-border"
         }`}
       >
         <svg

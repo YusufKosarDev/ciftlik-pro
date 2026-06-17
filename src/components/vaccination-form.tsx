@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
 const inputClass =
-  "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500";
+  "w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500";
 
 export function VaccinationForm({ animalId }: { animalId: string }) {
   const router = useRouter();
@@ -47,28 +47,28 @@ export function VaccinationForm({ animalId }: { animalId: string }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-lg bg-gray-50 p-4">
+    <form onSubmit={handleSubmit} className="space-y-3 rounded-lg bg-muted p-4">
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label htmlFor="vname" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="vname" className="mb-1 block text-xs font-medium text-muted-foreground">
             Asi Adi *
           </label>
           <input id="vname" name="name" type="text" required className={inputClass} />
         </div>
         <div>
-          <label htmlFor="vdate" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="vdate" className="mb-1 block text-xs font-medium text-muted-foreground">
             Yapilis Tarihi *
           </label>
           <input id="vdate" name="date" type="date" required className={inputClass} />
         </div>
         <div>
-          <label htmlFor="vnext" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="vnext" className="mb-1 block text-xs font-medium text-muted-foreground">
             Sonraki Asi Tarihi
           </label>
           <input id="vnext" name="nextDate" type="date" className={inputClass} />
         </div>
         <div>
-          <label htmlFor="vnotes" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="vnotes" className="mb-1 block text-xs font-medium text-muted-foreground">
             Not
           </label>
           <input id="vnotes" name="notes" type="text" className={inputClass} />

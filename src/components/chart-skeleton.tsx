@@ -9,10 +9,10 @@ export function ChartSkeleton({
 }) {
   return (
     <div
-      className={`${heightClass} w-full animate-pulse rounded-xl border border-gray-200 bg-white p-5`}
+      className={`${heightClass} w-full animate-pulse rounded-xl border border-border bg-card p-5`}
     >
-      <h3 className="mb-4 font-semibold text-gray-400">{title}</h3>
-      <div className="h-[78%] w-full rounded bg-gray-100" />
+      <h3 className="mb-4 font-semibold text-muted-foreground">{title}</h3>
+      <div className="h-[78%] w-full rounded bg-muted" />
     </div>
   );
 }

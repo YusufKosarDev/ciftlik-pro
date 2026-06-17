@@ -52,10 +52,10 @@ export default async function GorevlerPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900">
+          <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
             <span>✅</span> Gorevler
           </h1>
-          <p className="text-sm text-gray-500">Toplam {total} gorev</p>
+          <p className="text-sm text-muted-foreground">Toplam {total} gorev</p>
         </div>
         {canEdit && (
           <Link href="/panel/gorevler/yeni" className={buttonVariants({ size: "sm" })}>

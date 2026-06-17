@@ -44,7 +44,7 @@ export function TasksTable({
       key: "title",
       header: "Başlık",
       sortKey: "title",
-      cell: (t) => <span className="font-medium text-gray-900">{t.title}</span>,
+      cell: (t) => <span className="font-medium text-foreground">{t.title}</span>,
     },
     {
       key: "assignedTo",
@@ -59,7 +59,7 @@ export function TasksTable({
       cell: (t) => {
         const overdue = isOverdue(t.dueDate, t.status);
         return (
-          <span className={overdue ? "font-semibold text-red-600" : "text-gray-700"}>
+          <span className={overdue ? "font-semibold text-red-600" : "text-foreground"}>
             {formatDate(t.dueDate)}
             {overdue && (
               <Badge tone="red" className="ml-2">

@@ -88,7 +88,7 @@ export function DataTable<T extends { id: string }>({
     <div className="space-y-3">
       {searchable && (
         <div className="relative max-w-xs">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={term}
             onChange={(e) => setTerm(e.target.value)}
@@ -100,21 +100,21 @@ export function DataTable<T extends { id: string }>({
 
       {data.length === 0 ? (
         list.q.trim() ? (
-          <p className="rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center text-sm text-gray-500">
+          <p className="rounded-xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">
             “{list.q}” ile eşleşen kayıt bulunamadı.
           </p>
         ) : (
           emptyState ?? (
-            <p className="rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center text-sm text-gray-500">
+            <p className="rounded-xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">
               Kayıt bulunamadı.
             </p>
           )
         )
       ) : (
         <>
-          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+          <div className="overflow-x-auto rounded-xl border border-border bg-card">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-gray-200 bg-gray-50 text-gray-600">
+              <thead className="border-b border-border bg-muted text-muted-foreground">
                 <tr>
                   {columns.map((col) => (
                     <th
@@ -124,7 +124,7 @@ export function DataTable<T extends { id: string }>({
                       {col.sortKey ? (
                         <button
                           onClick={() => toggleSort(col.sortKey!)}
-                          className="inline-flex items-center gap-1 transition hover:text-gray-900"
+                          className="inline-flex items-center gap-1 transition hover:text-foreground"
                         >
                           {col.header}
                           {list.sort === col.sortKey ? (
@@ -144,9 +144,9 @@ export function DataTable<T extends { id: string }>({
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-border">
                 {data.map((row) => (
-                  <tr key={row.id} className="hover:bg-gray-50">
+                  <tr key={row.id} className="hover:bg-muted">
                     {columns.map((col) => (
                       <td key={col.key} className={cn("px-4 py-3", col.className)}>
                         {col.cell(row)}
@@ -159,13 +159,13 @@ export function DataTable<T extends { id: string }>({
           </div>
 
           {pageCount > 1 && (
-            <div className="flex items-center justify-between text-sm text-gray-500">
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
               <span>{list.total} kayıt</span>
               <div className="flex items-center gap-2">
                 <button
                   disabled={list.page <= 1}
                   onClick={() => goToPage(list.page - 1)}
-                  className="rounded-lg border border-gray-300 p-1.5 transition hover:bg-gray-50 disabled:opacity-40"
+                  className="rounded-lg border border-border p-1.5 transition hover:bg-muted disabled:opacity-40"
                   aria-label="Önceki sayfa"
                 >
                   <ChevronLeft className="h-4 w-4" />
@@ -176,7 +176,7 @@ export function DataTable<T extends { id: string }>({
                 <button
                   disabled={list.page >= pageCount}
                   onClick={() => goToPage(list.page + 1)}
-                  className="rounded-lg border border-gray-300 p-1.5 transition hover:bg-gray-50 disabled:opacity-40"
+                  className="rounded-lg border border-border p-1.5 transition hover:bg-muted disabled:opacity-40"
                   aria-label="Sonraki sayfa"
                 >
                   <ChevronRight className="h-4 w-4" />

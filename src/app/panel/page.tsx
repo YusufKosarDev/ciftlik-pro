@@ -16,10 +16,10 @@ function formatDate(date: Date): string {
 
 // Ozet kart bileseni
 const statTones = {
-  green: "bg-green-50 text-green-600",
-  amber: "bg-amber-50 text-amber-600",
-  sky: "bg-sky-50 text-sky-600",
-  violet: "bg-violet-50 text-violet-600",
+  green: "bg-green-50 text-green-600 dark:bg-green-500/15 dark:text-green-400",
+  amber: "bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400",
+  sky: "bg-sky-50 text-sky-600 dark:bg-sky-500/15 dark:text-sky-400",
+  violet: "bg-violet-50 text-violet-600 dark:bg-violet-500/15 dark:text-violet-400",
 } as const;
 
 function StatCard({
@@ -28,7 +28,7 @@ function StatCard({
   value,
   Icon,
   tone = "green",
-  valueClass = "text-slate-900",
+  valueClass = "text-foreground",
 }: {
   href: string;
   label: string;
@@ -40,7 +40,7 @@ function StatCard({
   return (
     <Link
       href={href}
-      className="group flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
+      className="group flex items-center gap-4 rounded-xl border border-border bg-card p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-border hover:shadow-md"
     >
       <span
         className={cn(
@@ -51,7 +51,7 @@ function StatCard({
         <Icon className="h-6 w-6" />
       </span>
       <div className="min-w-0">
-        <p className="text-sm text-slate-500">{label}</p>
+        <p className="text-sm text-muted-foreground">{label}</p>
         <p className={`mt-0.5 text-2xl font-bold tabular-nums ${valueClass}`}>{value}</p>
       </div>
     </Link>
@@ -73,15 +73,15 @@ function AlertCard({
   hasItems: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5">
-      <h3 className="mb-3 flex items-center gap-2 font-semibold text-gray-900">
+    <div className="rounded-xl border border-border bg-card p-5">
+      <h3 className="mb-3 flex items-center gap-2 font-semibold text-foreground">
         <span>{icon}</span>
         {title}
       </h3>
       {hasItems ? (
         <ul className="space-y-2 text-sm">{children}</ul>
       ) : (
-        <p className="text-sm text-gray-400">{emptyText}</p>
+        <p className="text-sm text-muted-foreground">{emptyText}</p>
       )}
     </div>
   );
@@ -150,8 +150,8 @@ export default async function PanelPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Panel</h1>
-        <p className="text-gray-600">
+        <h1 className="text-2xl font-bold text-foreground">Panel</h1>
+        <p className="text-muted-foreground">
           Hos geldin, <strong>{session?.user.name}</strong>.
         </p>
       </div>
@@ -194,10 +194,10 @@ export default async function PanelPage() {
 
       {/* Uyarilar */}
       <section className="space-y-4">
-        <h2 className="text-lg font-bold text-gray-900">Uyarilar</h2>
+        <h2 className="text-lg font-bold text-foreground">Uyarilar</h2>
 
         {!hasAlerts ? (
-          <p className="rounded-xl border border-gray-200 bg-white p-5 text-sm text-gray-500">
+          <p className="rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground">
             Aktif uyari yok. Her sey yolunda gorunuyor.
           </p>
         ) : (
@@ -210,7 +210,7 @@ export default async function PanelPage() {
             >
               {criticalItems.map((i) => (
                 <li key={i.id} className="flex justify-between">
-                  <span className="text-gray-700">{i.name}</span>
+                  <span className="text-foreground">{i.name}</span>
                   <span className="font-medium text-red-600">
                     {i.quantity} {i.unit}
                   </span>
@@ -226,7 +226,7 @@ export default async function PanelPage() {
             >
               {overdueTasks.map((t) => (
                 <li key={t.id} className="flex justify-between">
-                  <span className="text-gray-700">{t.title}</span>
+                  <span className="text-foreground">{t.title}</span>
                   <span className="font-medium text-red-600">
                     {t.dueDate ? formatDate(t.dueDate) : "-"}
                   </span>
@@ -242,7 +242,7 @@ export default async function PanelPage() {
             >
               {upcomingVaccinations.map((v) => (
                 <li key={v.id} className="flex justify-between">
-                  <span className="text-gray-700">
+                  <span className="text-foreground">
                     {v.animal.name ?? v.animal.tagNumber} · {v.name}
                   </span>
                   <span className="font-medium text-yellow-700">

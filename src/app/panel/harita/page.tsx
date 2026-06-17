@@ -51,18 +51,18 @@ export default async function HaritaPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900">
+        <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
           <span>🗺️</span> Ciftlik Haritasi
         </h1>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted-foreground">
           {fields.length} tarla · {structures.length} yapi · kusbakisi 2D yerlesim
           (bir tarlaya tiklayin)
         </p>
       </div>
 
       {fields.length === 0 && structures.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-300 bg-white p-12 text-center">
-          <p className="text-gray-500">
+        <div className="rounded-xl border border-dashed border-border bg-card p-12 text-center">
+          <p className="text-muted-foreground">
             Henuz tarla eklenmemis. Harita icin once tarla ekleyin.
           </p>
           <Link

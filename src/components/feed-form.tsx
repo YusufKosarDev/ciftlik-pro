@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
 const inputClass =
-  "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500";
+  "w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500";
 
 type FeedItem = { id: string; name: string; quantity: number; unit: string };
 
@@ -49,10 +49,10 @@ export function FeedForm({ items }: { items: FeedItem[] }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-xl border border-gray-200 bg-white p-4">
+    <form onSubmit={handleSubmit} className="space-y-3 rounded-xl border border-border bg-card p-4">
       <div className="grid gap-3 sm:grid-cols-4">
         <div className="sm:col-span-2">
-          <label htmlFor="fitem" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="fitem" className="mb-1 block text-xs font-medium text-muted-foreground">
             Yem Kalemi *
           </label>
           <select id="fitem" name="inventoryItemId" required className={inputClass}>
@@ -64,13 +64,13 @@ export function FeedForm({ items }: { items: FeedItem[] }) {
           </select>
         </div>
         <div>
-          <label htmlFor="fdate" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="fdate" className="mb-1 block text-xs font-medium text-muted-foreground">
             Tarih *
           </label>
           <input id="fdate" name="date" type="date" required className={inputClass} />
         </div>
         <div>
-          <label htmlFor="fqty" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="fqty" className="mb-1 block text-xs font-medium text-muted-foreground">
             Miktar *
           </label>
           <input
@@ -84,7 +84,7 @@ export function FeedForm({ items }: { items: FeedItem[] }) {
           />
         </div>
         <div className="sm:col-span-4">
-          <label htmlFor="fnotes" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="fnotes" className="mb-1 block text-xs font-medium text-muted-foreground">
             Not
           </label>
           <input id="fnotes" name="notes" type="text" className={inputClass} />

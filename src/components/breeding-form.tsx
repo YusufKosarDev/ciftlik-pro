@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { breedingStatusLabels } from "@/lib/labels";
 
 const inputClass =
-  "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500";
+  "w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500";
 
 export function BreedingForm({ animalId }: { animalId: string }) {
   const router = useRouter();
@@ -51,34 +51,34 @@ export function BreedingForm({ animalId }: { animalId: string }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-lg bg-gray-50 p-4">
+    <form onSubmit={handleSubmit} className="space-y-3 rounded-lg bg-muted p-4">
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label htmlFor="bdate" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="bdate" className="mb-1 block text-xs font-medium text-muted-foreground">
             Tohumlama Tarihi *
           </label>
           <input id="bdate" name="breedingDate" type="date" required className={inputClass} />
         </div>
         <div>
-          <label htmlFor="bsire" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="bsire" className="mb-1 block text-xs font-medium text-muted-foreground">
             Baba Kulak No
           </label>
           <input id="bsire" name="sireTag" type="text" className={inputClass} />
         </div>
         <div>
-          <label htmlFor="bexp" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="bexp" className="mb-1 block text-xs font-medium text-muted-foreground">
             Tahmini Doğum Tarihi
           </label>
           <input id="bexp" name="expectedBirthDate" type="date" className={inputClass} />
         </div>
         <div>
-          <label htmlFor="bact" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="bact" className="mb-1 block text-xs font-medium text-muted-foreground">
             Gerçek Doğum Tarihi
           </label>
           <input id="bact" name="actualBirthDate" type="date" className={inputClass} />
         </div>
         <div>
-          <label htmlFor="bstatus" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="bstatus" className="mb-1 block text-xs font-medium text-muted-foreground">
             Durum
           </label>
           <select id="bstatus" name="status" defaultValue="PLANNED" className={inputClass}>
@@ -90,13 +90,13 @@ export function BreedingForm({ animalId }: { animalId: string }) {
           </select>
         </div>
         <div>
-          <label htmlFor="bcount" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="bcount" className="mb-1 block text-xs font-medium text-muted-foreground">
             Yavru Sayısı
           </label>
           <input id="bcount" name="offspringCount" type="number" min="0" className={inputClass} />
         </div>
         <div className="sm:col-span-2">
-          <label htmlFor="bnotes" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="bnotes" className="mb-1 block text-xs font-medium text-muted-foreground">
             Not
           </label>
           <input id="bnotes" name="notes" type="text" className={inputClass} />

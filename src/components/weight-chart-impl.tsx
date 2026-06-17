@@ -14,8 +14,8 @@ import type { WeightPoint } from "@/lib/weight-stats";
 // Recharts iceren asil grafik; wrapper tarafindan tembel yuklenir.
 export function WeightChartImpl({ data }: { data: WeightPoint[] }) {
   return (
-    <div className="h-64 w-full rounded-xl border border-gray-200 bg-white p-5">
-      <h3 className="mb-4 font-semibold text-gray-900">Ağırlık Değişimi</h3>
+    <div className="h-64 w-full rounded-xl border border-border bg-card p-5">
+      <h3 className="mb-4 font-semibold text-foreground">Ağırlık Değişimi</h3>
       <ResponsiveContainer width="100%" height="82%">
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />

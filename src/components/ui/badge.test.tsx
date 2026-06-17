@@ -16,6 +16,6 @@ describe("Badge", () => {
 
   it("tone verilmezse varsayilan (gray) uygular", () => {
     render(<Badge>Notr</Badge>);
-    expect(screen.getByText("Notr").className).toContain("bg-gray-200");
+    expect(screen.getByText("Notr").className).toContain("bg-muted");
   });
 });

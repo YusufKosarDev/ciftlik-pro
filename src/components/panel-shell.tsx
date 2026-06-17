@@ -21,7 +21,7 @@ export function PanelShell({
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-background">
       {/* Masaustu: sabit sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:block">
         <Sidebar navItems={navItems} userName={userName} roleLabel={roleLabel} />

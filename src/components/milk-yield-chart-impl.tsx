@@ -14,8 +14,8 @@ import type { MilkDailyPoint } from "@/lib/milk-stats";
 // Recharts iceren asil grafik; wrapper tarafindan tembel yuklenir.
 export function MilkYieldChartImpl({ data }: { data: MilkDailyPoint[] }) {
   return (
-    <div className="h-64 w-full rounded-xl border border-gray-200 bg-white p-5">
-      <h3 className="mb-4 font-semibold text-gray-900">
+    <div className="h-64 w-full rounded-xl border border-border bg-card p-5">
+      <h3 className="mb-4 font-semibold text-foreground">
         Günlük Süt Verimi (son {data.length} gün)
       </h3>
       <ResponsiveContainer width="100%" height="82%">

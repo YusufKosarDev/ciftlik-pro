@@ -26,10 +26,10 @@ export default async function EkimDuzenlePage({
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Ekim Kaydını Düzenle</h1>
-          <p className="text-sm text-gray-500">{field.name}</p>
+          <h1 className="text-2xl font-bold text-foreground">Ekim Kaydını Düzenle</h1>
+          <p className="text-sm text-muted-foreground">{field.name}</p>
         </div>
-        <Link href={`/panel/tarlalar/${id}`} className="text-sm text-gray-500 hover:underline">
+        <Link href={`/panel/tarlalar/${id}`} className="text-sm text-muted-foreground hover:underline">
           &larr; Tarlaya dön
         </Link>
       </div>

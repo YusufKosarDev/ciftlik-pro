@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
 const inputClass =
-  "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500";
+  "w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500";
 
 export function WeightForm({ animalId }: { animalId: string }) {
   const router = useRouter();
@@ -46,16 +46,16 @@ export function WeightForm({ animalId }: { animalId: string }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-lg bg-gray-50 p-4">
+    <form onSubmit={handleSubmit} className="space-y-3 rounded-lg bg-muted p-4">
       <div className="grid gap-3 sm:grid-cols-3">
         <div>
-          <label htmlFor="wdate" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="wdate" className="mb-1 block text-xs font-medium text-muted-foreground">
             Tarih *
           </label>
           <input id="wdate" name="date" type="date" required className={inputClass} />
         </div>
         <div>
-          <label htmlFor="wkg" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="wkg" className="mb-1 block text-xs font-medium text-muted-foreground">
             Ağırlık (kg) *
           </label>
           <input
@@ -69,7 +69,7 @@ export function WeightForm({ animalId }: { animalId: string }) {
           />
         </div>
         <div>
-          <label htmlFor="wnotes" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="wnotes" className="mb-1 block text-xs font-medium text-muted-foreground">
             Not
           </label>
           <input id="wnotes" name="notes" type="text" className={inputClass} />

@@ -25,7 +25,7 @@ export function InventoryTable({
       key: "name",
       header: "Kalem",
       sortKey: "name",
-      cell: (i) => <span className="font-medium text-gray-900">{i.name}</span>,
+      cell: (i) => <span className="font-medium text-foreground">{i.name}</span>,
     },
     {
       key: "category",
@@ -40,7 +40,7 @@ export function InventoryTable({
       cell: (i) => {
         const isCritical = i.quantity <= i.criticalLevel;
         return (
-          <span className={isCritical ? "font-semibold text-red-600" : "text-gray-700"}>
+          <span className={isCritical ? "font-semibold text-red-600" : "text-foreground"}>
             {i.quantity} {i.unit}
             {isCritical && (
               <Badge tone="red" className="ml-2">
@@ -56,7 +56,7 @@ export function InventoryTable({
       header: "Kritik",
       sortKey: "criticalLevel",
       cell: (i) => (
-        <span className="text-gray-500">
+        <span className="text-muted-foreground">
           {i.criticalLevel} {i.unit}
         </span>
       ),

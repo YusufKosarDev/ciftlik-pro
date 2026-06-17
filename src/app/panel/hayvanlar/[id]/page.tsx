@@ -16,7 +16,7 @@ import { milkStats, dailyMilkSeries } from "@/lib/milk-stats";
 import { weightStats, weightSeries } from "@/lib/weight-stats";
 
 const breedingStatusStyles: Record<string, string> = {
-  PLANNED: "bg-gray-100 text-gray-700",
+  PLANNED: "bg-muted text-foreground",
   PREGNANT: "bg-blue-100 text-blue-700",
   BORN: "bg-green-100 text-green-700",
   FAILED: "bg-red-100 text-red-700",
@@ -25,7 +25,7 @@ const breedingStatusStyles: Record<string, string> = {
 const statusStyles: Record<string, string> = {
   ACTIVE: "bg-green-100 text-green-700",
   SOLD: "bg-yellow-100 text-yellow-700",
-  DECEASED: "bg-gray-200 text-gray-600",
+  DECEASED: "bg-muted text-muted-foreground",
 };
 
 // Tarihi "10.04.2023" gibi gosterir.
@@ -73,14 +73,14 @@ function nextVaccineBadge(nextDate: Date | null): React.ReactNode {
       </span>
     );
   }
-  return <span className="text-gray-700">{label}</span>;
+  return <span className="text-foreground">{label}</span>;
 }
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex justify-between border-b border-gray-100 py-2 last:border-0">
-      <span className="text-sm text-gray-500">{label}</span>
-      <span className="text-sm font-medium text-gray-900">{value}</span>
+    <div className="flex justify-between border-b border-border py-2 last:border-0">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="text-sm font-medium text-foreground">{value}</span>
     </div>
   );
 }
@@ -132,15 +132,15 @@ export default async function HayvanDetayPage({
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-foreground">
             {animal.name ?? animal.tagNumber}
           </h1>
-          <p className="text-sm text-gray-500">Kulak No: {animal.tagNumber}</p>
+          <p className="text-sm text-muted-foreground">Kulak No: {animal.tagNumber}</p>
         </div>
         <div className="flex items-center gap-3">
           <Link
             href="/panel/hayvanlar"
-            className="text-sm text-gray-500 hover:underline"
+            className="text-sm text-muted-foreground hover:underline"
           >
             &larr; Listeye don
           </Link>
@@ -166,11 +166,11 @@ export default async function HayvanDetayPage({
           alt={animal.name ?? animal.tagNumber}
           loading="lazy"
           decoding="async"
-          className="h-56 w-full rounded-xl border border-gray-200 object-cover"
+          className="h-56 w-full rounded-xl border border-border object-cover"
         />
       )}
 
-      <div className="rounded-xl border border-gray-200 bg-white p-6">
+      <div className="rounded-xl border border-border bg-card p-6">
         <Row label="Kulak No" value={animal.tagNumber} />
         <Row label="Ad" value={animal.name ?? "-"} />
         <Row label="Tur" value={speciesLabels[animal.species]} />
@@ -195,16 +195,16 @@ export default async function HayvanDetayPage({
 
       {/* Saglik Kayitlari */}
       <section className="space-y-4">
-        <h2 className="text-lg font-bold text-gray-900">Saglik Kayitlari</h2>
+        <h2 className="text-lg font-bold text-foreground">Saglik Kayitlari</h2>
 
         {canMedical && <HealthRecordForm animalId={animal.id} />}
 
         {animal.healthRecords.length === 0 ? (
-          <p className="text-sm text-gray-500">Henuz saglik kaydi yok.</p>
+          <p className="text-sm text-muted-foreground">Henuz saglik kaydi yok.</p>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+          <div className="overflow-hidden rounded-xl border border-border bg-card">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-gray-200 bg-gray-50 text-gray-600">
+              <thead className="border-b border-border bg-muted text-muted-foreground">
                 <tr>
                   <th className="px-4 py-2 font-medium">Tarih</th>
                   <th className="px-4 py-2 font-medium">Teshis</th>
@@ -212,15 +212,15 @@ export default async function HayvanDetayPage({
                   <th className="px-4 py-2 font-medium">Not</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-border">
                 {animal.healthRecords.map((r) => (
                   <tr key={r.id}>
-                    <td className="px-4 py-2 text-gray-700">{formatDate(r.date)}</td>
-                    <td className="px-4 py-2 font-medium text-gray-900">
+                    <td className="px-4 py-2 text-foreground">{formatDate(r.date)}</td>
+                    <td className="px-4 py-2 font-medium text-foreground">
                       {r.diagnosis}
                     </td>
-                    <td className="px-4 py-2 text-gray-700">{r.treatment ?? "-"}</td>
-                    <td className="px-4 py-2 text-gray-700">{r.notes ?? "-"}</td>
+                    <td className="px-4 py-2 text-foreground">{r.treatment ?? "-"}</td>
+                    <td className="px-4 py-2 text-foreground">{r.notes ?? "-"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -231,16 +231,16 @@ export default async function HayvanDetayPage({
 
       {/* Asi Takvimi */}
       <section className="space-y-4">
-        <h2 className="text-lg font-bold text-gray-900">Asi Takvimi</h2>
+        <h2 className="text-lg font-bold text-foreground">Asi Takvimi</h2>
 
         {canMedical && <VaccinationForm animalId={animal.id} />}
 
         {animal.vaccinations.length === 0 ? (
-          <p className="text-sm text-gray-500">Henuz asi kaydi yok.</p>
+          <p className="text-sm text-muted-foreground">Henuz asi kaydi yok.</p>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+          <div className="overflow-hidden rounded-xl border border-border bg-card">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-gray-200 bg-gray-50 text-gray-600">
+              <thead className="border-b border-border bg-muted text-muted-foreground">
                 <tr>
                   <th className="px-4 py-2 font-medium">Asi</th>
                   <th className="px-4 py-2 font-medium">Yapilis</th>
@@ -248,13 +248,13 @@ export default async function HayvanDetayPage({
                   <th className="px-4 py-2 font-medium">Not</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-border">
                 {animal.vaccinations.map((v) => (
                   <tr key={v.id}>
-                    <td className="px-4 py-2 font-medium text-gray-900">{v.name}</td>
-                    <td className="px-4 py-2 text-gray-700">{formatDate(v.date)}</td>
+                    <td className="px-4 py-2 font-medium text-foreground">{v.name}</td>
+                    <td className="px-4 py-2 text-foreground">{formatDate(v.date)}</td>
                     <td className="px-4 py-2">{nextVaccineBadge(v.nextDate)}</td>
-                    <td className="px-4 py-2 text-gray-700">{v.notes ?? "-"}</td>
+                    <td className="px-4 py-2 text-foreground">{v.notes ?? "-"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -265,26 +265,26 @@ export default async function HayvanDetayPage({
 
       {/* Sut Verimi */}
       <section className="space-y-4">
-        <h2 className="text-lg font-bold text-gray-900">Sut Verimi</h2>
+        <h2 className="text-lg font-bold text-foreground">Sut Verimi</h2>
 
         {animal.milkYields.length > 0 && (
           <>
             <div className="flex flex-wrap gap-4">
-              <div className="rounded-xl border border-gray-200 bg-white px-5 py-3">
-                <p className="text-xs text-gray-500">Toplam</p>
-                <p className="text-lg font-bold text-gray-900">
+              <div className="rounded-xl border border-border bg-card px-5 py-3">
+                <p className="text-xs text-muted-foreground">Toplam</p>
+                <p className="text-lg font-bold text-foreground">
                   {stats.total.toFixed(1)} L
                 </p>
               </div>
-              <div className="rounded-xl border border-gray-200 bg-white px-5 py-3">
-                <p className="text-xs text-gray-500">Kayit basina ortalama</p>
-                <p className="text-lg font-bold text-gray-900">
+              <div className="rounded-xl border border-border bg-card px-5 py-3">
+                <p className="text-xs text-muted-foreground">Kayit basina ortalama</p>
+                <p className="text-lg font-bold text-foreground">
                   {stats.average.toFixed(1)} L
                 </p>
               </div>
-              <div className="rounded-xl border border-gray-200 bg-white px-5 py-3">
-                <p className="text-xs text-gray-500">Son 7 gun ortalama</p>
-                <p className="text-lg font-bold text-gray-900">
+              <div className="rounded-xl border border-border bg-card px-5 py-3">
+                <p className="text-xs text-muted-foreground">Son 7 gun ortalama</p>
+                <p className="text-lg font-bold text-foreground">
                   {stats.last7Average.toFixed(1)} L/gun
                 </p>
               </div>
@@ -297,25 +297,25 @@ export default async function HayvanDetayPage({
         {canMilk && <MilkYieldForm animalId={animal.id} />}
 
         {animal.milkYields.length === 0 ? (
-          <p className="text-sm text-gray-500">Henuz sut verimi kaydi yok.</p>
+          <p className="text-sm text-muted-foreground">Henuz sut verimi kaydi yok.</p>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+          <div className="overflow-hidden rounded-xl border border-border bg-card">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-gray-200 bg-gray-50 text-gray-600">
+              <thead className="border-b border-border bg-muted text-muted-foreground">
                 <tr>
                   <th className="px-4 py-2 font-medium">Tarih</th>
                   <th className="px-4 py-2 font-medium">Miktar (L)</th>
                   <th className="px-4 py-2 font-medium">Not</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-border">
                 {animal.milkYields.map((m) => (
                   <tr key={m.id}>
-                    <td className="px-4 py-2 text-gray-700">{formatDate(m.date)}</td>
-                    <td className="px-4 py-2 font-medium text-gray-900">
+                    <td className="px-4 py-2 text-foreground">{formatDate(m.date)}</td>
+                    <td className="px-4 py-2 font-medium text-foreground">
                       {m.amount.toFixed(1)}
                     </td>
-                    <td className="px-4 py-2 text-gray-700">{m.notes ?? "-"}</td>
+                    <td className="px-4 py-2 text-foreground">{m.notes ?? "-"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -326,25 +326,25 @@ export default async function HayvanDetayPage({
 
       {/* Agirlik Takibi */}
       <section className="space-y-4">
-        <h2 className="text-lg font-bold text-gray-900">Ağırlık Takibi</h2>
+        <h2 className="text-lg font-bold text-foreground">Ağırlık Takibi</h2>
 
         {animal.weightRecords.length > 0 && (
           <>
             <div className="flex flex-wrap gap-4">
-              <div className="rounded-xl border border-gray-200 bg-white px-5 py-3">
-                <p className="text-xs text-gray-500">Son tartım</p>
-                <p className="text-lg font-bold text-gray-900">
+              <div className="rounded-xl border border-border bg-card px-5 py-3">
+                <p className="text-xs text-muted-foreground">Son tartım</p>
+                <p className="text-lg font-bold text-foreground">
                   {wStats.latest?.toFixed(1)} kg
                 </p>
               </div>
-              <div className="rounded-xl border border-gray-200 bg-white px-5 py-3">
-                <p className="text-xs text-gray-500">İlk tartım</p>
-                <p className="text-lg font-bold text-gray-900">
+              <div className="rounded-xl border border-border bg-card px-5 py-3">
+                <p className="text-xs text-muted-foreground">İlk tartım</p>
+                <p className="text-lg font-bold text-foreground">
                   {wStats.first?.toFixed(1)} kg
                 </p>
               </div>
-              <div className="rounded-xl border border-gray-200 bg-white px-5 py-3">
-                <p className="text-xs text-gray-500">Değişim</p>
+              <div className="rounded-xl border border-border bg-card px-5 py-3">
+                <p className="text-xs text-muted-foreground">Değişim</p>
                 <p
                   className={`text-lg font-bold ${
                     (wStats.change ?? 0) >= 0 ? "text-green-600" : "text-red-600"
@@ -363,11 +363,11 @@ export default async function HayvanDetayPage({
         {canWeight && <WeightForm animalId={animal.id} />}
 
         {animal.weightRecords.length === 0 ? (
-          <p className="text-sm text-gray-500">Henuz agirlik kaydi yok.</p>
+          <p className="text-sm text-muted-foreground">Henuz agirlik kaydi yok.</p>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+          <div className="overflow-hidden rounded-xl border border-border bg-card">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-gray-200 bg-gray-50 text-gray-600">
+              <thead className="border-b border-border bg-muted text-muted-foreground">
                 <tr>
                   <th className="px-4 py-2 font-medium">Tarih</th>
                   <th className="px-4 py-2 font-medium">Ağırlık (kg)</th>
@@ -375,14 +375,14 @@ export default async function HayvanDetayPage({
                   {canWeight && <th className="px-4 py-2 text-right font-medium">İşlem</th>}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-border">
                 {animal.weightRecords.map((w) => (
                   <tr key={w.id}>
-                    <td className="px-4 py-2 text-gray-700">{formatDate(w.date)}</td>
-                    <td className="px-4 py-2 font-medium text-gray-900">
+                    <td className="px-4 py-2 text-foreground">{formatDate(w.date)}</td>
+                    <td className="px-4 py-2 font-medium text-foreground">
                       {w.weightKg.toFixed(1)}
                     </td>
-                    <td className="px-4 py-2 text-gray-700">{w.notes ?? "-"}</td>
+                    <td className="px-4 py-2 text-foreground">{w.notes ?? "-"}</td>
                     {canWeight && (
                       <td className="px-4 py-2 text-right">
                         <DeleteButton
@@ -402,16 +402,16 @@ export default async function HayvanDetayPage({
 
       {/* Ureme Kayitlari */}
       <section className="space-y-4">
-        <h2 className="text-lg font-bold text-gray-900">Üreme Kayıtları</h2>
+        <h2 className="text-lg font-bold text-foreground">Üreme Kayıtları</h2>
 
         {canBreeding && <BreedingForm animalId={animal.id} />}
 
         {animal.breedingRecords.length === 0 ? (
-          <p className="text-sm text-gray-500">Henuz ureme kaydi yok.</p>
+          <p className="text-sm text-muted-foreground">Henuz ureme kaydi yok.</p>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+          <div className="overflow-hidden rounded-xl border border-border bg-card">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-gray-200 bg-gray-50 text-gray-600">
+              <thead className="border-b border-border bg-muted text-muted-foreground">
                 <tr>
                   <th className="px-4 py-2 font-medium">Tohumlama</th>
                   <th className="px-4 py-2 font-medium">Baba</th>
@@ -421,12 +421,12 @@ export default async function HayvanDetayPage({
                   {canBreeding && <th className="px-4 py-2 text-right font-medium">İşlem</th>}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-border">
                 {animal.breedingRecords.map((b) => (
                   <tr key={b.id}>
-                    <td className="px-4 py-2 text-gray-700">{formatDate(b.breedingDate)}</td>
-                    <td className="px-4 py-2 text-gray-700">{b.sireTag ?? "-"}</td>
-                    <td className="px-4 py-2 text-gray-700">
+                    <td className="px-4 py-2 text-foreground">{formatDate(b.breedingDate)}</td>
+                    <td className="px-4 py-2 text-foreground">{b.sireTag ?? "-"}</td>
+                    <td className="px-4 py-2 text-foreground">
                       {formatDate(b.expectedBirthDate)}
                     </td>
                     <td className="px-4 py-2">
@@ -438,7 +438,7 @@ export default async function HayvanDetayPage({
                         {breedingStatusLabels[b.status]}
                       </span>
                     </td>
-                    <td className="px-4 py-2 text-gray-700">
+                    <td className="px-4 py-2 text-foreground">
                       {b.offspringCount ?? "-"}
                     </td>
                     {canBreeding && (
@@ -460,8 +460,8 @@ export default async function HayvanDetayPage({
 
       {/* Soy (Pedigri) */}
       <section className="space-y-4">
-        <h2 className="text-lg font-bold text-gray-900">Soy</h2>
-        <div className="rounded-xl border border-gray-200 bg-white p-6">
+        <h2 className="text-lg font-bold text-foreground">Soy</h2>
+        <div className="rounded-xl border border-border bg-card p-6">
           <Row
             label="Anne"
             value={

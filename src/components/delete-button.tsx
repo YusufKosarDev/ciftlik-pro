@@ -47,12 +47,12 @@ export function DeleteButton({
       </AlertDialog.Trigger>
       <AlertDialog.Portal>
         <AlertDialog.Overlay className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" />
-        <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-xl border border-gray-200 bg-white p-6 shadow-xl focus:outline-none">
-          <AlertDialog.Title className="text-lg font-bold text-gray-900">
+        <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-card p-6 shadow-xl focus:outline-none">
+          <AlertDialog.Title className="text-lg font-bold text-foreground">
             {kind} silinsin mi?
           </AlertDialog.Title>
-          <AlertDialog.Description className="mt-1 text-sm text-gray-500">
-            <span className="font-medium text-gray-700">{itemLabel}</span> kalıcı
+          <AlertDialog.Description className="mt-1 text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">{itemLabel}</span> kalıcı
             olarak silinecek. Bu işlem geri alınamaz.
           </AlertDialog.Description>
           <div className="mt-5 flex justify-end gap-3">

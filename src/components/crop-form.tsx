@@ -9,7 +9,7 @@ import { toDateInputValue } from "@/lib/date";
 import type { Crop } from "@prisma/client";
 
 const inputClass =
-  "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500";
+  "w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500";
 
 type Props = {
   fieldId: string;
@@ -66,10 +66,10 @@ export function CropForm({ fieldId, crop }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-lg bg-gray-50 p-4">
+    <form onSubmit={handleSubmit} className="space-y-3 rounded-lg bg-muted p-4">
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label htmlFor="cname" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="cname" className="mb-1 block text-xs font-medium text-muted-foreground">
             Ürün Adı *
           </label>
           <input
@@ -82,7 +82,7 @@ export function CropForm({ fieldId, crop }: Props) {
           />
         </div>
         <div>
-          <label htmlFor="cstatus" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="cstatus" className="mb-1 block text-xs font-medium text-muted-foreground">
             Durum
           </label>
           <select
@@ -99,7 +99,7 @@ export function CropForm({ fieldId, crop }: Props) {
           </select>
         </div>
         <div>
-          <label htmlFor="cplanted" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="cplanted" className="mb-1 block text-xs font-medium text-muted-foreground">
             Ekim Tarihi *
           </label>
           <input
@@ -112,7 +112,7 @@ export function CropForm({ fieldId, crop }: Props) {
           />
         </div>
         <div>
-          <label htmlFor="charvest" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="charvest" className="mb-1 block text-xs font-medium text-muted-foreground">
             Hasat Tarihi
           </label>
           <input
@@ -127,7 +127,7 @@ export function CropForm({ fieldId, crop }: Props) {
 
       <div className="grid gap-3 sm:grid-cols-3">
         <div>
-          <label htmlFor="ccost" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="ccost" className="mb-1 block text-xs font-medium text-muted-foreground">
             Gider (TL)
           </label>
           <input
@@ -141,7 +141,7 @@ export function CropForm({ fieldId, crop }: Props) {
           />
         </div>
         <div>
-          <label htmlFor="crev" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="crev" className="mb-1 block text-xs font-medium text-muted-foreground">
             Hasat Geliri (TL)
           </label>
           <input
@@ -155,7 +155,7 @@ export function CropForm({ fieldId, crop }: Props) {
           />
         </div>
         <div>
-          <label htmlFor="cyield" className="mb-1 block text-xs font-medium text-gray-600">
+          <label htmlFor="cyield" className="mb-1 block text-xs font-medium text-muted-foreground">
             Verim (kg)
           </label>
           <input
@@ -171,7 +171,7 @@ export function CropForm({ fieldId, crop }: Props) {
       </div>
 
       <div>
-        <label htmlFor="cnotes" className="mb-1 block text-xs font-medium text-gray-600">
+        <label htmlFor="cnotes" className="mb-1 block text-xs font-medium text-muted-foreground">
           Not
         </label>
         <input

@@ -74,12 +74,12 @@ export function Sidebar({
     href === "/panel" ? pathname === "/panel" : pathname.startsWith(href);
 
   return (
-    <aside className="flex h-full w-64 flex-col border-r border-slate-200 bg-white">
+    <aside className="flex h-full w-64 flex-col border-r border-border bg-card">
       {/* Logo */}
       <Link
         href="/panel"
         onClick={onNavigate}
-        className="flex items-center gap-2.5 px-5 py-4 text-lg font-bold text-slate-900"
+        className="flex items-center gap-2.5 px-5 py-4 text-lg font-bold text-foreground"
       >
         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-green-600 text-white shadow-sm">
           <Wheat className="h-5 w-5" />
@@ -94,7 +94,7 @@ export function Sidebar({
           if (items.length === 0) return null;
           return (
             <div key={section.title}>
-              <p className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              <p className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                 {section.title}
               </p>
               <div className="space-y-0.5">
@@ -110,14 +110,14 @@ export function Sidebar({
                         "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition",
                         active
                           ? "bg-green-50 text-green-700"
-                          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
                       )}
                     >
                       {Icon && (
                         <Icon
                           className={cn(
                             "h-[18px] w-[18px] shrink-0 transition",
-                            active ? "text-green-600" : "text-slate-400 group-hover:text-slate-600"
+                            active ? "text-green-600" : "text-muted-foreground group-hover:text-muted-foreground"
                           )}
                         />
                       )}
@@ -132,7 +132,7 @@ export function Sidebar({
       </nav>
 
       {/* Kullanici + cikis */}
-      <div className="border-t border-slate-200 p-3">
+      <div className="border-t border-border p-3">
         <div className="flex items-center gap-3 rounded-lg px-2 py-2">
           <Link
             href="/panel/profil"
@@ -148,12 +148,12 @@ export function Sidebar({
             className="min-w-0 flex-1"
             title="Profil"
           >
-            <p className="truncate text-sm font-medium text-slate-900">{userName}</p>
-            <p className="truncate text-xs text-slate-500">{roleLabel}</p>
+            <p className="truncate text-sm font-medium text-foreground">{userName}</p>
+            <p className="truncate text-xs text-muted-foreground">{roleLabel}</p>
           </Link>
           <button
             onClick={() => signOut({ callbackUrl: "/giris" })}
-            className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-red-600"
+            className="rounded-lg p-2 text-muted-foreground transition hover:bg-muted hover:text-red-600"
             title="Çıkış yap"
             aria-label="Çıkış yap"
           >

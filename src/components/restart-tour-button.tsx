@@ -35,9 +35,9 @@ export function RestartTourButton() {
   }
 
   return (
-    <div className="space-y-3 rounded-xl border border-gray-200 bg-white p-6">
-      <h2 className="font-semibold text-gray-900">Tanıtım Turu</h2>
-      <p className="text-sm text-gray-500">
+    <div className="space-y-3 rounded-xl border border-border bg-card p-6">
+      <h2 className="font-semibold text-foreground">Tanıtım Turu</h2>
+      <p className="text-sm text-muted-foreground">
         Çiftlik Pro’nun hoş geldin turunu istediğin zaman yeniden izleyebilirsin.
       </p>
       <Button variant="outline" onClick={handleClick} loading={loading}>

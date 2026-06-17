@@ -10,8 +10,8 @@ import { toDateInputValue } from "@/lib/date";
 import type { Task } from "@prisma/client";
 
 const inputClass =
-  "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500";
-const labelClass = "mb-1 block text-sm font-medium text-gray-700";
+  "w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500";
+const labelClass = "mb-1 block text-sm font-medium text-foreground";
 
 type UserOption = { id: string; name: string };
 
@@ -63,7 +63,7 @@ export function TaskForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-4 rounded-xl border border-gray-200 bg-white p-6"
+      className="space-y-4 rounded-xl border border-border bg-card p-6"
     >
       <div>
         <label htmlFor="title" className={labelClass}>
@@ -151,7 +151,7 @@ export function TaskForm({
       <div className="flex justify-end gap-3">
         <Link
           href="/panel/gorevler"
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+          className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
         >
           Iptal
         </Link>

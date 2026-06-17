@@ -44,9 +44,9 @@ export function PasswordChangeForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-4 rounded-xl border border-gray-200 bg-white p-6"
+      className="space-y-4 rounded-xl border border-border bg-card p-6"
     >
-      <h2 className="font-semibold text-gray-900">Parola Değiştir</h2>
+      <h2 className="font-semibold text-foreground">Parola Değiştir</h2>
 
       <div>
         <Label htmlFor="currentPassword">Mevcut Parola</Label>

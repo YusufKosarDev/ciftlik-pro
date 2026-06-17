@@ -22,8 +22,8 @@ export default function Error({
         <AlertTriangle className="h-7 w-7" />
       </div>
       <div>
-        <h2 className="text-xl font-bold text-gray-900">Bir şeyler ters gitti</h2>
-        <p className="mt-1 text-sm text-gray-500">
+        <h2 className="text-xl font-bold text-foreground">Bir şeyler ters gitti</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
           Bu sayfa yüklenirken beklenmeyen bir hata oluştu.
         </p>
       </div>

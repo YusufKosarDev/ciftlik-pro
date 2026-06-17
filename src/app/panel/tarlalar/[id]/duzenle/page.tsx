@@ -21,8 +21,8 @@ export default async function TarlaDuzenlePage({
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Tarlayi Duzenle</h1>
-        <Link href="/panel/tarlalar" className="text-sm text-gray-500 hover:underline">
+        <h1 className="text-2xl font-bold text-foreground">Tarlayi Duzenle</h1>
+        <Link href="/panel/tarlalar" className="text-sm text-muted-foreground hover:underline">
           &larr; Listeye don
         </Link>
       </div>

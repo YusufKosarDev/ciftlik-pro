@@ -21,8 +21,8 @@ export default async function YapiDuzenlePage({
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Yapiyi Duzenle</h1>
-        <Link href="/panel/yapilar" className="text-sm text-gray-500 hover:underline">
+        <h1 className="text-2xl font-bold text-foreground">Yapiyi Duzenle</h1>
+        <Link href="/panel/yapilar" className="text-sm text-muted-foreground hover:underline">
           &larr; Listeye don
         </Link>
       </div>
