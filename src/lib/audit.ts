@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 // hata firlatmaz, yalnizca loglar.
 
 type Actor = { id?: string | null; name?: string | null; email?: string | null };
-type Action = "CREATE" | "UPDATE" | "DELETE";
+type Action = "CREATE" | "UPDATE" | "DELETE" | "LOGIN_FAILED";
 
 export async function logAudit(
   actor: Actor | undefined,

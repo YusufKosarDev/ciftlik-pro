@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { authConfig } from "@/lib/auth.config";
 import { rateLimit, resetRateLimit, clientIp } from "@/lib/rate-limit";
+import { logAudit } from "@/lib/audit";
 
 // Brute-force / kimlik bilgisi doldurma (credential stuffing) korumasi:
 // 15 dakikalik pencerede ayni IP+e-posta ikilisi icin en fazla bu kadar
@@ -43,11 +44,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const user = await prisma.user.findUnique({
           where: { email: normalizedEmail },
         });
-        if (!user) return null;
-
-        // Girilen parolayi, saklanan hash ile karsilastir
-        const isValid = await bcrypt.compare(password, user.password);
-        if (!isValid) return null;
+        // Kullanici yoksa bcrypt'i bosa calistirmayiz; parola yanlissa karsilastirma false doner.
+        const isValid = user ? await bcrypt.compare(password, user.password) : false;
+        if (!user || !isValid) {
+          // Basarisiz giris denemesini denetim gunlugune yaz (guvenlik izi).
+          // Best-effort: logAudit hata firlatmaz. Denemeler zaten hiz siniriyla bounded.
+          await logAudit({ email: normalizedEmail }, "LOGIN_FAILED", "Auth", null, `ip=${ip}`);
+          return null;
+        }
 
         // Basarili giris: bu hesaba ait IP+e-posta sayacini sifirla ki mesru
         // kullanici onceki yanlis denemelerden dolayi kilitlenmesin.

@@ -75,6 +75,7 @@ export const auditActionLabels: Record<AuditAction, string> = {
   CREATE: "Olusturma",
   UPDATE: "Guncelleme",
   DELETE: "Silme",
+  LOGIN_FAILED: "Basarisiz giris",
 };
 
 export const roleLabels: Record<Role, string> = {

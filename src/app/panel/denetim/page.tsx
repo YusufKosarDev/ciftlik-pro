@@ -9,10 +9,11 @@ function formatDateTime(date: Date): string {
   return new Date(date).toLocaleString("tr-TR");
 }
 
-const actionTone: Record<AuditAction, "green" | "blue" | "red"> = {
+const actionTone: Record<AuditAction, "green" | "blue" | "red" | "yellow"> = {
   CREATE: "green",
   UPDATE: "blue",
   DELETE: "red",
+  LOGIN_FAILED: "yellow",
 };
 
 export default async function DenetimPage() {
