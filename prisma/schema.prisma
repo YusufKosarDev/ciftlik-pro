@@ -370,3 +370,44 @@ model Sale {
   @@index([date])
   @@index([customerId])
 }
+
+// Magaza (herkese acik katalog) urunu.
+model Product {
+  id          String   @id @default(cuid())
+  name        String // Urun adi
+  description String?
+  price       Float // Birim fiyat (TL)
+  unit        String? // Birim (kg, litre, adet...)
+  active      Boolean  @default(true) // Katalogda gosterilsin mi
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orders Order[]
+}
+
+// Siparis durumu
+enum OrderStatus {
+  PENDING // Bekliyor
+  CONFIRMED // Onaylandi
+  CANCELLED // Iptal
+}
+
+// Magazadan verilen (odemesiz) siparis. Tek urun + miktar; fiyat/ad anlik
+// snapshot olarak saklanir (urun sonradan degisse de siparis bozulmaz).
+model Order {
+  id            String      @id @default(cuid())
+  productId     String? // Iliskili urun (silinirse null; snapshot kalir)
+  product       Product?    @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productName   String // Snapshot: urun adi
+  unitPrice     Float // Snapshot: birim fiyat
+  quantity      Float // Adet/miktar
+  total         Float // unitPrice * quantity
+  customerName  String // Siparis veren ad
+  customerPhone String? // Iletisim (opsiyonel)
+  note          String?
+  status        OrderStatus @default(PENDING)
+  createdAt     DateTime    @default(now())
+
+  @@index([createdAt])
+  @@index([status])
+}

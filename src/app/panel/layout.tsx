@@ -30,6 +30,8 @@ export default async function PanelLayout({
     { href: "/panel/finans", label: "Finans" },
     { href: "/panel/satis", label: "Satış" },
     { href: "/panel/musteriler", label: "Müşteriler" },
+    { href: "/panel/urunler", label: "Ürünler" },
+    { href: "/panel/siparisler", label: "Siparişler" },
     { href: "/panel/gorevler", label: "Görevler" },
     { href: "/panel/personel", label: "Personel" },
     { href: "/panel/denetim", label: "Denetim" },

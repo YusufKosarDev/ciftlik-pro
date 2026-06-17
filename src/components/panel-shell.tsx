@@ -14,6 +14,7 @@ const createDefs: { need: string; label: string; href: string }[] = [
   { need: "/panel/finans", label: "Yeni İşlem", href: "/panel/finans/yeni" },
   { need: "/panel/satis", label: "Yeni Satış", href: "/panel/satis/yeni" },
   { need: "/panel/musteriler", label: "Yeni Müşteri", href: "/panel/musteriler/yeni" },
+  { need: "/panel/urunler", label: "Yeni Ürün", href: "/panel/urunler/yeni" },
   { need: "/panel/gorevler", label: "Yeni Görev", href: "/panel/gorevler/yeni" },
   { need: "/panel/yapilar", label: "Yeni Yapı", href: "/panel/yapilar/yeni" },
 ];

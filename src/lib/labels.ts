@@ -9,8 +9,15 @@ import type {
   StructureType,
   BreedingStatus,
   AuditAction,
+  OrderStatus,
   Role,
 } from "@prisma/client";
+
+export const orderStatusLabels: Record<OrderStatus, string> = {
+  PENDING: "Bekliyor",
+  CONFIRMED: "Onaylandı",
+  CANCELLED: "İptal",
+};
 
 // Enum degerlerini arayuzde gosterecegimiz Turkce etiketlere ceviren haritalar.
 
