@@ -39,12 +39,21 @@ export function CartView() {
       body: JSON.stringify(payload),
     });
 
-    setLoading(false);
+    const data = await res.json().catch(() => null);
     if (!res.ok) {
-      const data = await res.json().catch(() => null);
+      setLoading(false);
       setError(data?.error ?? "Sipariş alınamadı, lütfen tekrar deneyin");
       return;
     }
+
+    // Ödeme yapılandırılmışsa Stripe ödeme sayfasına yönlendir (sepet temizlenir).
+    if (data?.checkoutUrl) {
+      clear();
+      window.location.href = data.checkoutUrl;
+      return;
+    }
+
+    setLoading(false);
     clear();
     setDone(true);
     toast.success("Siparişiniz alındı!");

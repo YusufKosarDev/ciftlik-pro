@@ -68,6 +68,16 @@ export function OrdersTable({
       cell: (o) => <span className="font-medium text-foreground">{formatMoney(o.total)}</span>,
     },
     {
+      key: "payment",
+      header: "Ödeme",
+      cell: (o) =>
+        o.paymentStatus === "PAID" ? (
+          <Badge tone="green">Ödendi</Badge>
+        ) : (
+          <span className="text-muted-foreground">-</span>
+        ),
+    },
+    {
       key: "status",
       header: "Durum",
       sortKey: "status",

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { orderSchema } from "@/lib/validations/order";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
+import { getStripe } from "@/lib/stripe";
 
 // POST /api/orders -> HERKESE ACIK magaza siparisi (cok kalemli, odemesiz).
 // Kimlik gerektirmez; hiz siniri + dogrulama + urun aktiflik kontrolu uygulanir.
@@ -62,6 +63,35 @@ export async function POST(request: Request) {
         items: { create: itemsData },
       },
     });
+
+    // Gercek odeme yapilandirildiysa Stripe Checkout oturumu olustur ve URL dondur.
+    // Kesirli miktari desteklemek icin her satir quantity:1 + unit_amount=lineTotal.
+    const stripe = getStripe();
+    if (stripe) {
+      const origin = process.env.NEXT_PUBLIC_SITE_URL ?? new URL(request.url).origin;
+      const checkout = await stripe.checkout.sessions.create({
+        mode: "payment",
+        line_items: itemsData.map((it) => ({
+          price_data: {
+            currency: "try",
+            product_data: { name: `${it.productName} (${it.quantity})` },
+            unit_amount: Math.round(it.lineTotal * 100),
+          },
+          quantity: 1,
+        })),
+        metadata: { orderId: order.id },
+        success_url: `${origin}/magaza/siparis-tamam`,
+        cancel_url: `${origin}/magaza/sepet`,
+      });
+      await prisma.order.update({
+        where: { id: order.id },
+        data: { paymentRef: checkout.id },
+      });
+      return NextResponse.json(
+        { ok: true, orderId: order.id, checkoutUrl: checkout.url },
+        { status: 201 }
+      );
+    }
 
     return NextResponse.json({ ok: true, orderId: order.id }, { status: 201 });
   } catch (error) {
