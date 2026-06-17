@@ -3,13 +3,16 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Wheat, Mail, Lock, Sprout, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 export default function GirisPage() {
   const router = useRouter();
+  const t = useTranslations("Login");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [demoLoading, setDemoLoading] = useState(false);
@@ -32,7 +35,7 @@ export default function GirisPage() {
     setLoading(false);
 
     if (result?.error) {
-      setError("E-posta veya parola hatalı");
+      setError(t("errorInvalid"));
       return;
     }
 
@@ -51,7 +54,7 @@ export default function GirisPage() {
     });
     setDemoLoading(false);
     if (result?.error) {
-      setError("Demo girişi şu an kullanılamıyor");
+      setError(t("errorDemo"));
       return;
     }
     router.push("/panel");
@@ -61,17 +64,20 @@ export default function GirisPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-700 via-green-600 to-emerald-800 p-4">
       <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-8 shadow-xl">
+        <div className="mb-4 flex justify-end">
+          <LanguageSwitcher />
+        </div>
         <div className="mb-6 text-center">
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400">
             <Wheat className="h-7 w-7" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Çiftlik Pro</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Hesabınıza giriş yapın</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("title")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="email">E-posta</Label>
+            <Label htmlFor="email">{t("email")}</Label>
             <div className="relative">
               <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -87,7 +93,7 @@ export default function GirisPage() {
           </div>
 
           <div>
-            <Label htmlFor="password">Parola</Label>
+            <Label htmlFor="password">{t("password")}</Label>
             <div className="relative">
               <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -110,13 +116,13 @@ export default function GirisPage() {
           )}
 
           <Button type="submit" loading={loading} className="w-full">
-            Giriş Yap
+            {t("submit")}
           </Button>
         </form>
 
         <div className="my-4 flex items-center gap-3 text-xs text-muted-foreground">
           <span className="h-px flex-1 bg-muted" />
-          veya
+          {t("or")}
           <span className="h-px flex-1 bg-muted" />
         </div>
 
@@ -128,10 +134,10 @@ export default function GirisPage() {
           className="w-full"
         >
           <Sprout className="h-4 w-4" />
-          Demo olarak gez
+          {t("demo")}
         </Button>
         <p className="mt-2 text-center text-xs text-muted-foreground">
-          Kayıt gerektirmez · örnek verilerle inceleyin
+          {t("demoHint")}
         </p>
       </div>
     </main>

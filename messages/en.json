@@ -1,0 +1,19 @@
+{
+  "Login": {
+    "title": "Çiftlik Pro",
+    "subtitle": "Sign in to your account",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "or": "or",
+    "demo": "Browse as demo",
+    "demoHint": "No sign-up required · explore with sample data",
+    "errorInvalid": "Invalid email or password",
+    "errorDemo": "Demo sign-in is currently unavailable"
+  },
+  "Language": {
+    "aria": "Language selection",
+    "tr": "Türkçe",
+    "en": "English"
+  }
+}
