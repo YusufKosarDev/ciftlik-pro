@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { PawPrint, Wheat, Wallet, ListChecks } from "lucide-react";
+import { PawPrint, Wheat, Wallet, ListChecks, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { buildMonthlyFinance } from "@/lib/finance";
 import { MonthlyFinanceChart } from "@/components/monthly-finance-chart";
+import { countDelta, moneyDelta, overdueDelta, type StatDelta } from "@/lib/stat-delta";
 import { cn } from "@/lib/cn";
 
 function formatMoney(amount: number): string {
@@ -22,6 +23,18 @@ const statTones = {
   violet: "bg-violet-50 text-violet-600 dark:bg-violet-500/15 dark:text-violet-400",
 } as const;
 
+const deltaToneClass = {
+  up: "text-green-600 dark:text-green-400",
+  down: "text-red-600 dark:text-red-400",
+  neutral: "text-muted-foreground",
+} as const;
+
+const deltaIcon = {
+  up: TrendingUp,
+  down: TrendingDown,
+  neutral: Minus,
+} as const;
+
 function StatCard({
   href,
   label,
@@ -29,6 +42,7 @@ function StatCard({
   Icon,
   tone = "green",
   valueClass = "text-foreground",
+  delta,
 }: {
   href: string;
   label: string;
@@ -36,7 +50,9 @@ function StatCard({
   Icon: React.ComponentType<{ className?: string }>;
   tone?: keyof typeof statTones;
   valueClass?: string;
+  delta?: StatDelta;
 }) {
+  const DeltaIcon = delta ? deltaIcon[delta.tone] : null;
   return (
     <Link
       href={href}
@@ -53,6 +69,12 @@ function StatCard({
       <div className="min-w-0">
         <p className="text-sm text-muted-foreground">{label}</p>
         <p className={`mt-0.5 text-2xl font-bold tabular-nums ${valueClass}`}>{value}</p>
+        {delta && DeltaIcon && (
+          <p className={cn("mt-1 flex items-center gap-1 text-xs font-medium", deltaToneClass[delta.tone])}>
+            <DeltaIcon className="h-3.5 w-3.5" />
+            {delta.label}
+          </p>
+        )}
       </div>
     </Link>
   );
@@ -95,6 +117,8 @@ export default async function PanelPage() {
   // Grafik yalnizca son 6 ayi gosterir; bu yuzden tum islemleri degil,
   // sadece bu pencereyi cekiyoruz. Toplamlar ise aggregate ile hesaplanir.
   const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+  // Bu ayin baslangici — "bu ay" trend deltalari icin.
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
   // Tum ozet verilerini tek seferde paralel cekiyoruz
   const [
@@ -106,6 +130,9 @@ export default async function PanelPage() {
     inventoryItems,
     overdueTasks,
     upcomingVaccinations,
+    animalsThisMonth,
+    fieldsThisMonth,
+    monthTotalsByType,
   ] = await Promise.all([
     prisma.animal.count({ where: { status: "ACTIVE" } }),
     prisma.field.count(),
@@ -128,6 +155,14 @@ export default async function PanelPage() {
       include: { animal: { select: { tagNumber: true, name: true } } },
       orderBy: { nextDate: "asc" },
     }),
+    // Trend deltalari: bu ay eklenen hayvan/tarla ve bu ayin gelir/gider toplami
+    prisma.animal.count({ where: { createdAt: { gte: monthStart } } }),
+    prisma.field.count({ where: { createdAt: { gte: monthStart } } }),
+    prisma.transaction.groupBy({
+      by: ["type"],
+      _sum: { amount: true },
+      where: { date: { gte: monthStart } },
+    }),
   ]);
 
   const totalIncome =
@@ -135,6 +170,13 @@ export default async function PanelPage() {
   const totalExpense =
     totalsByType.find((t) => t.type === "EXPENSE")?._sum.amount ?? 0;
   const balance = totalIncome - totalExpense;
+
+  // Bu ayin net tutari (gelir - gider) — Net Bakiye kartinin deltasi.
+  const monthIncome =
+    monthTotalsByType.find((t) => t.type === "INCOME")?._sum.amount ?? 0;
+  const monthExpense =
+    monthTotalsByType.find((t) => t.type === "EXPENSE")?._sum.amount ?? 0;
+  const monthNet = monthIncome - monthExpense;
 
   const criticalItems = inventoryItems.filter(
     (i) => i.quantity <= i.criticalLevel
@@ -164,6 +206,7 @@ export default async function PanelPage() {
           value={String(animalCount)}
           Icon={PawPrint}
           tone="green"
+          delta={countDelta(animalsThisMonth)}
         />
         <StatCard
           href="/panel/tarlalar"
@@ -171,6 +214,7 @@ export default async function PanelPage() {
           value={String(fieldCount)}
           Icon={Wheat}
           tone="amber"
+          delta={countDelta(fieldsThisMonth)}
         />
         <StatCard
           href="/panel/finans"
@@ -179,6 +223,7 @@ export default async function PanelPage() {
           Icon={Wallet}
           tone="sky"
           valueClass={balance >= 0 ? "text-green-600" : "text-red-600"}
+          delta={moneyDelta(monthNet, formatMoney)}
         />
         <StatCard
           href="/panel/gorevler"
@@ -186,6 +231,7 @@ export default async function PanelPage() {
           value={String(pendingTasks)}
           Icon={ListChecks}
           tone="violet"
+          delta={overdueDelta(overdueTasks.length)}
         />
       </div>
 
