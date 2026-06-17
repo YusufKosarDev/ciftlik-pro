@@ -15,5 +15,62 @@
     "aria": "Dil seçimi",
     "tr": "Türkçe",
     "en": "English"
+  },
+  "Nav": {
+    "panel": "Panel",
+    "map": "Harita",
+    "calendar": "Takvim",
+    "animals": "Hayvanlar",
+    "fields": "Tarlalar",
+    "inventory": "Stok",
+    "feed": "Yem",
+    "structures": "Yapılar",
+    "finance": "Finans",
+    "sales": "Satış",
+    "customers": "Müşteriler",
+    "products": "Ürünler",
+    "orders": "Siparişler",
+    "tasks": "Görevler",
+    "staff": "Personel",
+    "audit": "Denetim",
+    "sectionGeneral": "Genel",
+    "sectionOperations": "Operasyon",
+    "sectionManagement": "Yönetim"
+  },
+  "Common": {
+    "search": "Ara...",
+    "logout": "Çıkış yap",
+    "profile": "Profil"
+  },
+  "Command": {
+    "placeholder": "Sayfaya git veya eylem ara...",
+    "empty": "Eşleşen komut yok.",
+    "groupGo": "Git",
+    "groupCreate": "Oluştur",
+    "newAnimal": "Yeni Hayvan",
+    "newField": "Yeni Tarla",
+    "newInventory": "Yeni Stok Kalemi",
+    "newTransaction": "Yeni İşlem",
+    "newSale": "Yeni Satış",
+    "newCustomer": "Yeni Müşteri",
+    "newProduct": "Yeni Ürün",
+    "newTask": "Yeni Görev",
+    "newStructure": "Yeni Yapı"
+  },
+  "Dashboard": {
+    "title": "Panel",
+    "welcome": "Hoş geldin, {name}.",
+    "activeAnimals": "Aktif Hayvan",
+    "fields": "Tarla",
+    "netBalance": "Net Bakiye",
+    "openTasks": "Açık Görev",
+    "alerts": "Uyarılar",
+    "noAlerts": "Aktif uyarı yok. Her şey yolunda görünüyor.",
+    "criticalStock": "Kritik Stok",
+    "noCriticalStock": "Kritik stok yok.",
+    "overdueTasks": "Geciken Görevler",
+    "noOverdueTasks": "Geciken görev yok.",
+    "upcomingVaccinations": "Yaklaşan Aşılar",
+    "noUpcomingVaccinations": "Yaklaşan aşı yok."
   }
 }

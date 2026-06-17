@@ -15,5 +15,62 @@
     "aria": "Language selection",
     "tr": "Türkçe",
     "en": "English"
+  },
+  "Nav": {
+    "panel": "Dashboard",
+    "map": "Map",
+    "calendar": "Calendar",
+    "animals": "Animals",
+    "fields": "Fields",
+    "inventory": "Inventory",
+    "feed": "Feed",
+    "structures": "Structures",
+    "finance": "Finance",
+    "sales": "Sales",
+    "customers": "Customers",
+    "products": "Products",
+    "orders": "Orders",
+    "tasks": "Tasks",
+    "staff": "Staff",
+    "audit": "Audit log",
+    "sectionGeneral": "General",
+    "sectionOperations": "Operations",
+    "sectionManagement": "Management"
+  },
+  "Common": {
+    "search": "Search...",
+    "logout": "Sign out",
+    "profile": "Profile"
+  },
+  "Command": {
+    "placeholder": "Go to a page or search an action...",
+    "empty": "No matching command.",
+    "groupGo": "Go to",
+    "groupCreate": "Create",
+    "newAnimal": "New Animal",
+    "newField": "New Field",
+    "newInventory": "New Inventory Item",
+    "newTransaction": "New Transaction",
+    "newSale": "New Sale",
+    "newCustomer": "New Customer",
+    "newProduct": "New Product",
+    "newTask": "New Task",
+    "newStructure": "New Structure"
+  },
+  "Dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome, {name}.",
+    "activeAnimals": "Active Animals",
+    "fields": "Fields",
+    "netBalance": "Net Balance",
+    "openTasks": "Open Tasks",
+    "alerts": "Alerts",
+    "noAlerts": "No active alerts. Everything looks fine.",
+    "criticalStock": "Critical Stock",
+    "noCriticalStock": "No critical stock.",
+    "overdueTasks": "Overdue Tasks",
+    "noOverdueTasks": "No overdue tasks.",
+    "upcomingVaccinations": "Upcoming Vaccinations",
+    "noUpcomingVaccinations": "No upcoming vaccinations."
   }
 }

@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { buildMonthlyFinance } from "@/lib/finance";
 import { MonthlyFinanceChart } from "@/components/monthly-finance-chart";
+import { getTranslations } from "next-intl/server";
 import { countDelta, moneyDelta, overdueDelta, type StatDelta } from "@/lib/stat-delta";
 import { cn } from "@/lib/cn";
 
@@ -111,6 +112,7 @@ function AlertCard({
 
 export default async function PanelPage() {
   const session = await auth();
+  const t = await getTranslations("Dashboard");
   const now = new Date();
   const in30Days = new Date();
   in30Days.setDate(in30Days.getDate() + 30);
@@ -192,9 +194,9 @@ export default async function PanelPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Panel</h1>
+        <h1 className="text-2xl font-bold text-foreground">{t("title")}</h1>
         <p className="text-muted-foreground">
-          Hos geldin, <strong>{session?.user.name}</strong>.
+          {t("welcome", { name: session?.user.name ?? "" })}
         </p>
       </div>
 
@@ -202,7 +204,7 @@ export default async function PanelPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           href="/panel/hayvanlar"
-          label="Aktif Hayvan"
+          label={t("activeAnimals")}
           value={String(animalCount)}
           Icon={PawPrint}
           tone="green"
@@ -210,7 +212,7 @@ export default async function PanelPage() {
         />
         <StatCard
           href="/panel/tarlalar"
-          label="Tarla"
+          label={t("fields")}
           value={String(fieldCount)}
           Icon={Wheat}
           tone="amber"
@@ -218,7 +220,7 @@ export default async function PanelPage() {
         />
         <StatCard
           href="/panel/finans"
-          label="Net Bakiye"
+          label={t("netBalance")}
           value={formatMoney(balance)}
           Icon={Wallet}
           tone="sky"
@@ -227,7 +229,7 @@ export default async function PanelPage() {
         />
         <StatCard
           href="/panel/gorevler"
-          label="Acik Gorev"
+          label={t("openTasks")}
           value={String(pendingTasks)}
           Icon={ListChecks}
           tone="violet"
@@ -240,18 +242,18 @@ export default async function PanelPage() {
 
       {/* Uyarilar */}
       <section className="space-y-4">
-        <h2 className="text-lg font-bold text-foreground">Uyarilar</h2>
+        <h2 className="text-lg font-bold text-foreground">{t("alerts")}</h2>
 
         {!hasAlerts ? (
           <p className="rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground">
-            Aktif uyari yok. Her sey yolunda gorunuyor.
+            {t("noAlerts")}
           </p>
         ) : (
           <div className="grid gap-4 lg:grid-cols-3">
             <AlertCard
-              title="Kritik Stok"
+              title={t("criticalStock")}
               icon="📦"
-              emptyText="Kritik stok yok."
+              emptyText={t("noCriticalStock")}
               hasItems={criticalItems.length > 0}
             >
               {criticalItems.map((i) => (
@@ -265,9 +267,9 @@ export default async function PanelPage() {
             </AlertCard>
 
             <AlertCard
-              title="Geciken Gorevler"
+              title={t("overdueTasks")}
               icon="⏰"
-              emptyText="Geciken gorev yok."
+              emptyText={t("noOverdueTasks")}
               hasItems={overdueTasks.length > 0}
             >
               {overdueTasks.map((t) => (
@@ -281,9 +283,9 @@ export default async function PanelPage() {
             </AlertCard>
 
             <AlertCard
-              title="Yaklasan Asilar"
+              title={t("upcomingVaccinations")}
               icon="💉"
-              emptyText="Yaklasan asi yok."
+              emptyText={t("noUpcomingVaccinations")}
               hasItems={upcomingVaccinations.length > 0}
             >
               {upcomingVaccinations.map((v) => (

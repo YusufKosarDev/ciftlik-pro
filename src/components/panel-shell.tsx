@@ -1,22 +1,23 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Sidebar, navIcons, type NavItem } from "@/components/sidebar";
 import { Topbar } from "@/components/topbar";
 import { CommandPalette, type CommandItem } from "@/components/command-palette";
 import { Plus } from "lucide-react";
 
 // "Oluştur" kisayollari: ilgili modulun menude (yetkili) olmasi kosuluyla gosterilir.
-const createDefs: { need: string; label: string; href: string }[] = [
-  { need: "/panel/hayvanlar", label: "Yeni Hayvan", href: "/panel/hayvanlar/yeni" },
-  { need: "/panel/tarlalar", label: "Yeni Tarla", href: "/panel/tarlalar/yeni" },
-  { need: "/panel/stok", label: "Yeni Stok Kalemi", href: "/panel/stok/yeni" },
-  { need: "/panel/finans", label: "Yeni İşlem", href: "/panel/finans/yeni" },
-  { need: "/panel/satis", label: "Yeni Satış", href: "/panel/satis/yeni" },
-  { need: "/panel/musteriler", label: "Yeni Müşteri", href: "/panel/musteriler/yeni" },
-  { need: "/panel/urunler", label: "Yeni Ürün", href: "/panel/urunler/yeni" },
-  { need: "/panel/gorevler", label: "Yeni Görev", href: "/panel/gorevler/yeni" },
-  { need: "/panel/yapilar", label: "Yeni Yapı", href: "/panel/yapilar/yeni" },
+const createDefs: { need: string; labelKey: string; href: string }[] = [
+  { need: "/panel/hayvanlar", labelKey: "newAnimal", href: "/panel/hayvanlar/yeni" },
+  { need: "/panel/tarlalar", labelKey: "newField", href: "/panel/tarlalar/yeni" },
+  { need: "/panel/stok", labelKey: "newInventory", href: "/panel/stok/yeni" },
+  { need: "/panel/finans", labelKey: "newTransaction", href: "/panel/finans/yeni" },
+  { need: "/panel/satis", labelKey: "newSale", href: "/panel/satis/yeni" },
+  { need: "/panel/musteriler", labelKey: "newCustomer", href: "/panel/musteriler/yeni" },
+  { need: "/panel/urunler", labelKey: "newProduct", href: "/panel/urunler/yeni" },
+  { need: "/panel/gorevler", labelKey: "newTask", href: "/panel/gorevler/yeni" },
+  { need: "/panel/yapilar", labelKey: "newStructure", href: "/panel/yapilar/yeni" },
 ];
 
 // Panel duzeni: solda sabit sidebar (masaustu) / cekmece (mobil) + ust bar +
@@ -35,6 +36,7 @@ export function PanelShell({
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
+  const tc = useTranslations("Command");
 
   // Komut listesi: once "Oluştur" eylemleri, sonra "Git" (sayfalar).
   const commands = useMemo<CommandItem[]>(() => {
@@ -43,22 +45,22 @@ export function PanelShell({
       .filter((d) => allowed.has(d.need))
       .map((d) => ({
         id: d.href,
-        label: d.label,
-        group: "Oluştur",
+        label: tc(d.labelKey),
+        group: tc("groupCreate"),
         href: d.href,
-        keywords: "ekle yeni oluştur",
+        keywords: "ekle yeni create",
         Icon: Plus,
       }));
     const navs: CommandItem[] = navItems.map((i) => ({
       id: i.href,
       label: i.label,
-      group: "Git",
+      group: tc("groupGo"),
       href: i.href,
-      keywords: "sayfa git",
+      keywords: "sayfa git go",
       Icon: navIcons[i.href],
     }));
     return [...creates, ...navs];
-  }, [navItems]);
+  }, [navItems, tc]);
 
   return (
     <div className="min-h-screen bg-background">

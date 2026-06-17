@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Search, CornerDownLeft } from "lucide-react";
 import { filterCommands, type Command } from "@/lib/command-filter";
 import { cn } from "@/lib/cn";
@@ -22,6 +23,7 @@ export function CommandPalette({
   commands: CommandItem[];
 }) {
   const router = useRouter();
+  const t = useTranslations("Command");
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -100,7 +102,7 @@ export function CommandPalette({
               setQuery(e.target.value);
               setActive(0);
             }}
-            placeholder="Sayfaya git veya eylem ara..."
+            placeholder={t("placeholder")}
             className="w-full bg-transparent py-3.5 text-sm text-foreground outline-none placeholder:text-muted-foreground"
           />
           <kbd className="hidden rounded border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground sm:inline">
@@ -111,7 +113,7 @@ export function CommandPalette({
         <div ref={listRef} className="max-h-72 overflow-y-auto p-1.5">
           {filtered.length === 0 ? (
             <p className="px-3 py-6 text-center text-sm text-muted-foreground">
-              Eşleşen komut yok.
+              {t("empty")}
             </p>
           ) : (
             filtered.map((cmd, i) => {

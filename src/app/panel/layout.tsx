@@ -1,9 +1,30 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { PanelShell } from "@/components/panel-shell";
 import { OnboardingModal } from "@/components/onboarding-modal";
 import { roleLabels } from "@/lib/labels";
 import { navHrefsFor } from "@/lib/authz";
+
+// Menu yolu -> ceviri anahtari (sira = goruntuleme sirasi).
+const navKeys: Record<string, string> = {
+  "/panel": "panel",
+  "/panel/harita": "map",
+  "/panel/takvim": "calendar",
+  "/panel/hayvanlar": "animals",
+  "/panel/tarlalar": "fields",
+  "/panel/stok": "inventory",
+  "/panel/yem": "feed",
+  "/panel/yapilar": "structures",
+  "/panel/finans": "finance",
+  "/panel/satis": "sales",
+  "/panel/musteriler": "customers",
+  "/panel/urunler": "products",
+  "/panel/siparisler": "orders",
+  "/panel/gorevler": "tasks",
+  "/panel/personel": "staff",
+  "/panel/denetim": "audit",
+};
 
 export default async function PanelLayout({
   children,
@@ -18,24 +39,11 @@ export default async function PanelLayout({
   }
 
   // Tüm olası menü öğeleri; her rol yalnızca yetkili olduğu yolları görür.
-  const allNavItems = [
-    { href: "/panel", label: "Panel" },
-    { href: "/panel/harita", label: "Harita" },
-    { href: "/panel/takvim", label: "Takvim" },
-    { href: "/panel/hayvanlar", label: "Hayvanlar" },
-    { href: "/panel/tarlalar", label: "Tarlalar" },
-    { href: "/panel/stok", label: "Stok" },
-    { href: "/panel/yem", label: "Yem" },
-    { href: "/panel/yapilar", label: "Yapılar" },
-    { href: "/panel/finans", label: "Finans" },
-    { href: "/panel/satis", label: "Satış" },
-    { href: "/panel/musteriler", label: "Müşteriler" },
-    { href: "/panel/urunler", label: "Ürünler" },
-    { href: "/panel/siparisler", label: "Siparişler" },
-    { href: "/panel/gorevler", label: "Görevler" },
-    { href: "/panel/personel", label: "Personel" },
-    { href: "/panel/denetim", label: "Denetim" },
-  ];
+  const t = await getTranslations("Nav");
+  const allNavItems = Object.entries(navKeys).map(([href, key]) => ({
+    href,
+    label: t(key),
+  }));
   const allowed = navHrefsFor(session.user.role);
   const navItems = allNavItems.filter((item) => allowed.has(item.href));
 

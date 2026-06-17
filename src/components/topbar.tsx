@@ -1,9 +1,11 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Menu, Search } from "lucide-react";
 import type { NavItem } from "@/components/sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 // Aktif yola gore sayfa basligini bulur (en uzun eslesen on-ek).
 function titleFor(pathname: string, navItems: NavItem[]): string {
@@ -25,6 +27,7 @@ export function Topbar({
   onOpenCommand: () => void;
 }) {
   const pathname = usePathname();
+  const tc = useTranslations("Common");
   const title = titleFor(pathname, navItems);
 
   return (
@@ -44,11 +47,12 @@ export function Topbar({
           aria-label="Komut paletini aç"
         >
           <Search className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Ara...</span>
+          <span className="hidden sm:inline">{tc("search")}</span>
           <kbd className="hidden rounded border border-border px-1 py-0.5 text-[10px] sm:inline">
             ⌘K
           </kbd>
         </button>
+        <LanguageSwitcher />
         <ThemeToggle />
       </div>
     </header>

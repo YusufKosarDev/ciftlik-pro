@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import {
   Wheat,
   LayoutDashboard,
@@ -45,13 +46,16 @@ export const navIcons: Record<string, React.ComponentType<{ className?: string }
 
 // Menuyu mantiksal bolumlere ayiririz; her bolumde yalnizca rolun yetkili oldugu
 // (navItems icindeki) yollar gosterilir, bos bolumler gizlenir.
-const sections: { title: string; hrefs: string[] }[] = [
-  { title: "Genel", hrefs: ["/panel", "/panel/harita", "/panel/takvim"] },
+const sections: { titleKey: string; hrefs: string[] }[] = [
+  { titleKey: "sectionGeneral", hrefs: ["/panel", "/panel/harita", "/panel/takvim"] },
   {
-    title: "Operasyon",
+    titleKey: "sectionOperations",
     hrefs: ["/panel/hayvanlar", "/panel/tarlalar", "/panel/stok", "/panel/yem", "/panel/yapilar"],
   },
-  { title: "Yonetim", hrefs: ["/panel/finans", "/panel/satis", "/panel/musteriler", "/panel/urunler", "/panel/siparisler", "/panel/gorevler", "/panel/personel", "/panel/denetim"] },
+  {
+    titleKey: "sectionManagement",
+    hrefs: ["/panel/finans", "/panel/satis", "/panel/musteriler", "/panel/urunler", "/panel/siparisler", "/panel/gorevler", "/panel/personel", "/panel/denetim"],
+  },
 ];
 
 export type NavItem = { href: string; label: string };
@@ -75,6 +79,8 @@ export function Sidebar({
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
+  const t = useTranslations("Nav");
+  const tc = useTranslations("Common");
   const labelOf = new Map(navItems.map((i) => [i.href, i.label]));
   const allowed = new Set(navItems.map((i) => i.href));
 
@@ -101,9 +107,9 @@ export function Sidebar({
           const items = section.hrefs.filter((h) => allowed.has(h));
           if (items.length === 0) return null;
           return (
-            <div key={section.title}>
+            <div key={section.titleKey}>
               <p className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                {section.title}
+                {t(section.titleKey)}
               </p>
               <div className="space-y-0.5">
                 {items.map((href) => {
@@ -146,7 +152,7 @@ export function Sidebar({
             href="/panel/profil"
             onClick={onNavigate}
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-green-100 text-sm font-semibold text-green-700 dark:bg-green-500/15 dark:text-green-400"
-            title="Profil"
+            title={tc("profile")}
           >
             {initials(userName)}
           </Link>
@@ -154,7 +160,7 @@ export function Sidebar({
             href="/panel/profil"
             onClick={onNavigate}
             className="min-w-0 flex-1"
-            title="Profil"
+            title={tc("profile")}
           >
             <p className="truncate text-sm font-medium text-foreground">{userName}</p>
             <p className="truncate text-xs text-muted-foreground">{roleLabel}</p>
@@ -162,8 +168,8 @@ export function Sidebar({
           <button
             onClick={() => signOut({ callbackUrl: "/giris" })}
             className="rounded-lg p-2 text-muted-foreground transition hover:bg-muted hover:text-red-600"
-            title="Çıkış yap"
-            aria-label="Çıkış yap"
+            title={tc("logout")}
+            aria-label={tc("logout")}
           >
             <LogOut className="h-[18px] w-[18px]" />
           </button>
