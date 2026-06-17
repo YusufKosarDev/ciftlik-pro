@@ -114,12 +114,15 @@ export function DataTable<T extends { id: string }>({
         <>
           <div className="overflow-x-auto rounded-xl border border-border bg-card">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-border bg-muted text-muted-foreground">
+              <thead className="border-b border-border text-muted-foreground">
                 <tr>
                   {columns.map((col) => (
                     <th
                       key={col.key}
-                      className={cn("px-4 py-3 font-medium", col.headerClassName)}
+                      className={cn(
+                        "whitespace-nowrap bg-muted px-4 py-3 text-xs font-semibold uppercase tracking-wider",
+                        col.headerClassName
+                      )}
                     >
                       {col.sortKey ? (
                         <button
@@ -146,9 +149,9 @@ export function DataTable<T extends { id: string }>({
               </thead>
               <tbody className="divide-y divide-border">
                 {data.map((row) => (
-                  <tr key={row.id} className="hover:bg-muted">
+                  <tr key={row.id} className="transition-colors hover:bg-muted">
                     {columns.map((col) => (
-                      <td key={col.key} className={cn("px-4 py-3", col.className)}>
+                      <td key={col.key} className={cn("px-4 py-3 align-middle", col.className)}>
                         {col.cell(row)}
                       </td>
                     ))}
