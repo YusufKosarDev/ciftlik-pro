@@ -11,7 +11,7 @@ rol bazlı yetkilendirmeyle tek panelden yöneten tam yığın Çiftlik Yönetim
 [![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Coverage](https://img.shields.io/badge/coverage-~95%25%20(lib)-success?logo=vitest&logoColor=white)](#test--kalite)
-[![Tests](https://img.shields.io/badge/tests-180%2B%20unit%20%2B%207%20e2e-success)](#test--kalite)
+[![Tests](https://img.shields.io/badge/tests-200%2B%20unit%20%2B%207%20e2e-success)](#test--kalite)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 🔗 **Canlı Demo: [ciftlik-pro.vercel.app](https://ciftlik-pro.vercel.app)**
@@ -65,7 +65,8 @@ rol bazlı yetkilendirmeyle tek panelden yöneten tam yığın Çiftlik Yönetim
 - **Dashboard** — özet kartları, kritik stok / geciken görev / yaklaşan aşı uyarıları.
 - **Hoş geldin turu (onboarding)** — ilk panel girişinde role özel, çok adımlı
   tanıtım modal'ı; Profil'den istenildiğinde yeniden başlatılabilir.
-- **Aranabilir tablolar** — tüm liste modüllerinde arama, kolon sıralama ve sayfalama.
+- **Aranabilir tablolar** — tüm liste modüllerinde **sunucu-tarafı (DB)** arama,
+  kolon sıralama ve sayfalama; durum URL'de tutulur (paylaşılabilir/derin bağlantı).
 - **E-posta bildirimleri** — günlük cron (Vercel Cron) ile kritik stok, geciken
   görev ve yaklaşan aşı özetini yöneticilere e-posta gönderir (Resend).
 
@@ -75,12 +76,18 @@ rol bazlı yetkilendirmeyle tek panelden yöneten tam yığın Çiftlik Yönetim
   (API) hem hassas okuma (sayfa) düzeyinde uygulanır.
 - **Uçtan uca tip güvenliği** — Zod şemaları hem istemci hem sunucuda doğrular;
   Prisma ile veritabanı tipleri.
-- **Test & CI/CD** — 180+ birim/bileşen testi (Vitest + Testing Library) + 7 uçtan uca test (Playwright),
+- **Test & CI/CD** — 200+ birim/bileşen testi (Vitest + Testing Library) + 7 uçtan uca test (Playwright),
   GitHub Actions'ta gerçek PostgreSQL servisiyle her PR'da çalışır.
 - **Serverless-doğru veritabanı** — pooled (`DATABASE_URL`) + direct
   (`DIRECT_URL`) ayrımıyla Vercel + Neon/Supabase'e hazır.
+- **Sunucu-tarafı listeleme** — arama/sıralama/sayfalama veritabanında yapılır
+  (`where` / `orderBy` / `skip` / `take` + `count`); büyük tablolarda bellek/ağ
+  yükü sabit kalır. Sık filtrelenen tarih kolonlarında DB index'leri.
+- **Performans-odaklı yükleme** — ağır grafik kütüphanesi (Recharts) `next/dynamic`
+  ile tembel (ssr:false) yüklenir; görseller lazy. Finans özet/kırılımı `groupBy`
+  ile DB'de hesaplanır (tüm satırları belleğe çekmeden).
 - **Yeniden kullanılabilir tasarım sistemi** — `cva` tabanlı Button/Badge
-  primitive'leri ve jenerik `DataTable` bileşeni.
+  primitive'leri ve URL-güdümlü jenerik `DataTable` bileşeni.
 
 ## 🧱 Mimari
 
@@ -118,7 +125,14 @@ Sertleştirme önlemleri:
 - **Herkese açık kayıt yoktur** — yeni personeli yalnızca Admin oluşturur
   (`/api/auth/register`); ziyaretçiler salt-okunur **"Demo olarak gez"** ile gezer.
 - **Demo hesabı salt-okunurdur** — hiçbir yazma işlemi yapamaz (canlı demoda veri korunur).
-- **Parolalar bcrypt** ile hash'lenir; düz metin asla saklanmaz/dönülmez.
+- **Parolalar bcrypt** (maliyet 12) ile hash'lenir; düz metin asla saklanmaz/dönülmez.
+- **HTTP güvenlik başlıkları** — tüm yanıtlara CSP, HSTS, `X-Frame-Options`,
+  `X-Content-Type-Options`, `Referrer-Policy` ve `Permissions-Policy` (`next.config.ts`).
+- **Brute-force koruması** — giriş ve kayıt uçlarında IP / e-posta bazlı hız sınırı
+  (`src/lib/rate-limit.ts`); başarısız giriş denemeleri denetim günlüğüne
+  (`LOGIN_FAILED`) yazılır.
+- **Güvenli görsel URL'leri** — hayvan görseli yalnızca `http(s)` URL kabul eder
+  (Zod); `javascript:` / `data:` şemaları reddedilir (CSP `img-src` ile uyumlu).
 - **Çift taraflı doğrulama** — Zod şemaları hem istemcide hem her yazma ucunda sunucuda çalışır.
 - **Denetim günlüğü** — her yazma işlemi (kim / ne / ne zaman) `AuditLog`'a kaydedilir.
 - **Korumalı cron** — bildirim ucu `CRON_SECRET` ile `Authorization` başlığı doğrular.
@@ -212,9 +226,10 @@ Seed çalıştırıldıysa:
 
 ## Test & Kalite
 
-- **Birim testleri (Vitest):** doğrulama şemaları, RBAC yetkilendirme,
-  finans/harita/tarih/takvim yardımcıları + UI bileşenleri (Testing Library:
-  Badge/Button/EmptyState/DataTable/OnboardingModal) — `npm test` (180+ test). Kapsam raporu için
+- **Birim testleri (Vitest):** doğrulama şemaları, RBAC yetkilendirme, hız sınırı,
+  liste sorgu parametreleri, finans/harita/tarih/takvim yardımcıları + UI bileşenleri
+  (Testing Library: Badge/Button/EmptyState/DataTable/OnboardingModal) — `npm test`
+  (200+ test). Kapsam raporu için
   `npm run test:coverage` (iş mantığı `src/lib` için ~%95 satır kapsamı).
 - **Uçtan uca testler (Playwright):** kimlik doğrulama, hayvan CRUD akışı ve
   RBAC erişim engeli — `npm run test:e2e` (7 test).
