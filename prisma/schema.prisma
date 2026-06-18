@@ -16,6 +16,23 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+// Abonelik plani (SaaS).
+enum Plan {
+  FREE
+  PRO
+}
+
+// Kiraci (tenant) — her tenant bir ciftlik/isletmedir. Cok-kiracilik Faz 1:
+// her tenant-kapsamli tabloda nullable "tenantId" kolonu eklendi (additive).
+// Sonraki adimlar: backfill + NOT NULL + per-tenant unique + Postgres RLS.
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String // Ciftlik/isletme adi
+  slug      String   @unique // acme (subdomain/URL icin, ileride)
+  plan      Plan     @default(FREE)
+  createdAt DateTime @default(now())
+}
+
 // Kullanici rolleri (RBAC)
 enum Role {
   ADMIN // Yonetici: her seye tam erisim
@@ -35,6 +52,7 @@ enum AuditAction {
 // Denetim gunlugu: kim, neyi, ne zaman degistirdi (yazma islemleri).
 model AuditLog {
   id        String      @id @default(cuid())
+  tenantId  String?
   actorId   String? // Islemi yapan kullanici id'si (kullanici silinse de kayit kalir)
   actorName String // Snapshot: kullanici adi/e-postasi
   action    AuditAction
@@ -49,6 +67,7 @@ model AuditLog {
 // Sistemi kullanan personel
 model User {
   id          String    @id @default(cuid())
+  tenantId    String?
   name        String
   email       String    @unique
   password    String // Parolanin hash'lenmis hali saklanir, asla duz metin degil
@@ -70,6 +89,7 @@ enum TaskStatus {
 // Personele atanan gorev
 model Task {
   id           String     @id @default(cuid())
+  tenantId     String?
   title        String // Gorev basligi
   description  String?
   assignedToId String?
@@ -109,6 +129,7 @@ enum AnimalStatus {
 // Ciftlikteki hayvanlar
 model Animal {
   id        String        @id @default(cuid())
+  tenantId  String?
   tagNumber String        @unique // Kulak kupesi numarasi (benzersiz)
   name      String? // Istege bagli isim/lakap
   species   AnimalSpecies
@@ -139,6 +160,7 @@ model Animal {
 // Bir hayvana ait saglik/tedavi kaydi
 model HealthRecord {
   id        String   @id @default(cuid())
+  tenantId  String?
   animalId  String
   animal    Animal   @relation(fields: [animalId], references: [id], onDelete: Cascade)
   date      DateTime // Muayene/tedavi tarihi
@@ -153,6 +175,7 @@ model HealthRecord {
 // Bir hayvana yapilan asi kaydi
 model Vaccination {
   id        String    @id @default(cuid())
+  tenantId  String?
   animalId  String
   animal    Animal    @relation(fields: [animalId], references: [id], onDelete: Cascade)
   name      String // Asi adi
@@ -175,6 +198,7 @@ enum TransactionType {
 // Gelir/gider kaydi
 model Transaction {
   id          String          @id @default(cuid())
+  tenantId    String?
   type        TransactionType
   amount      Float // Tutar (TL)
   category    String // Kategori (orn. Sut satisi, Yem alimi)
@@ -196,6 +220,7 @@ enum InventoryCategory {
 // Stok / envanter kalemi
 model InventoryItem {
   id            String            @id @default(cuid())
+  tenantId      String?
   name          String // Kalem adi
   category      InventoryCategory
   quantity      Float // Mevcut miktar
@@ -212,6 +237,7 @@ model InventoryItem {
 // stok kaleminin miktari dusurulur (bkz. POST /api/feed).
 model FeedLog {
   id              String        @id @default(cuid())
+  tenantId        String?
   inventoryItemId String
   inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
   date            DateTime // Tuketim tarihi
@@ -232,6 +258,7 @@ enum CropStatus {
 // Ciftlikteki tarlalar
 model Field {
   id        String   @id @default(cuid())
+  tenantId  String?
   name      String // Tarla adi
   area      Float // Alan (donum)
   location  String? // Konum/mevki
@@ -247,6 +274,7 @@ model Field {
 // Bir tarlaya yapilan ekim/hasat kaydi
 model Crop {
   id          String     @id @default(cuid())
+  tenantId    String?
   fieldId     String
   field       Field      @relation(fields: [fieldId], references: [id], onDelete: Cascade)
   name        String // Urun adi (orn. Bugday)
@@ -267,6 +295,7 @@ model Crop {
 // Bir hayvanin gunluk sut verimi kaydi
 model MilkYield {
   id        String   @id @default(cuid())
+  tenantId  String?
   animalId  String
   animal    Animal   @relation(fields: [animalId], references: [id], onDelete: Cascade)
   date      DateTime // Olcum tarihi
@@ -280,6 +309,7 @@ model MilkYield {
 // Bir hayvanin periyodik agirlik (tartim) kaydi
 model WeightRecord {
   id        String   @id @default(cuid())
+  tenantId  String?
   animalId  String
   animal    Animal   @relation(fields: [animalId], references: [id], onDelete: Cascade)
   date      DateTime // Tartim tarihi
@@ -301,6 +331,7 @@ enum BreedingStatus {
 // Bir disi hayvanin ureme/gebelik kaydi
 model BreedingRecord {
   id                String         @id @default(cuid())
+  tenantId          String?
   animalId          String
   animal            Animal         @relation(fields: [animalId], references: [id], onDelete: Cascade)
   sireTag           String? // Baba kulak numarasi (serbest metin; baba sistemde olmayabilir)
@@ -328,6 +359,7 @@ enum StructureType {
 // Ciftlikteki yapilar (ahir, kumes, depo...) — 2D haritada konumlu
 model Structure {
   id        String        @id @default(cuid())
+  tenantId  String?
   name      String // Yapi adi
   type      StructureType
   posX      Float? // 2D harita yatay konumu (sanal birim)
@@ -342,6 +374,7 @@ model Structure {
 // Musteri (alici). Satislar opsiyonel olarak bir musteriye baglanir.
 model Customer {
   id        String   @id @default(cuid())
+  tenantId  String?
   name      String // Musteri adi / unvani
   phone     String?
   email     String?
@@ -356,6 +389,7 @@ model Customer {
 // transactionId ile baglanir; boylece satislar finansa otomatik yansir.
 model Sale {
   id            String    @id @default(cuid())
+  tenantId      String?
   item          String // Satilan (serbest metin: "Sut 100L", "Inek TR-001")
   customerId    String? // Musteri (opsiyonel)
   customer      Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
@@ -374,6 +408,7 @@ model Sale {
 // Magaza (herkese acik katalog) urunu.
 model Product {
   id          String   @id @default(cuid())
+  tenantId    String?
   name        String // Urun adi
   description String?
   price       Float // Birim fiyat (TL)
@@ -401,6 +436,7 @@ enum PaymentStatus {
 // Magazadan verilen (odemesiz olabilen) siparis. Cok kalemlidir (OrderItem).
 model Order {
   id            String        @id @default(cuid())
+  tenantId      String?
   customerName  String // Siparis veren ad
   customerPhone String? // Iletisim (opsiyonel)
   note          String?
@@ -420,6 +456,7 @@ model Order {
 // (urun sonradan degisse/silinse de siparis bozulmaz).
 model OrderItem {
   id          String   @id @default(cuid())
+  tenantId    String?
   orderId     String
   order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId   String? // Iliskili urun (silinirse null; snapshot kalir)
