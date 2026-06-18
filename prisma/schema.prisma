@@ -62,6 +62,7 @@ model AuditLog {
   summary   String? // Insana okunur kisa aciklama
   createdAt DateTime    @default(now())
 
+  @@index([tenantId])
   @@index([createdAt])
 }
 
@@ -78,6 +79,8 @@ model User {
   updatedAt   DateTime  @updatedAt
 
   tasks Task[]
+
+  @@index([tenantId])
 }
 
 // Gorev durumu
@@ -100,6 +103,7 @@ model Task {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
+  @@index([tenantId])
   @@index([assignedToId])
   // Takvim/dashboard/cron son tarih araligi sorgulari icin.
   @@index([dueDate])
@@ -171,6 +175,7 @@ model HealthRecord {
   notes     String? // Ek notlar
   createdAt DateTime @default(now())
 
+  @@index([tenantId])
   @@index([animalId])
 }
 
@@ -186,6 +191,7 @@ model Vaccination {
   notes     String?
   createdAt DateTime  @default(now())
 
+  @@index([tenantId])
   @@index([animalId])
   // Yaklasan asi araligi sorgulari (takvim/dashboard/cron) icin.
   @@index([nextDate])
@@ -208,6 +214,7 @@ model Transaction {
   description String?
   createdAt   DateTime        @default(now())
 
+  @@index([tenantId])
   @@index([date])
 }
 
@@ -233,6 +240,8 @@ model InventoryItem {
   updatedAt     DateTime          @updatedAt
 
   feedLogs FeedLog[]
+
+  @@index([tenantId])
 }
 
 // Bir yem (FEED) kaleminin tuketim kaydi. Tuketim eklendiginde ilgili
@@ -247,6 +256,7 @@ model FeedLog {
   notes           String?
   createdAt       DateTime      @default(now())
 
+  @@index([tenantId])
   @@index([inventoryItemId])
 }
 
@@ -271,6 +281,8 @@ model Field {
   updatedAt DateTime @updatedAt
 
   crops Crop[]
+
+  @@index([tenantId])
 }
 
 // Bir tarlaya yapilan ekim/hasat kaydi
@@ -289,6 +301,7 @@ model Crop {
   notes       String?
   createdAt   DateTime   @default(now())
 
+  @@index([tenantId])
   @@index([fieldId])
   // Takvimde hasat tarihi araligi sorgulari icin.
   @@index([harvestDate])
@@ -305,6 +318,7 @@ model MilkYield {
   notes     String?
   createdAt DateTime @default(now())
 
+  @@index([tenantId])
   @@index([animalId])
 }
 
@@ -319,6 +333,7 @@ model WeightRecord {
   notes     String?
   createdAt DateTime @default(now())
 
+  @@index([tenantId])
   @@index([animalId])
 }
 
@@ -345,6 +360,7 @@ model BreedingRecord {
   notes             String?
   createdAt         DateTime       @default(now())
 
+  @@index([tenantId])
   @@index([animalId])
   // Takvimde tahmini dogum tarihi araligi sorgulari icin.
   @@index([expectedBirthDate])
@@ -371,6 +387,8 @@ model Structure {
   notes     String?
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
+
+  @@index([tenantId])
 }
 
 // Musteri (alici). Satislar opsiyonel olarak bir musteriye baglanir.
@@ -385,6 +403,8 @@ model Customer {
   updatedAt DateTime @updatedAt
 
   sales Sale[]
+
+  @@index([tenantId])
 }
 
 // Satis kaydi. Olusturuldugunda otomatik bir gelir (INCOME) islemi uretilir ve
@@ -403,6 +423,7 @@ model Sale {
   transactionId String?   @unique // Otomatik olusturulan gelir isleminin id'si
   createdAt     DateTime  @default(now())
 
+  @@index([tenantId])
   @@index([date])
   @@index([customerId])
 }
@@ -420,6 +441,8 @@ model Product {
   updatedAt   DateTime @updatedAt
 
   orderItems OrderItem[]
+
+  @@index([tenantId])
 }
 
 // Siparis durumu
@@ -450,6 +473,7 @@ model Order {
 
   items OrderItem[]
 
+  @@index([tenantId])
   @@index([createdAt])
   @@index([status])
 }
@@ -468,6 +492,7 @@ model OrderItem {
   quantity    Float // Adet/miktar
   lineTotal   Float // unitPrice * quantity
 
+  @@index([tenantId])
   @@index([orderId])
   @@index([productId])
 }

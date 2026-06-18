@@ -173,10 +173,15 @@ CV-hazır canlı demo korunuyor.
   ürün doğrulaması tenant-kapsamlı. Stripe metadata'sına `tenantId` yazılır;
   webhook siparişi o tenant bağlamında günceller. seed/seed-demo tenantId'li.
 
+**Performans — tamamlandı:**
+
+- ✅ Her tenant-tablosunda `@@index([tenantId])` (RLS + forTenant her sorguya
+  `tenantId` filtresi enjekte ettiğinden). Animal (zaten `@@unique([tenantId,
+  tagNumber])` tenantId-öncülü) ve Invitation (zaten index'li) hariç 19 tablo.
+
 **Kalan:**
 
 - ⏳ **Faz 3 / 5** — faturalandırma, operasyon (KVKK ihraç/silme, süper-admin).
-- ⏳ Performans: `@@index([tenantId])` (RLS her sorguda `tenantId` filtreler).
 - ⏳ (Opsiyonel) Vitrin dizini cross-tenant ürün sayısı için SECURITY DEFINER
   fonksiyonu — şu an tüm tenant'lar listeleniyor (boş vitrinler de).
 
