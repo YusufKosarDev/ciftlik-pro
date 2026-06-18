@@ -50,3 +50,19 @@ export function forTenant(tenantId: string) {
 }
 
 export type TenantPrisma = ReturnType<typeof forTenant>;
+
+// RLS baglamini ayarlayarak tenant-kapsamli calistirir: interaktif transaction
+// icinde `app.tenant_id` GUC'unu SET LOCAL eder (pgbouncer uyumlu) ve forTenant
+// enjeksiyonlu tx verir. Uretimde uygulama NON-SUPERUSER rolle baglandiginda
+// Postgres RLS, bu baglam disindaki tum satirlari gizler (findUnique/update/delete
+// dahil). Cagiranlar: `await withTenant(session.user.tenantId, (db) => db.animal.findMany())`.
+export async function withTenant<T>(
+  tenantId: string,
+  fn: (db: Parameters<Parameters<TenantPrisma["$transaction"]>[0]>[0]) => Promise<T>
+): Promise<T> {
+  return forTenant(tenantId).$transaction(async (tx) => {
+    // set_config(name, value, is_local=true) === SET LOCAL (transaction kapsamli).
+    await tx.$executeRaw`SELECT set_config('app.tenant_id', ${tenantId}, true)`;
+    return fn(tx);
+  });
+}
