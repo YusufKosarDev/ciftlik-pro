@@ -1,9 +1,9 @@
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { canWrite } from "@/lib/authz";
 import { parseListParams, type ListState } from "@/lib/list-query";
+import { withTenant } from "@/lib/tenant-prisma";
 import { buttonVariants } from "@/components/ui/button";
 import { AnimalsTable } from "@/components/tables/animals-table";
 
@@ -28,18 +28,20 @@ export default async function HayvanlarPage({
       }
     : {};
 
-  const [animals, total, session] = await Promise.all([
-    prisma.animal.findMany({
-      where,
-      orderBy: { [sort]: dir } as Prisma.AnimalOrderByWithRelationInput,
-      skip,
-      take,
-    }),
-    prisma.animal.count({ where }),
-    auth(),
-  ]);
-
+  const session = await auth();
   const canEdit = session ? canWrite(session.user.role, "animals") : false;
+  const { animals, total } = await withTenant(session!.user.tenantId, async (db) => {
+    const [animals, total] = await Promise.all([
+      db.animal.findMany({
+        where,
+        orderBy: { [sort]: dir } as Prisma.AnimalOrderByWithRelationInput,
+        skip,
+        take,
+      }),
+      db.animal.count({ where }),
+    ]);
+    return { animals, total };
+  });
   const list: ListState = { total, page, pageSize: take, q, sort, dir };
 
   return (

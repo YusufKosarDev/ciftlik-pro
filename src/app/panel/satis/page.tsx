@@ -1,8 +1,8 @@
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
 import { canWrite, requirePageView } from "@/lib/authz";
 import { parseListParams, type ListState } from "@/lib/list-query";
+import { withTenant } from "@/lib/tenant-prisma";
 import { buttonVariants } from "@/components/ui/button";
 import { SalesTable } from "@/components/tables/sales-table";
 
@@ -39,18 +39,21 @@ export default async function SatisPage({
     sort === "customer" ? { customer: { name: dir } } : { [sort]: dir }
   ) as Prisma.SaleOrderByWithRelationInput;
 
-  const [sales, total, totalAgg] = await Promise.all([
-    prisma.sale.findMany({
-      where,
-      orderBy,
-      skip,
-      take,
-      include: { customer: { select: { name: true } } },
-    }),
-    prisma.sale.count({ where }),
-    // Tum zamanlarin toplam satis tutari (arama/sayfadan bagimsiz).
-    prisma.sale.aggregate({ _sum: { amount: true } }),
-  ]);
+  const { sales, total, totalAgg } = await withTenant(session.user.tenantId, async (db) => {
+    const [sales, total, totalAgg] = await Promise.all([
+      db.sale.findMany({
+        where,
+        orderBy,
+        skip,
+        take,
+        include: { customer: { select: { name: true } } },
+      }),
+      db.sale.count({ where }),
+      // Tum zamanlarin toplam satis tutari (arama/sayfadan bagimsiz).
+      db.sale.aggregate({ _sum: { amount: true } }),
+    ]);
+    return { sales, total, totalAgg };
+  });
 
   const canEdit = canWrite(session.user.role, "sales");
   const list: ListState = { total, page, pageSize: take, q, sort, dir };

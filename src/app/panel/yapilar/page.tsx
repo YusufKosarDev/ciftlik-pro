@@ -1,9 +1,9 @@
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { canWrite } from "@/lib/authz";
 import { parseListParams, type ListState } from "@/lib/list-query";
+import { withTenant } from "@/lib/tenant-prisma";
 import { buttonVariants } from "@/components/ui/button";
 import { StructuresTable } from "@/components/tables/structures-table";
 
@@ -27,18 +27,20 @@ export default async function YapilarPage({
       }
     : {};
 
-  const [structures, total, session] = await Promise.all([
-    prisma.structure.findMany({
-      where,
-      orderBy: { [sort]: dir } as Prisma.StructureOrderByWithRelationInput,
-      skip,
-      take,
-    }),
-    prisma.structure.count({ where }),
-    auth(),
-  ]);
-
+  const session = await auth();
   const canEdit = session ? canWrite(session.user.role, "structures") : false;
+  const { structures, total } = await withTenant(session!.user.tenantId, async (db) => {
+    const [structures, total] = await Promise.all([
+      db.structure.findMany({
+        where,
+        orderBy: { [sort]: dir } as Prisma.StructureOrderByWithRelationInput,
+        skip,
+        take,
+      }),
+      db.structure.count({ where }),
+    ]);
+    return { structures, total };
+  });
   const list: ListState = { total, page, pageSize: take, q, sort, dir };
 
   return (

@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import type { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { parseListParams, type ListState } from "@/lib/list-query";
+import { withTenant } from "@/lib/tenant-prisma";
 import { UserForm } from "@/components/user-form";
 import { UsersTable } from "@/components/tables/users-table";
 
@@ -33,16 +33,19 @@ export default async function PersonelPage({
       }
     : {};
 
-  const [users, total] = await Promise.all([
-    prisma.user.findMany({
-      where,
-      orderBy: { [sort]: dir } as Prisma.UserOrderByWithRelationInput,
-      skip,
-      take,
-      select: { id: true, name: true, email: true, role: true, createdAt: true },
-    }),
-    prisma.user.count({ where }),
-  ]);
+  const { users, total } = await withTenant(session!.user.tenantId, async (db) => {
+    const [users, total] = await Promise.all([
+      db.user.findMany({
+        where,
+        orderBy: { [sort]: dir } as Prisma.UserOrderByWithRelationInput,
+        skip,
+        take,
+        select: { id: true, name: true, email: true, role: true, createdAt: true },
+      }),
+      db.user.count({ where }),
+    ]);
+    return { users, total };
+  });
 
   const list: ListState = { total, page, pageSize: take, q, sort, dir };
 

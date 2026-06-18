@@ -1,9 +1,9 @@
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { canWrite } from "@/lib/authz";
 import { parseListParams, type ListState } from "@/lib/list-query";
+import { withTenant } from "@/lib/tenant-prisma";
 import { buttonVariants } from "@/components/ui/button";
 import { FieldsTable } from "@/components/tables/fields-table";
 
@@ -27,18 +27,20 @@ export default async function TarlalarPage({
       }
     : {};
 
-  const [fields, total, session] = await Promise.all([
-    prisma.field.findMany({
-      where,
-      orderBy: { [sort]: dir } as Prisma.FieldOrderByWithRelationInput,
-      skip,
-      take,
-    }),
-    prisma.field.count({ where }),
-    auth(),
-  ]);
-
+  const session = await auth();
   const canEdit = session ? canWrite(session.user.role, "fields") : false;
+  const { fields, total } = await withTenant(session!.user.tenantId, async (db) => {
+    const [fields, total] = await Promise.all([
+      db.field.findMany({
+        where,
+        orderBy: { [sort]: dir } as Prisma.FieldOrderByWithRelationInput,
+        skip,
+        take,
+      }),
+      db.field.count({ where }),
+    ]);
+    return { fields, total };
+  });
   const list: ListState = { total, page, pageSize: take, q, sort, dir };
 
   return (

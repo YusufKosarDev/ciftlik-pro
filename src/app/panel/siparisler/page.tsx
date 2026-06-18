@@ -1,7 +1,7 @@
 import type { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
 import { canWrite, requirePageView } from "@/lib/authz";
 import { parseListParams, type ListState } from "@/lib/list-query";
+import { withTenant } from "@/lib/tenant-prisma";
 import { OrdersTable } from "@/components/tables/orders-table";
 
 export default async function SiparislerPage({
@@ -26,17 +26,20 @@ export default async function SiparislerPage({
       }
     : {};
 
-  const [orders, total, pendingCount] = await Promise.all([
-    prisma.order.findMany({
-      where,
-      orderBy: { [sort]: dir } as Prisma.OrderOrderByWithRelationInput,
-      skip,
-      take,
-      include: { items: { select: { productName: true, quantity: true } } },
-    }),
-    prisma.order.count({ where }),
-    prisma.order.count({ where: { status: "PENDING" } }),
-  ]);
+  const { orders, total, pendingCount } = await withTenant(session.user.tenantId, async (db) => {
+    const [orders, total, pendingCount] = await Promise.all([
+      db.order.findMany({
+        where,
+        orderBy: { [sort]: dir } as Prisma.OrderOrderByWithRelationInput,
+        skip,
+        take,
+        include: { items: { select: { productName: true, quantity: true } } },
+      }),
+      db.order.count({ where }),
+      db.order.count({ where: { status: "PENDING" } }),
+    ]);
+    return { orders, total, pendingCount };
+  });
 
   const canEdit = canWrite(session.user.role, "orders");
   const list: ListState = { total, page, pageSize: take, q, sort, dir };

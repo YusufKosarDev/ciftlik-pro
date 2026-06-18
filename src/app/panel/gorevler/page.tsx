@@ -1,9 +1,9 @@
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { canWrite } from "@/lib/authz";
 import { parseListParams, type ListState } from "@/lib/list-query";
+import { withTenant } from "@/lib/tenant-prisma";
 import { buttonVariants } from "@/components/ui/button";
 import { TasksTable } from "@/components/tables/tasks-table";
 
@@ -33,19 +33,21 @@ export default async function GorevlerPage({
     sort === "assignedTo" ? { assignedTo: { name: dir } } : { [sort]: dir }
   ) as Prisma.TaskOrderByWithRelationInput;
 
-  const [tasks, total, session] = await Promise.all([
-    prisma.task.findMany({
-      where,
-      orderBy,
-      skip,
-      take,
-      include: { assignedTo: { select: { name: true } } },
-    }),
-    prisma.task.count({ where }),
-    auth(),
-  ]);
-
+  const session = await auth();
   const canEdit = session ? canWrite(session.user.role, "tasks") : false;
+  const { tasks, total } = await withTenant(session!.user.tenantId, async (db) => {
+    const [tasks, total] = await Promise.all([
+      db.task.findMany({
+        where,
+        orderBy,
+        skip,
+        take,
+        include: { assignedTo: { select: { name: true } } },
+      }),
+      db.task.count({ where }),
+    ]);
+    return { tasks, total };
+  });
   const list: ListState = { total, page, pageSize: take, q, sort, dir };
 
   return (

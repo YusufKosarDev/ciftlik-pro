@@ -1,9 +1,9 @@
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { canWrite } from "@/lib/authz";
 import { parseListParams, type ListState } from "@/lib/list-query";
+import { withTenant } from "@/lib/tenant-prisma";
 import { buttonVariants } from "@/components/ui/button";
 import { InventoryTable } from "@/components/tables/inventory-table";
 
@@ -30,21 +30,25 @@ export default async function StokPage({
   // Kritik sayim kolon-kolon karsilastirma gerektirir (quantity <= criticalLevel);
   // Prisma standart where ile yapamaz, bu yuzden DB-tarafi COUNT (tum kayitlari
   // bellege cekmeden) kullaniyoruz.
-  const [items, total, session, criticalRows] = await Promise.all([
-    prisma.inventoryItem.findMany({
-      where,
-      orderBy: { [sort]: dir } as Prisma.InventoryItemOrderByWithRelationInput,
-      skip,
-      take,
-    }),
-    prisma.inventoryItem.count({ where }),
-    auth(),
-    prisma.$queryRaw<{ count: number }[]>`
-      SELECT COUNT(*)::int AS count FROM "InventoryItem" WHERE "quantity" <= "criticalLevel"`,
-  ]);
+  const session = await auth();
+  const canEdit = session ? canWrite(session.user.role, "inventory") : false;
+  const { items, total, criticalRows } = await withTenant(session!.user.tenantId, async (db) => {
+    const [items, total, criticalRows] = await Promise.all([
+      db.inventoryItem.findMany({
+        where,
+        orderBy: { [sort]: dir } as Prisma.InventoryItemOrderByWithRelationInput,
+        skip,
+        take,
+      }),
+      db.inventoryItem.count({ where }),
+      // RLS baglaminda calistigindan bu raw COUNT da tenant-kapsamli olur.
+      db.$queryRaw<{ count: number }[]>`
+        SELECT COUNT(*)::int AS count FROM "InventoryItem" WHERE "quantity" <= "criticalLevel"`,
+    ]);
+    return { items, total, criticalRows };
+  });
 
   const criticalCount = criticalRows[0]?.count ?? 0;
-  const canEdit = session ? canWrite(session.user.role, "inventory") : false;
   const list: ListState = { total, page, pageSize: take, q, sort, dir };
 
   return (

@@ -1,8 +1,8 @@
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
 import { canWrite, requirePageView } from "@/lib/authz";
 import { parseListParams, type ListState } from "@/lib/list-query";
+import { withTenant } from "@/lib/tenant-prisma";
 import { buttonVariants } from "@/components/ui/button";
 import { TransactionsTable } from "@/components/tables/transactions-table";
 
@@ -66,20 +66,23 @@ export default async function FinansPage({
 
   // Tablo: aranan/sayfalanan kayitlar. Ozet ve kategori kirilimi ise TUM
   // islemler uzerinden DB'de gruplanir (bellege cekmeden) — arama/sayfadan bagimsiz.
+  const { transactions, total, grouped } = await withTenant(session.user.tenantId, async (db) => {
   const [transactions, total, grouped] = await Promise.all([
-    prisma.transaction.findMany({
+    db.transaction.findMany({
       where,
       orderBy: { [sort]: dir } as Prisma.TransactionOrderByWithRelationInput,
       skip,
       take,
     }),
-    prisma.transaction.count({ where }),
-    prisma.transaction.groupBy({
+    db.transaction.count({ where }),
+    db.transaction.groupBy({
       by: ["type", "category"],
       _sum: { amount: true },
       orderBy: { _sum: { amount: "desc" } },
     }),
   ]);
+    return { transactions, total, grouped };
+  });
 
   const income = grouped
     .filter((g) => g.type === "INCOME")

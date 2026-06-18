@@ -1,8 +1,8 @@
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
 import { canWrite, requirePageView } from "@/lib/authz";
 import { parseListParams, type ListState } from "@/lib/list-query";
+import { withTenant } from "@/lib/tenant-prisma";
 import { buttonVariants } from "@/components/ui/button";
 import { ProductsTable } from "@/components/tables/products-table";
 
@@ -28,15 +28,18 @@ export default async function UrunlerPage({
       }
     : {};
 
-  const [products, total] = await Promise.all([
-    prisma.product.findMany({
-      where,
-      orderBy: { [sort]: dir } as Prisma.ProductOrderByWithRelationInput,
-      skip,
-      take,
-    }),
-    prisma.product.count({ where }),
-  ]);
+  const { products, total } = await withTenant(session.user.tenantId, async (db) => {
+    const [products, total] = await Promise.all([
+      db.product.findMany({
+        where,
+        orderBy: { [sort]: dir } as Prisma.ProductOrderByWithRelationInput,
+        skip,
+        take,
+      }),
+      db.product.count({ where }),
+    ]);
+    return { products, total };
+  });
 
   const canEdit = canWrite(session.user.role, "products");
   const list: ListState = { total, page, pageSize: take, q, sort, dir };
