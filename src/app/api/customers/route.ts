@@ -23,6 +23,7 @@ export async function POST(request: Request) {
     const customer = await withTenant(authz.session.user.tenantId, (db) =>
       db.customer.create({
         data: {
+          tenantId: authz.session.user.tenantId,
           name: data.name,
           phone: data.phone || null,
           email: data.email || null,

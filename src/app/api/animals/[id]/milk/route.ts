@@ -30,6 +30,7 @@ export async function POST(
       if (!animal) return null;
       return db.milkYield.create({
         data: {
+          tenantId: authz.session.user.tenantId,
           animalId: id,
           date: new Date(data.date),
           amount: data.amount,

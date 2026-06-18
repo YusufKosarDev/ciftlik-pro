@@ -30,6 +30,7 @@ export async function POST(
       if (!animal) return null;
       return db.vaccination.create({
         data: {
+          tenantId: authz.session.user.tenantId,
           animalId: id,
           name: data.name,
           date: new Date(data.date),

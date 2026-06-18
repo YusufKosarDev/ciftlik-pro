@@ -23,6 +23,7 @@ export async function POST(request: Request) {
     const structure = await withTenant(authz.session.user.tenantId, (db) =>
       db.structure.create({
         data: {
+          tenantId: authz.session.user.tenantId,
           name: data.name,
           type: data.type,
           notes: data.notes || null,

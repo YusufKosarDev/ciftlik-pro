@@ -23,6 +23,7 @@ export async function POST(request: Request) {
     const transaction = await withTenant(authz.session.user.tenantId, (db) =>
       db.transaction.create({
         data: {
+          tenantId: authz.session.user.tenantId,
           type: data.type,
           amount: data.amount,
           category: data.category,

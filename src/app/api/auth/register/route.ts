@@ -56,7 +56,7 @@ export async function POST(request: Request) {
     // baglanir (tenantId withTenant tarafindan otomatik enjekte edilir).
     const user = await withTenant(tenantId, (db) =>
       db.user.create({
-        data: { name, email, password: passwordHash, role },
+        data: { tenantId, name, email, password: passwordHash, role },
         // Parolayi asla geri dondurmuyoruz
         select: { id: true, name: true, email: true, role: true, createdAt: true },
       })

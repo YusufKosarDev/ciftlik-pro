@@ -61,6 +61,7 @@ export async function POST(request: Request) {
         }
         return db.feedLog.create({
           data: {
+            tenantId,
             inventoryItemId: data.inventoryItemId,
             date: new Date(data.date),
             quantity: data.quantity,

@@ -52,6 +52,7 @@ export async function POST(request: Request) {
 
       const animal = await db.animal.create({
         data: {
+          tenantId: authz.session.user.tenantId,
           tagNumber: data.tagNumber,
           name: data.name || null,
           species: data.species,

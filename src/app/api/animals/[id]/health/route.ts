@@ -31,6 +31,7 @@ export async function POST(
       if (!animal) return null;
       return db.healthRecord.create({
         data: {
+          tenantId: authz.session.user.tenantId,
           animalId: id,
           date: new Date(data.date),
           diagnosis: data.diagnosis,

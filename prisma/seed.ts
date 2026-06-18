@@ -16,6 +16,15 @@ async function main() {
   await prisma.field.deleteMany();
   await prisma.user.deleteMany();
 
+  // Cok-kiracilik: tum seed verisi tek bir varsayilan tenant'a baglanir.
+  // (Backfill migration ile ayni sabit id.)
+  const TENANT_ID = "default-tenant";
+  await prisma.tenant.upsert({
+    where: { id: TENANT_ID },
+    update: {},
+    create: { id: TENANT_ID, name: "Varsayilan Ciftlik", slug: "default" },
+  });
+
   // Kullanicilar (seed kullanicilari "mevcut" sayilir; hos geldin turunu
   // gormus kabul edilir -> onboardedAt dolu)
   // Maliyet 12: src/lib/password-hash.ts BCRYPT_COST ile ayni.
@@ -23,6 +32,7 @@ async function main() {
   const now = new Date();
   const admin = await prisma.user.create({
     data: {
+      tenantId: TENANT_ID,
       name: "Yonetici",
       email: "admin@ciftlik.com",
       password: passwordHash,
@@ -32,6 +42,7 @@ async function main() {
   });
   const worker = await prisma.user.create({
     data: {
+      tenantId: TENANT_ID,
       name: "Ahmet Calisan",
       email: "ahmet@ciftlik.com",
       password: passwordHash,
@@ -41,6 +52,7 @@ async function main() {
   });
   await prisma.user.create({
     data: {
+      tenantId: TENANT_ID,
       name: "Veteriner Veli",
       email: "vet@ciftlik.com",
       password: passwordHash,
@@ -49,9 +61,11 @@ async function main() {
     },
   });
 
-  // Hayvanlar (alt kayitlariyla)
+  // Hayvanlar (alt kayitlariyla). Ic ice kayitlar tenantId'yi otomatik
+  // devralmadigindan her alt kayda da acikca yaziyoruz.
   await prisma.animal.create({
     data: {
+      tenantId: TENANT_ID,
       tagNumber: "TR-001",
       name: "Sarikiz",
       species: "CATTLE",
@@ -62,6 +76,7 @@ async function main() {
       healthRecords: {
         create: [
           {
+            tenantId: TENANT_ID,
             date: new Date("2026-05-20"),
             diagnosis: "Ayak enfeksiyonu",
             treatment: "Antibiyotik",
@@ -71,6 +86,7 @@ async function main() {
       vaccinations: {
         create: [
           {
+            tenantId: TENANT_ID,
             name: "Sap Asisi",
             date: new Date("2026-01-10"),
             nextDate: new Date("2026-07-10"),
@@ -79,15 +95,16 @@ async function main() {
       },
       milkYields: {
         create: [
-          { date: new Date("2026-05-28"), amount: 13.5 },
-          { date: new Date("2026-05-29"), amount: 12.5 },
-          { date: new Date("2026-05-30"), amount: 14.0 },
+          { tenantId: TENANT_ID, date: new Date("2026-05-28"), amount: 13.5 },
+          { tenantId: TENANT_ID, date: new Date("2026-05-29"), amount: 12.5 },
+          { tenantId: TENANT_ID, date: new Date("2026-05-30"), amount: 14.0 },
         ],
       },
     },
   });
   await prisma.animal.create({
     data: {
+      tenantId: TENANT_ID,
       tagNumber: "TR-002",
       name: "Pamuk",
       species: "SHEEP",
@@ -101,12 +118,14 @@ async function main() {
   // Tarlalar (ekimleriyle)
   await prisma.field.create({
     data: {
+      tenantId: TENANT_ID,
       name: "Dere Tarlasi",
       area: 25.5,
       location: "Koy alti",
       crops: {
         create: [
           {
+            tenantId: TENANT_ID,
             name: "Bugday",
             plantedDate: new Date("2025-11-01"),
             status: "GROWING",
@@ -116,25 +135,25 @@ async function main() {
     },
   });
   await prisma.field.create({
-    data: { name: "Tepe Tarlasi", area: 40, location: "Sirt" },
+    data: { tenantId: TENANT_ID, name: "Tepe Tarlasi", area: 40, location: "Sirt" },
   });
 
   // Stok (biri kritik seviyede)
   await prisma.inventoryItem.createMany({
     data: [
-      { name: "Arpa", category: "FEED", quantity: 500, unit: "kg", criticalLevel: 100 },
-      { name: "Antibiyotik", category: "MEDICINE", quantity: 5, unit: "adet", criticalLevel: 10 },
-      { name: "Traktor yagi", category: "EQUIPMENT", quantity: 20, unit: "litre", criticalLevel: 5 },
+      { tenantId: TENANT_ID, name: "Arpa", category: "FEED", quantity: 500, unit: "kg", criticalLevel: 100 },
+      { tenantId: TENANT_ID, name: "Antibiyotik", category: "MEDICINE", quantity: 5, unit: "adet", criticalLevel: 10 },
+      { tenantId: TENANT_ID, name: "Traktor yagi", category: "EQUIPMENT", quantity: 20, unit: "litre", criticalLevel: 5 },
     ],
   });
 
   // Finans (son aylara yayilmis)
   await prisma.transaction.createMany({
     data: [
-      { type: "INCOME", amount: 5000, category: "Sut satisi", date: new Date("2026-05-20") },
-      { type: "EXPENSE", amount: 2000, category: "Yem alimi", date: new Date("2026-05-22") },
-      { type: "INCOME", amount: 3500, category: "Sut satisi", date: new Date("2026-04-15") },
-      { type: "EXPENSE", amount: 1200, category: "Ilac alimi", date: new Date("2026-04-18") },
+      { tenantId: TENANT_ID, type: "INCOME", amount: 5000, category: "Sut satisi", date: new Date("2026-05-20") },
+      { tenantId: TENANT_ID, type: "EXPENSE", amount: 2000, category: "Yem alimi", date: new Date("2026-05-22") },
+      { tenantId: TENANT_ID, type: "INCOME", amount: 3500, category: "Sut satisi", date: new Date("2026-04-15") },
+      { tenantId: TENANT_ID, type: "EXPENSE", amount: 1200, category: "Ilac alimi", date: new Date("2026-04-18") },
     ],
   });
 
@@ -142,12 +161,14 @@ async function main() {
   await prisma.task.createMany({
     data: [
       {
+        tenantId: TENANT_ID,
         title: "Ahir temizligi",
         assignedToId: worker.id,
         status: "PENDING",
         dueDate: new Date("2026-05-25"),
       },
       {
+        tenantId: TENANT_ID,
         title: "Yem siparisi ver",
         assignedToId: admin.id,
         status: "IN_PROGRESS",

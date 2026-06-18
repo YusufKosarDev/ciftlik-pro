@@ -23,6 +23,7 @@ export async function POST(request: Request) {
     const product = await withTenant(authz.session.user.tenantId, (db) =>
       db.product.create({
         data: {
+          tenantId: authz.session.user.tenantId,
           name: data.name,
           description: data.description || null,
           price: data.price,

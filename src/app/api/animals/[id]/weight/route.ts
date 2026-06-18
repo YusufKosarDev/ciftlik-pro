@@ -30,6 +30,7 @@ export async function POST(
       if (!animal) return null;
       return db.weightRecord.create({
         data: {
+          tenantId: authz.session.user.tenantId,
           animalId: id,
           date: new Date(data.date),
           weightKg: data.weightKg,

@@ -30,6 +30,7 @@ export async function POST(
       if (!animal) return null;
       return db.breedingRecord.create({
         data: {
+          tenantId: authz.session.user.tenantId,
           animalId: id,
           sireTag: data.sireTag || null,
           breedingDate: new Date(data.breedingDate),

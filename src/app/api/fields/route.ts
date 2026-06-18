@@ -23,6 +23,7 @@ export async function POST(request: Request) {
     const field = await withTenant(authz.session.user.tenantId, (db) =>
       db.field.create({
         data: {
+          tenantId: authz.session.user.tenantId,
           name: data.name,
           area: data.area,
           location: data.location || null,

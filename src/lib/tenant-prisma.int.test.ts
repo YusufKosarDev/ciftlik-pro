@@ -28,18 +28,18 @@ describe.skipIf(!run)("tenant izolasyonu (integration, gercek DB)", () => {
     await prisma.$disconnect();
   });
 
-  it("create otomatik tenantId atar ve findMany/count yalnız kendi tenant'ını döner", async () => {
+  it("create acik tenantId ile yazar ve findMany/count yalnız kendi tenant'ını döner", async () => {
     const dbA = forTenant(A);
     const dbB = forTenant(B);
 
+    // tenantId yazma tarafinda acikca verilir (tip zorunlulugu + RLS WITH CHECK).
     const aAnimal = await dbA.animal.create({
-      data: { tagNumber: tagA, species: "CATTLE", gender: "FEMALE" },
+      data: { tenantId: A, tagNumber: tagA, species: "CATTLE", gender: "FEMALE" },
     });
     const bAnimal = await dbB.animal.create({
-      data: { tagNumber: tagB, species: "SHEEP", gender: "FEMALE" },
+      data: { tenantId: B, tagNumber: tagB, species: "SHEEP", gender: "FEMALE" },
     });
 
-    // create otomatik tenantId atadı
     expect(aAnimal.tenantId).toBe(A);
     expect(bAnimal.tenantId).toBe(B);
 
@@ -66,10 +66,10 @@ describe.skipIf(!run)("tenant izolasyonu (integration, gercek DB)", () => {
     const shared = `SHARED-${stamp}`;
     try {
       const a = await forTenant(A).animal.create({
-        data: { tagNumber: shared, species: "CATTLE", gender: "FEMALE" },
+        data: { tenantId: A, tagNumber: shared, species: "CATTLE", gender: "FEMALE" },
       });
       const b = await forTenant(B).animal.create({
-        data: { tagNumber: shared, species: "GOAT", gender: "FEMALE" },
+        data: { tenantId: B, tagNumber: shared, species: "GOAT", gender: "FEMALE" },
       });
       expect(a.tenantId).toBe(A);
       expect(b.tenantId).toBe(B);

@@ -41,6 +41,7 @@ export async function PUT(
       }
 
       const txData = {
+        tenantId: authz.session.user.tenantId,
         type: "INCOME" as const,
         amount: data.amount,
         category: "Satış",

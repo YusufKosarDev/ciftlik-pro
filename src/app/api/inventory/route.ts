@@ -23,6 +23,7 @@ export async function POST(request: Request) {
     const item = await withTenant(authz.session.user.tenantId, (db) =>
       db.inventoryItem.create({
         data: {
+          tenantId: authz.session.user.tenantId,
           name: data.name,
           category: data.category,
           quantity: data.quantity,

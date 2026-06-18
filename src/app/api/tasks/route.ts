@@ -23,6 +23,7 @@ export async function POST(request: Request) {
     const task = await withTenant(authz.session.user.tenantId, (db) =>
       db.task.create({
         data: {
+          tenantId: authz.session.user.tenantId,
           title: data.title,
           description: data.description || null,
           assignedToId: data.assignedToId || null,

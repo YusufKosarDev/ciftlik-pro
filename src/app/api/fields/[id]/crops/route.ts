@@ -30,6 +30,7 @@ export async function POST(
       if (!field) return null;
       return db.crop.create({
         data: {
+          tenantId: authz.session.user.tenantId,
           fieldId: id,
           name: data.name,
           plantedDate: new Date(data.plantedDate),

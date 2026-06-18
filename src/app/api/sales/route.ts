@@ -41,6 +41,7 @@ export async function POST(request: Request) {
 
       const transaction = await db.transaction.create({
         data: {
+          tenantId: authz.session.user.tenantId,
           type: "INCOME",
           amount: data.amount,
           category: "Satış",
@@ -50,6 +51,7 @@ export async function POST(request: Request) {
       });
       const sale = await db.sale.create({
         data: {
+          tenantId: authz.session.user.tenantId,
           item: data.item,
           customerId: data.customerId || null,
           quantity: data.quantity ?? null,

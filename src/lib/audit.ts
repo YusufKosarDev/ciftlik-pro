@@ -35,8 +35,9 @@ export async function logAudit(
   };
   try {
     if (actor?.tenantId) {
-      // Tenant baglaminda yaz; forTenant tenantId'yi enjekte eder, RLS gecer.
-      await withTenant(actor.tenantId, (db) => db.auditLog.create({ data }));
+      // Tenant baglaminda yaz; tenantId acikca verilir, RLS WITH CHECK gecer.
+      const tenantId = actor.tenantId;
+      await withTenant(tenantId, (db) => db.auditLog.create({ data: { ...data, tenantId } }));
     } else {
       // Tenant'siz sistem kaydi (orn. LOGIN_FAILED).
       await prisma.auditLog.create({ data: { ...data, tenantId: null } });

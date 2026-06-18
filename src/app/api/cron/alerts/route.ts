@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { collectAlerts, renderAlertsHtml, VACCINATION_WINDOW_DAYS } from "@/lib/notifications";
 import { sendEmail } from "@/lib/email";
 
@@ -31,43 +32,60 @@ export async function GET(request: Request) {
     const windowEnd = new Date(now);
     windowEnd.setDate(windowEnd.getDate() + VACCINATION_WINDOW_DAYS);
 
-    const [inventory, tasks, vaccinations, admins] = await Promise.all([
-      prisma.inventoryItem.findMany({
-        select: { name: true, quantity: true, criticalLevel: true, unit: true },
-      }),
-      prisma.task.findMany({
-        where: { status: { not: "DONE" }, dueDate: { lt: now } },
-        select: { title: true, status: true, dueDate: true },
-      }),
-      prisma.vaccination.findMany({
-        where: { nextDate: { gte: now, lte: windowEnd } },
-        select: {
-          name: true,
-          nextDate: true,
-          animal: { select: { tagNumber: true, name: true } },
-        },
-      }),
-      prisma.user.findMany({ where: { role: "ADMIN" }, select: { email: true } }),
-    ]);
+    // Cok-kiracilik: her tenant'in uyarilari kendi verisiyle toplanir ve yalnizca
+    // o tenant'in ADMIN'lerine gonderilir. Tenant listesi RLS'siz okunur; her
+    // tenant icin sorgular withTenant baglaminda calisir.
+    const tenants = await prisma.tenant.findMany({ select: { id: true } });
 
-    const alerts = collectAlerts({ inventory, tasks, vaccinations }, now);
+    let tenantsNotified = 0;
+    let totalAlerts = 0;
+    let totalRecipients = 0;
 
-    if (alerts.total === 0) {
-      return NextResponse.json({ ok: true, sent: false, total: 0 });
+    for (const tenant of tenants) {
+      const [inventory, tasks, vaccinations, admins] = await withTenant(tenant.id, (db) =>
+        Promise.all([
+          db.inventoryItem.findMany({
+            select: { name: true, quantity: true, criticalLevel: true, unit: true },
+          }),
+          db.task.findMany({
+            where: { status: { not: "DONE" }, dueDate: { lt: now } },
+            select: { title: true, status: true, dueDate: true },
+          }),
+          db.vaccination.findMany({
+            where: { nextDate: { gte: now, lte: windowEnd } },
+            select: {
+              name: true,
+              nextDate: true,
+              animal: { select: { tagNumber: true, name: true } },
+            },
+          }),
+          db.user.findMany({ where: { role: "ADMIN" }, select: { email: true } }),
+        ])
+      );
+
+      const alerts = collectAlerts({ inventory, tasks, vaccinations }, now);
+      if (alerts.total === 0) continue;
+
+      const recipients = admins.map((a) => a.email);
+      if (recipients.length === 0) continue;
+
+      await sendEmail(
+        recipients,
+        `Çiftlik Pro — ${alerts.total} uyarı`,
+        renderAlertsHtml(alerts)
+      );
+
+      tenantsNotified += 1;
+      totalAlerts += alerts.total;
+      totalRecipients += recipients.length;
     }
-
-    const recipients = admins.map((a) => a.email);
-    const result = await sendEmail(
-      recipients,
-      `Çiftlik Pro — ${alerts.total} uyarı`,
-      renderAlertsHtml(alerts)
-    );
 
     return NextResponse.json({
       ok: true,
-      sent: !result.skipped,
-      total: alerts.total,
-      recipients: recipients.length,
+      tenants: tenants.length,
+      tenantsNotified,
+      total: totalAlerts,
+      recipients: totalRecipients,
     });
   } catch (error) {
     console.error("Cron uyari hatasi:", error);
