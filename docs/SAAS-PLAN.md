@@ -128,6 +128,39 @@ enum Plan { FREE PRO }
 - **Tek-tenant → çoklu-üyelik** sonradan istenirse `Membership` tablosuna geçiş
   gerekir (e-posta / login modeli değişir) — v1'de bilinçli olarak basit tutuldu.
 
+## 12. Uygulama durumu (`feat/saas-phase1` dalı)
+
+**Faz 1 — büyük ölçüde tamamlandı** (mağaza hariç). `main`'e merge edilmedi;
+CV-hazır canlı demo korunuyor.
+
+- ✅ `Tenant` modeli + `Plan` enum; 20 tabloya `tenantId`; `Animal.tagNumber`
+  per-tenant unique (`@@unique([tenantId, tagNumber])`).
+- ✅ Migration zinciri: ekleme → backfill (default-tenant) → RLS (ENABLE+FORCE +
+  `tenant_isolation`) → AuditLog NULL politikası → **`tenantId` NOT NULL** (17
+  tablo). `AuditLog`/`Order`/`OrderItem` bilinçli nullable.
+- ✅ Scoped client: `forTenant` (okuma `where` enjeksiyonu) + `withTenant`
+  (interaktif transaction + `SET LOCAL app.tenant_id`, pgbouncer-uyumlu).
+- ✅ Yazma yolları: tenantId **açıkça** verilir (tip-zorunlu); RLS `WITH CHECK`
+  DB-seviyesi garanti. Tüm panel sayfaları + yazma rotaları + register +
+  profil + denetim adapte edildi.
+- ✅ Oturum: JWT/session'da `tenantId`.
+- ✅ Cron uyarıları **tenant döngüsünde** çalışır (her tenant'ın admin'lerine).
+- ✅ İzolasyon e2e testleri (gerçek DB, non-superuser rol): `forTenant`
+  izolasyonu, per-tenant tag tekrarı, RLS `findUnique` sızıntı yok, fail-closed.
+- ✅ **Üretim non-superuser rolü:** `prisma/rls-app-role.sql` + kurulum rehberi
+  [`docs/PRODUCTION-RLS.md`](./PRODUCTION-RLS.md).
+
+**Kalan:**
+
+- ⏳ **Faz 2** — public çiftlik kaydı + personel davet akışı (mevcut admin-only
+  register tenant-içi çalışıyor; public "çiftlik oluştur" + davet modeli henüz yok).
+- ⏳ **Faz 4** — per-tenant mağaza: vitrin tenant çözümleme (subdomain vs `/{slug}`),
+  `Order`/`OrderItem` adoption + NOT NULL. (Şu an `/api/orders` ve `/magaza`
+  tek-tenant/ertelenmiş.)
+- ⏳ **Faz 3 / 5** — faturalandırma, operasyon (KVKK ihraç/silme, süper-admin).
+- ⏳ Performans: `@@index([tenantId])` (RLS her sorguda `tenantId` filtreler).
+
 ---
 
-_Durum: taslak. Uygulama, onaylanan fazlarla parça parça yapılacaktır._
+_Durum: Faz 1 uygulandı (`feat/saas-phase1`). Sonraki fazlar onaylandıkça parça
+parça yapılacaktır._
