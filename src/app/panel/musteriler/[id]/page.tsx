@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import { canWrite, requirePageView } from "@/lib/authz";
+import { withTenant } from "@/lib/tenant-prisma";
 
 function formatMoney(amount: number): string {
   return amount.toLocaleString("tr-TR", { minimumFractionDigits: 2 }) + " TL";
@@ -27,10 +27,14 @@ export default async function MusteriDetayPage({
   const session = await requirePageView("/panel/musteriler");
 
   const { id } = await params;
-  const customer = await prisma.customer.findUnique({
-    where: { id },
-    include: { sales: { orderBy: { date: "desc" } } },
-  });
+  // findFirst (findUnique degil) ki forTenant enjeksiyonu where'e tenantId ekleyebilsin;
+  // ayrica RLS (withTenant baglami) tekil erisimi DB'de de garanti eder.
+  const customer = await withTenant(session.user.tenantId, (db) =>
+    db.customer.findFirst({
+      where: { id },
+      include: { sales: { orderBy: { date: "desc" } } },
+    })
+  );
   if (!customer) {
     notFound();
   }

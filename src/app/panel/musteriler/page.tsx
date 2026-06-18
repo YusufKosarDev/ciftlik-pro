@@ -1,8 +1,8 @@
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
 import { canWrite, requirePageView } from "@/lib/authz";
 import { parseListParams, type ListState } from "@/lib/list-query";
+import { withTenant } from "@/lib/tenant-prisma";
 import { buttonVariants } from "@/components/ui/button";
 import { CustomersTable } from "@/components/tables/customers-table";
 
@@ -29,16 +29,19 @@ export default async function MusterilerPage({
       }
     : {};
 
-  const [customers, total] = await Promise.all([
-    prisma.customer.findMany({
-      where,
-      orderBy: { [sort]: dir } as Prisma.CustomerOrderByWithRelationInput,
-      skip,
-      take,
-      include: { _count: { select: { sales: true } } },
-    }),
-    prisma.customer.count({ where }),
-  ]);
+  const { customers, total } = await withTenant(session.user.tenantId, async (db) => {
+    const [customers, total] = await Promise.all([
+      db.customer.findMany({
+        where,
+        orderBy: { [sort]: dir } as Prisma.CustomerOrderByWithRelationInput,
+        skip,
+        take,
+        include: { _count: { select: { sales: true } } },
+      }),
+      db.customer.count({ where }),
+    ]);
+    return { customers, total };
+  });
 
   const canEdit = canWrite(session.user.role, "customers");
   const list: ListState = { total, page, pageSize: take, q, sort, dir };

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import { requirePageWrite } from "@/lib/authz";
+import { withTenant } from "@/lib/tenant-prisma";
 import { CustomerForm } from "@/components/customer-form";
 
 export default async function MusteriDuzenlePage({
@@ -8,10 +8,12 @@ export default async function MusteriDuzenlePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requirePageWrite("customers");
+  const session = await requirePageWrite("customers");
 
   const { id } = await params;
-  const customer = await prisma.customer.findUnique({ where: { id } });
+  const customer = await withTenant(session.user.tenantId, (db) =>
+    db.customer.findFirst({ where: { id } })
+  );
   if (!customer) {
     notFound();
   }
