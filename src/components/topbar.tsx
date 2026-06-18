@@ -5,7 +5,9 @@ import { useTranslations } from "next-intl";
 import { Menu, Search } from "lucide-react";
 import type { NavItem } from "@/components/sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { LanguageSwitcher } from "@/components/language-switcher";
+// NOT: Panel string'lerinin tam cevirisi tamamlanana kadar panel ici dil
+// degistirici gizli (karisik-dil gorunmemesi icin). Giris ekrani iki dilli kalir.
+// Tamamlandiginda asagidaki <LanguageSwitcher /> geri eklenir.
 
 // Aktif yola gore sayfa basligini bulur (en uzun eslesen on-ek).
 function titleFor(pathname: string, navItems: NavItem[]): string {
@@ -52,7 +54,6 @@ export function Topbar({
             ⌘K
           </kbd>
         </button>
-        <LanguageSwitcher />
         <ThemeToggle />
       </div>
     </header>
