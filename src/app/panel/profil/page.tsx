@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { roleLabels } from "@/lib/labels";
 import { PasswordChangeForm } from "@/components/password-change-form";
 import { RestartTourButton } from "@/components/restart-tour-button";
+import { AccountDangerZone } from "@/components/account-danger-zone";
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -19,6 +21,15 @@ export default async function ProfilPage() {
     redirect("/giris");
   }
 
+  // Hesap (tenant) islemleri yalnizca ADMIN'e gosterilir.
+  const isAdmin = session.user.role === "ADMIN";
+  const tenant = isAdmin
+    ? await prisma.tenant.findUnique({
+        where: { id: session.user.tenantId },
+        select: { name: true },
+      })
+    : null;
+
   return (
     <div className="mx-auto max-w-xl space-y-6">
       <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
@@ -34,6 +45,13 @@ export default async function ProfilPage() {
       <PasswordChangeForm />
 
       <RestartTourButton />
+
+      {isAdmin && tenant && (
+        <AccountDangerZone
+          farmName={tenant.name}
+          canDelete={session.user.tenantId !== "default-tenant"}
+        />
+      )}
     </div>
   );
 }

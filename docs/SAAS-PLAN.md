@@ -179,9 +179,20 @@ CV-hazır canlı demo korunuyor.
   `tenantId` filtresi enjekte ettiğinden). Animal (zaten `@@unique([tenantId,
   tagNumber])` tenantId-öncülü) ve Invitation (zaten index'li) hariç 19 tablo.
 
+**Faz 5 — kısmen tamamlandı (KVKK self-servis):**
+
+- ✅ **Veri ihracı** (`GET /api/tenant/export`, ADMIN): tenant'ın tüm verisi JSON
+  olarak indirilir (parola hash'leri hariç). KVKK/GDPR taşınabilirlik.
+- ✅ **Çiftlik silme** (`DELETE /api/tenant`, ADMIN): tüm veri FK-güvenli sırayla
+  + Tenant kalıcı silinir. Onay (çiftlik adı yazılır), demo (default-tenant)
+  korunur. Profil sayfasında "Tehlikeli bölge" UI'ı + silmede otomatik oturum kapatma.
+- ⏳ **Süper-admin paneli** ertelendi: platform-rolü mimarisi + cross-tenant
+  erişim (RLS bypass / SECURITY DEFINER) gerektirir.
+
 **Kalan:**
 
-- ⏳ **Faz 3 / 5** — faturalandırma, operasyon (KVKK ihraç/silme, süper-admin).
+- ⏳ **Faz 3** — faturalandırma (Stripe Billing, planlar/limitler).
+- ⏳ **Faz 5 (kalan)** — süper-admin paneli, tenant başına metrik/loglama.
 - ⏳ (Opsiyonel) Vitrin dizini cross-tenant ürün sayısı için SECURITY DEFINER
   fonksiyonu — şu an tüm tenant'lar listeleniyor (boş vitrinler de).
 
