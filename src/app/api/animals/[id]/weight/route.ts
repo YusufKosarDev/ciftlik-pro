@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { weightSchema } from "@/lib/validations/weight";
@@ -24,20 +24,23 @@ export async function POST(
       );
     }
 
-    const animal = await prisma.animal.findUnique({ where: { id } });
-    if (!animal) {
+    const data = parsed.data;
+    const record = await withTenant(authz.session.user.tenantId, async (db) => {
+      const animal = await db.animal.findFirst({ where: { id } });
+      if (!animal) return null;
+      return db.weightRecord.create({
+        data: {
+          animalId: id,
+          date: new Date(data.date),
+          weightKg: data.weightKg,
+          notes: data.notes || null,
+        },
+      });
+    });
+
+    if (!record) {
       return NextResponse.json({ error: "Hayvan bulunamadi" }, { status: 404 });
     }
-
-    const data = parsed.data;
-    const record = await prisma.weightRecord.create({
-      data: {
-        animalId: id,
-        date: new Date(data.date),
-        weightKg: data.weightKg,
-        notes: data.notes || null,
-      },
-    });
 
     await logAudit(authz.session.user, "CREATE", "WeightRecord", record.id, `${record.weightKg} kg`);
 

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { milkYieldSchema } from "@/lib/validations/milk";
@@ -24,20 +24,23 @@ export async function POST(
       );
     }
 
-    const animal = await prisma.animal.findUnique({ where: { id } });
-    if (!animal) {
+    const data = parsed.data;
+    const yield_ = await withTenant(authz.session.user.tenantId, async (db) => {
+      const animal = await db.animal.findFirst({ where: { id } });
+      if (!animal) return null;
+      return db.milkYield.create({
+        data: {
+          animalId: id,
+          date: new Date(data.date),
+          amount: data.amount,
+          notes: data.notes || null,
+        },
+      });
+    });
+
+    if (!yield_) {
       return NextResponse.json({ error: "Hayvan bulunamadi" }, { status: 404 });
     }
-
-    const data = parsed.data;
-    const yield_ = await prisma.milkYield.create({
-      data: {
-        animalId: id,
-        date: new Date(data.date),
-        amount: data.amount,
-        notes: data.notes || null,
-      },
-    });
 
     await logAudit(authz.session.user, "CREATE", "MilkYield", yield_.id, `${yield_.amount} L`);
 

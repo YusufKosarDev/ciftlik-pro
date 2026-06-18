@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { breedingSchema } from "@/lib/validations/breeding";
@@ -24,28 +24,31 @@ export async function POST(
       );
     }
 
-    const animal = await prisma.animal.findUnique({ where: { id } });
-    if (!animal) {
+    const data = parsed.data;
+    const record = await withTenant(authz.session.user.tenantId, async (db) => {
+      const animal = await db.animal.findFirst({ where: { id } });
+      if (!animal) return null;
+      return db.breedingRecord.create({
+        data: {
+          animalId: id,
+          sireTag: data.sireTag || null,
+          breedingDate: new Date(data.breedingDate),
+          expectedBirthDate: data.expectedBirthDate
+            ? new Date(data.expectedBirthDate)
+            : null,
+          actualBirthDate: data.actualBirthDate
+            ? new Date(data.actualBirthDate)
+            : null,
+          status: data.status,
+          offspringCount: data.offspringCount ?? null,
+          notes: data.notes || null,
+        },
+      });
+    });
+
+    if (!record) {
       return NextResponse.json({ error: "Hayvan bulunamadi" }, { status: 404 });
     }
-
-    const data = parsed.data;
-    const record = await prisma.breedingRecord.create({
-      data: {
-        animalId: id,
-        sireTag: data.sireTag || null,
-        breedingDate: new Date(data.breedingDate),
-        expectedBirthDate: data.expectedBirthDate
-          ? new Date(data.expectedBirthDate)
-          : null,
-        actualBirthDate: data.actualBirthDate
-          ? new Date(data.actualBirthDate)
-          : null,
-        status: data.status,
-        offspringCount: data.offspringCount ?? null,
-        notes: data.notes || null,
-      },
-    });
 
     await logAudit(authz.session.user, "CREATE", "BreedingRecord", record.id, record.sireTag ?? "üreme kaydı");
 

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { cropSchema } from "@/lib/validations/crop";
@@ -24,25 +24,28 @@ export async function POST(
       );
     }
 
-    const field = await prisma.field.findUnique({ where: { id } });
-    if (!field) {
+    const data = parsed.data;
+    const crop = await withTenant(authz.session.user.tenantId, async (db) => {
+      const field = await db.field.findFirst({ where: { id } });
+      if (!field) return null;
+      return db.crop.create({
+        data: {
+          fieldId: id,
+          name: data.name,
+          plantedDate: new Date(data.plantedDate),
+          harvestDate: data.harvestDate ? new Date(data.harvestDate) : null,
+          status: data.status,
+          cost: data.cost ?? null,
+          revenue: data.revenue ?? null,
+          yieldAmount: data.yieldAmount ?? null,
+          notes: data.notes || null,
+        },
+      });
+    });
+
+    if (!crop) {
       return NextResponse.json({ error: "Tarla bulunamadi" }, { status: 404 });
     }
-
-    const data = parsed.data;
-    const crop = await prisma.crop.create({
-      data: {
-        fieldId: id,
-        name: data.name,
-        plantedDate: new Date(data.plantedDate),
-        harvestDate: data.harvestDate ? new Date(data.harvestDate) : null,
-        status: data.status,
-        cost: data.cost ?? null,
-        revenue: data.revenue ?? null,
-        yieldAmount: data.yieldAmount ?? null,
-        notes: data.notes || null,
-      },
-    });
 
     await logAudit(authz.session.user, "CREATE", "Crop", crop.id, crop.name);
 

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { AnimalForm } from "@/components/animal-form";
 import { requirePageWrite } from "@/lib/authz";
 
@@ -9,21 +9,24 @@ export default async function HayvanDuzenlePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requirePageWrite("animals");
+  const session = await requirePageWrite("animals");
 
   const { id } = await params;
-  const animal = await prisma.animal.findUnique({ where: { id } });
+  const [animal, mothers] = await withTenant(session.user.tenantId, (db) =>
+    Promise.all([
+      db.animal.findFirst({ where: { id } }),
+      // Anne adaylari: disi hayvanlar (kendisi haric)
+      db.animal.findMany({
+        where: { gender: "FEMALE", id: { not: id } },
+        select: { id: true, tagNumber: true, name: true },
+        orderBy: { tagNumber: "asc" },
+      }),
+    ])
+  );
 
   if (!animal) {
     notFound();
   }
-
-  // Anne adaylari: disi hayvanlar (kendisi haric)
-  const mothers = await prisma.animal.findMany({
-    where: { gender: "FEMALE", id: { not: id } },
-    select: { id: true, tagNumber: true, name: true },
-    orderBy: { tagNumber: "asc" },
-  });
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">

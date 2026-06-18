@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { requirePageWrite } from "@/lib/authz";
 import { ProductForm } from "@/components/product-form";
 
@@ -8,10 +8,12 @@ export default async function UrunDuzenlePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requirePageWrite("products");
+  const session = await requirePageWrite("products");
 
   const { id } = await params;
-  const product = await prisma.product.findUnique({ where: { id } });
+  const product = await withTenant(session.user.tenantId, (db) =>
+    db.product.findFirst({ where: { id } })
+  );
   if (!product) {
     notFound();
   }

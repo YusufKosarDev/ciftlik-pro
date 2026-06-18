@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import { withTenant } from "@/lib/tenant-prisma";
 import {
   parseMonthParam,
   monthRange,
@@ -28,27 +29,30 @@ export default async function TakvimPage({
   const { year, month } = parseMonthParam(ay);
   const { start, end } = monthRange(year, month);
 
-  const [vaccinations, tasks, crops, births] = await Promise.all([
-    prisma.vaccination.findMany({
-      where: { nextDate: { gte: start, lt: end } },
-      select: { id: true, name: true, nextDate: true, animal: { select: { id: true, tagNumber: true, name: true } } },
-    }),
-    prisma.task.findMany({
-      where: { dueDate: { gte: start, lt: end } },
-      select: { id: true, title: true, dueDate: true },
-    }),
-    prisma.crop.findMany({
-      where: { harvestDate: { gte: start, lt: end } },
-      select: { id: true, name: true, harvestDate: true, field: { select: { id: true, name: true } } },
-    }),
-    prisma.breedingRecord.findMany({
-      where: {
-        expectedBirthDate: { gte: start, lt: end },
-        status: { in: ["PLANNED", "PREGNANT"] },
-      },
-      select: { id: true, expectedBirthDate: true, animal: { select: { id: true, tagNumber: true, name: true } } },
-    }),
-  ]);
+  const session = await auth();
+  const [vaccinations, tasks, crops, births] = await withTenant(session!.user.tenantId, (db) =>
+    Promise.all([
+      db.vaccination.findMany({
+        where: { nextDate: { gte: start, lt: end } },
+        select: { id: true, name: true, nextDate: true, animal: { select: { id: true, tagNumber: true, name: true } } },
+      }),
+      db.task.findMany({
+        where: { dueDate: { gte: start, lt: end } },
+        select: { id: true, title: true, dueDate: true },
+      }),
+      db.crop.findMany({
+        where: { harvestDate: { gte: start, lt: end } },
+        select: { id: true, name: true, harvestDate: true, field: { select: { id: true, name: true } } },
+      }),
+      db.breedingRecord.findMany({
+        where: {
+          expectedBirthDate: { gte: start, lt: end },
+          status: { in: ["PLANNED", "PREGNANT"] },
+        },
+        select: { id: true, expectedBirthDate: true, animal: { select: { id: true, tagNumber: true, name: true } } },
+      }),
+    ])
+  );
 
   const events: CalendarEvent[] = [
     ...vaccinations.map((v) => ({

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { inventorySchema } from "@/lib/validations/inventory";
@@ -20,16 +20,18 @@ export async function POST(request: Request) {
     }
 
     const data = parsed.data;
-    const item = await prisma.inventoryItem.create({
-      data: {
-        name: data.name,
-        category: data.category,
-        quantity: data.quantity,
-        unit: data.unit,
-        criticalLevel: data.criticalLevel,
-        notes: data.notes || null,
-      },
-    });
+    const item = await withTenant(authz.session.user.tenantId, (db) =>
+      db.inventoryItem.create({
+        data: {
+          name: data.name,
+          category: data.category,
+          quantity: data.quantity,
+          unit: data.unit,
+          criticalLevel: data.criticalLevel,
+          notes: data.notes || null,
+        },
+      })
+    );
 
     await logAudit(authz.session.user, "CREATE", "InventoryItem", item.id, item.name);
 

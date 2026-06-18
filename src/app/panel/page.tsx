@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { PawPrint, Wheat, Wallet, ListChecks, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { buildMonthlyFinance } from "@/lib/finance";
 import { MonthlyFinanceChart } from "@/components/monthly-finance-chart";
 import { getTranslations } from "next-intl/server";
@@ -135,37 +135,39 @@ export default async function PanelPage() {
     animalsThisMonth,
     fieldsThisMonth,
     monthTotalsByType,
-  ] = await Promise.all([
-    prisma.animal.count({ where: { status: "ACTIVE" } }),
-    prisma.field.count(),
-    // Tum zamanlarin gelir/gider toplamlari (kayitlari belleğe cekmeden)
-    prisma.transaction.groupBy({ by: ["type"], _sum: { amount: true } }),
-    // Grafik icin yalnizca son 6 ayin islemleri
-    prisma.transaction.findMany({
-      where: { date: { gte: sixMonthsAgo } },
-      select: { type: true, amount: true, date: true },
-    }),
-    prisma.task.count({ where: { status: { not: "DONE" } } }),
-    prisma.inventoryItem.findMany(),
-    prisma.task.findMany({
-      where: { status: { not: "DONE" }, dueDate: { lt: now } },
-      include: { assignedTo: { select: { name: true } } },
-      orderBy: { dueDate: "asc" },
-    }),
-    prisma.vaccination.findMany({
-      where: { nextDate: { gte: now, lte: in30Days } },
-      include: { animal: { select: { tagNumber: true, name: true } } },
-      orderBy: { nextDate: "asc" },
-    }),
-    // Trend deltalari: bu ay eklenen hayvan/tarla ve bu ayin gelir/gider toplami
-    prisma.animal.count({ where: { createdAt: { gte: monthStart } } }),
-    prisma.field.count({ where: { createdAt: { gte: monthStart } } }),
-    prisma.transaction.groupBy({
-      by: ["type"],
-      _sum: { amount: true },
-      where: { date: { gte: monthStart } },
-    }),
-  ]);
+  ] = await withTenant(session!.user.tenantId, (db) =>
+    Promise.all([
+      db.animal.count({ where: { status: "ACTIVE" } }),
+      db.field.count(),
+      // Tum zamanlarin gelir/gider toplamlari (kayitlari belleğe cekmeden)
+      db.transaction.groupBy({ by: ["type"], _sum: { amount: true } }),
+      // Grafik icin yalnizca son 6 ayin islemleri
+      db.transaction.findMany({
+        where: { date: { gte: sixMonthsAgo } },
+        select: { type: true, amount: true, date: true },
+      }),
+      db.task.count({ where: { status: { not: "DONE" } } }),
+      db.inventoryItem.findMany(),
+      db.task.findMany({
+        where: { status: { not: "DONE" }, dueDate: { lt: now } },
+        include: { assignedTo: { select: { name: true } } },
+        orderBy: { dueDate: "asc" },
+      }),
+      db.vaccination.findMany({
+        where: { nextDate: { gte: now, lte: in30Days } },
+        include: { animal: { select: { tagNumber: true, name: true } } },
+        orderBy: { nextDate: "asc" },
+      }),
+      // Trend deltalari: bu ay eklenen hayvan/tarla ve bu ayin gelir/gider toplami
+      db.animal.count({ where: { createdAt: { gte: monthStart } } }),
+      db.field.count({ where: { createdAt: { gte: monthStart } } }),
+      db.transaction.groupBy({
+        by: ["type"],
+        _sum: { amount: true },
+        where: { date: { gte: monthStart } },
+      }),
+    ])
+  );
 
   const totalIncome =
     totalsByType.find((t) => t.type === "INCOME")?._sum.amount ?? 0;

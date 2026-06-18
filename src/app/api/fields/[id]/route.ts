@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { fieldSchema } from "@/lib/validations/field";
@@ -25,21 +25,24 @@ export async function PUT(
       );
     }
 
-    const existing = await prisma.field.findUnique({ where: { id } });
-    if (!existing) {
+    const data = parsed.data;
+    const field = await withTenant(authz.session.user.tenantId, async (db) => {
+      const existing = await db.field.findFirst({ where: { id } });
+      if (!existing) return null;
+      return db.field.update({
+        where: { id },
+        data: {
+          name: data.name,
+          area: data.area,
+          location: data.location || null,
+          notes: data.notes || null,
+        },
+      });
+    });
+
+    if (!field) {
       return NextResponse.json({ error: "Tarla bulunamadi" }, { status: 404 });
     }
-
-    const data = parsed.data;
-    const field = await prisma.field.update({
-      where: { id },
-      data: {
-        name: data.name,
-        area: data.area,
-        location: data.location || null,
-        notes: data.notes || null,
-      },
-    });
 
     await logAudit(authz.session.user, "UPDATE", "Field", field.id, field.name);
 
@@ -63,12 +66,16 @@ export async function DELETE(
     if ("error" in authz) return authz.error;
 
     const { id } = await params;
-    const existing = await prisma.field.findUnique({ where: { id } });
+    const existing = await withTenant(authz.session.user.tenantId, async (db) => {
+      const existing = await db.field.findFirst({ where: { id } });
+      if (!existing) return null;
+      await db.field.delete({ where: { id } });
+      return existing;
+    });
+
     if (!existing) {
       return NextResponse.json({ error: "Tarla bulunamadi" }, { status: 404 });
     }
-
-    await prisma.field.delete({ where: { id } });
     await logAudit(authz.session.user, "DELETE", "Field", id, existing.name);
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -100,15 +107,18 @@ export async function PATCH(
       );
     }
 
-    const existing = await prisma.field.findUnique({ where: { id } });
-    if (!existing) {
+    const field = await withTenant(authz.session.user.tenantId, async (db) => {
+      const existing = await db.field.findFirst({ where: { id } });
+      if (!existing) return null;
+      return db.field.update({
+        where: { id },
+        data: { posX: parsed.data.posX, posY: parsed.data.posY },
+      });
+    });
+
+    if (!field) {
       return NextResponse.json({ error: "Tarla bulunamadi" }, { status: 404 });
     }
-
-    const field = await prisma.field.update({
-      where: { id },
-      data: { posX: parsed.data.posX, posY: parsed.data.posY },
-    });
 
     return NextResponse.json({ field });
   } catch (error) {

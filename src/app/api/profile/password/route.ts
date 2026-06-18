@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { auth } from "@/lib/auth";
 import { DEMO_EMAIL } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
@@ -33,7 +33,10 @@ export async function PUT(request: Request) {
       );
     }
 
-    const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+    const tenantId = session.user.tenantId;
+    const user = await withTenant(tenantId, (db) =>
+      db.user.findFirst({ where: { id: session.user.id } })
+    );
     if (!user) {
       return NextResponse.json({ error: "Kullanici bulunamadi" }, { status: 404 });
     }
@@ -45,10 +48,12 @@ export async function PUT(request: Request) {
     }
 
     const passwordHash = await hashPassword(newPassword);
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { password: passwordHash },
-    });
+    await withTenant(tenantId, (db) =>
+      db.user.update({
+        where: { id: user.id },
+        data: { password: passwordHash },
+      })
+    );
 
     await logAudit(session.user, "UPDATE", "User", user.id, "Parola degistirildi");
 

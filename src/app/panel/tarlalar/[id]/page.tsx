@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { auth } from "@/lib/auth";
 import { canWrite } from "@/lib/authz";
 import { cropStatusLabels } from "@/lib/labels";
@@ -38,18 +38,20 @@ export default async function TarlaDetayPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const field = await prisma.field.findUnique({
-    where: { id },
-    include: {
-      crops: { orderBy: { plantedDate: "desc" } },
-    },
-  });
+  const session = await auth();
+  const field = await withTenant(session!.user.tenantId, (db) =>
+    db.field.findFirst({
+      where: { id },
+      include: {
+        crops: { orderBy: { plantedDate: "desc" } },
+      },
+    })
+  );
 
   if (!field) {
     notFound();
   }
 
-  const session = await auth();
   const canEdit = session ? canWrite(session.user.role, "fields") : false;
 
   const eco = fieldEconomics(field.crops, field.area);

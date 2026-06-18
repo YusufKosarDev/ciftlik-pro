@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { requirePageWrite } from "@/lib/authz";
 import { SaleForm } from "@/components/sale-form";
 
@@ -8,13 +8,15 @@ export default async function SatisDuzenlePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requirePageWrite("sales");
+  const session = await requirePageWrite("sales");
 
   const { id } = await params;
-  const [sale, customers] = await Promise.all([
-    prisma.sale.findUnique({ where: { id } }),
-    prisma.customer.findMany({ select: { id: true, name: true }, orderBy: { name: "asc" } }),
-  ]);
+  const [sale, customers] = await withTenant(session.user.tenantId, (db) =>
+    Promise.all([
+      db.sale.findFirst({ where: { id } }),
+      db.customer.findMany({ select: { id: true, name: true }, orderBy: { name: "asc" } }),
+    ])
+  );
   if (!sale) {
     notFound();
   }

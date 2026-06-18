@@ -1,15 +1,17 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { TaskForm } from "@/components/task-form";
 import { requirePageWrite } from "@/lib/authz";
 
 export default async function YeniGorevPage() {
-  await requirePageWrite("tasks");
+  const session = await requirePageWrite("tasks");
 
-  const users = await prisma.user.findMany({
-    select: { id: true, name: true },
-    orderBy: { name: "asc" },
-  });
+  const users = await withTenant(session.user.tenantId, (db) =>
+    db.user.findMany({
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    })
+  );
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">

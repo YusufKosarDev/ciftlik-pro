@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { toCsv } from "@/lib/finance-report";
 
@@ -8,10 +8,12 @@ export async function GET() {
   const authz = await authorizeWrite("transactions");
   if ("error" in authz) return authz.error;
 
-  const transactions = await prisma.transaction.findMany({
-    orderBy: { date: "desc" },
-    select: { type: true, amount: true, category: true, date: true, description: true },
-  });
+  const transactions = await withTenant(authz.session.user.tenantId, (db) =>
+    db.transaction.findMany({
+      orderBy: { date: "desc" },
+      select: { type: true, amount: true, category: true, date: true, description: true },
+    })
+  );
 
   // UTF-8 BOM -> Excel Turkce karakterleri dogru okur.
   const csv = "﻿" + toCsv(transactions);

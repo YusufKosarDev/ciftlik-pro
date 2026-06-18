@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { TaskForm } from "@/components/task-form";
 import { requirePageWrite } from "@/lib/authz";
 
@@ -9,16 +9,18 @@ export default async function GorevDuzenlePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requirePageWrite("tasks");
+  const session = await requirePageWrite("tasks");
 
   const { id } = await params;
-  const [task, users] = await Promise.all([
-    prisma.task.findUnique({ where: { id } }),
-    prisma.user.findMany({
-      select: { id: true, name: true },
-      orderBy: { name: "asc" },
-    }),
-  ]);
+  const [task, users] = await withTenant(session.user.tenantId, (db) =>
+    Promise.all([
+      db.task.findFirst({ where: { id } }),
+      db.user.findMany({
+        select: { id: true, name: true },
+        orderBy: { name: "asc" },
+      }),
+    ])
+  );
 
   if (!task) {
     notFound();

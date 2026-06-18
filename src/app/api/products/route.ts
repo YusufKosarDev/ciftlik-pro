@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { productSchema } from "@/lib/validations/product";
@@ -20,15 +20,17 @@ export async function POST(request: Request) {
     }
 
     const data = parsed.data;
-    const product = await prisma.product.create({
-      data: {
-        name: data.name,
-        description: data.description || null,
-        price: data.price,
-        unit: data.unit || null,
-        active: data.active,
-      },
-    });
+    const product = await withTenant(authz.session.user.tenantId, (db) =>
+      db.product.create({
+        data: {
+          name: data.name,
+          description: data.description || null,
+          price: data.price,
+          unit: data.unit || null,
+          active: data.active,
+        },
+      })
+    );
 
     await logAudit(authz.session.user, "CREATE", "Product", product.id, product.name);
 

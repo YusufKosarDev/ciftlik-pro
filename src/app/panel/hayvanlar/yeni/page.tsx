@@ -1,17 +1,19 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { AnimalForm } from "@/components/animal-form";
 import { requirePageWrite } from "@/lib/authz";
 
 export default async function YeniHayvanPage() {
-  await requirePageWrite("animals");
+  const session = await requirePageWrite("animals");
 
   // Anne adaylari: disi hayvanlar
-  const mothers = await prisma.animal.findMany({
-    where: { gender: "FEMALE" },
-    select: { id: true, tagNumber: true, name: true },
-    orderBy: { tagNumber: "asc" },
-  });
+  const mothers = await withTenant(session.user.tenantId, (db) =>
+    db.animal.findMany({
+      where: { gender: "FEMALE" },
+      select: { id: true, tagNumber: true, name: true },
+      orderBy: { tagNumber: "asc" },
+    })
+  );
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">

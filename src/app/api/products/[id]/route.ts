@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { productSchema } from "@/lib/validations/product";
@@ -23,22 +23,25 @@ export async function PUT(
       );
     }
 
-    const existing = await prisma.product.findUnique({ where: { id } });
-    if (!existing) {
+    const data = parsed.data;
+    const product = await withTenant(authz.session.user.tenantId, async (db) => {
+      const existing = await db.product.findFirst({ where: { id } });
+      if (!existing) return null;
+      return db.product.update({
+        where: { id },
+        data: {
+          name: data.name,
+          description: data.description || null,
+          price: data.price,
+          unit: data.unit || null,
+          active: data.active,
+        },
+      });
+    });
+
+    if (!product) {
       return NextResponse.json({ error: "Urun bulunamadi" }, { status: 404 });
     }
-
-    const data = parsed.data;
-    const product = await prisma.product.update({
-      where: { id },
-      data: {
-        name: data.name,
-        description: data.description || null,
-        price: data.price,
-        unit: data.unit || null,
-        active: data.active,
-      },
-    });
 
     await logAudit(authz.session.user, "UPDATE", "Product", product.id, product.name);
 
@@ -63,12 +66,16 @@ export async function DELETE(
     if ("error" in authz) return authz.error;
 
     const { id } = await params;
-    const existing = await prisma.product.findUnique({ where: { id } });
+    const existing = await withTenant(authz.session.user.tenantId, async (db) => {
+      const existing = await db.product.findFirst({ where: { id } });
+      if (!existing) return null;
+      await db.product.delete({ where: { id } });
+      return existing;
+    });
+
     if (!existing) {
       return NextResponse.json({ error: "Urun bulunamadi" }, { status: 404 });
     }
-
-    await prisma.product.delete({ where: { id } });
     await logAudit(authz.session.user, "DELETE", "Product", id, existing.name);
 
     return NextResponse.json({ success: true });

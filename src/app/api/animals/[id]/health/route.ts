@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { healthRecordSchema } from "@/lib/validations/health";
@@ -24,22 +24,25 @@ export async function POST(
       );
     }
 
-    // Hayvan var mi?
-    const animal = await prisma.animal.findUnique({ where: { id } });
-    if (!animal) {
+    const data = parsed.data;
+    const record = await withTenant(authz.session.user.tenantId, async (db) => {
+      // Hayvan var mi?
+      const animal = await db.animal.findFirst({ where: { id } });
+      if (!animal) return null;
+      return db.healthRecord.create({
+        data: {
+          animalId: id,
+          date: new Date(data.date),
+          diagnosis: data.diagnosis,
+          treatment: data.treatment || null,
+          notes: data.notes || null,
+        },
+      });
+    });
+
+    if (!record) {
       return NextResponse.json({ error: "Hayvan bulunamadi" }, { status: 404 });
     }
-
-    const data = parsed.data;
-    const record = await prisma.healthRecord.create({
-      data: {
-        animalId: id,
-        date: new Date(data.date),
-        diagnosis: data.diagnosis,
-        treatment: data.treatment || null,
-        notes: data.notes || null,
-      },
-    });
 
     await logAudit(authz.session.user, "CREATE", "HealthRecord", record.id, record.diagnosis);
 

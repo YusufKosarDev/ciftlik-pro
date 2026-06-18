@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { cropSchema } from "@/lib/validations/crop";
@@ -24,29 +24,35 @@ export async function PUT(
       );
     }
 
-    // Ekim kaydi bu tarlaya mi ait?
-    const existing = await prisma.crop.findUnique({ where: { id: cropId } });
-    if (!existing) {
+    const data = parsed.data;
+    const result = await withTenant(authz.session.user.tenantId, async (db) => {
+      // Ekim kaydi bu tarlaya mi ait?
+      const existing = await db.crop.findFirst({ where: { id: cropId } });
+      if (!existing) return { notFound: true } as const;
+      if (existing.fieldId !== id) return { wrongField: true } as const;
+      const crop = await db.crop.update({
+        where: { id: cropId },
+        data: {
+          name: data.name,
+          plantedDate: new Date(data.plantedDate),
+          harvestDate: data.harvestDate ? new Date(data.harvestDate) : null,
+          status: data.status,
+          cost: data.cost ?? null,
+          revenue: data.revenue ?? null,
+          yieldAmount: data.yieldAmount ?? null,
+          notes: data.notes || null,
+        },
+      });
+      return { crop };
+    });
+
+    if ("notFound" in result) {
       return NextResponse.json({ error: "Ekim kaydi bulunamadi" }, { status: 404 });
     }
-    if (existing.fieldId !== id) {
+    if ("wrongField" in result) {
       return NextResponse.json({ error: "Ekim kaydi bu tarlaya ait degil" }, { status: 400 });
     }
-
-    const data = parsed.data;
-    const crop = await prisma.crop.update({
-      where: { id: cropId },
-      data: {
-        name: data.name,
-        plantedDate: new Date(data.plantedDate),
-        harvestDate: data.harvestDate ? new Date(data.harvestDate) : null,
-        status: data.status,
-        cost: data.cost ?? null,
-        revenue: data.revenue ?? null,
-        yieldAmount: data.yieldAmount ?? null,
-        notes: data.notes || null,
-      },
-    });
+    const { crop } = result;
 
     await logAudit(authz.session.user, "UPDATE", "Crop", crop.id, crop.name);
 
@@ -71,16 +77,21 @@ export async function DELETE(
 
     const { id, cropId } = await params;
 
-    const existing = await prisma.crop.findUnique({ where: { id: cropId } });
-    if (!existing) {
+    const result = await withTenant(authz.session.user.tenantId, async (db) => {
+      const existing = await db.crop.findFirst({ where: { id: cropId } });
+      if (!existing) return { notFound: true } as const;
+      if (existing.fieldId !== id) return { wrongField: true } as const;
+      await db.crop.delete({ where: { id: cropId } });
+      return { existing };
+    });
+
+    if ("notFound" in result) {
       return NextResponse.json({ error: "Ekim kaydi bulunamadi" }, { status: 404 });
     }
-    if (existing.fieldId !== id) {
+    if ("wrongField" in result) {
       return NextResponse.json({ error: "Ekim kaydi bu tarlaya ait degil" }, { status: 400 });
     }
-
-    await prisma.crop.delete({ where: { id: cropId } });
-    await logAudit(authz.session.user, "DELETE", "Crop", cropId, existing.name);
+    await logAudit(authz.session.user, "DELETE", "Crop", cropId, result.existing.name);
 
     return NextResponse.json({ success: true });
   } catch (error) {

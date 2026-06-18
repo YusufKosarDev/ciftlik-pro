@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { inventorySchema } from "@/lib/validations/inventory";
@@ -24,23 +24,26 @@ export async function PUT(
       );
     }
 
-    const existing = await prisma.inventoryItem.findUnique({ where: { id } });
-    if (!existing) {
+    const data = parsed.data;
+    const item = await withTenant(authz.session.user.tenantId, async (db) => {
+      const existing = await db.inventoryItem.findFirst({ where: { id } });
+      if (!existing) return null;
+      return db.inventoryItem.update({
+        where: { id },
+        data: {
+          name: data.name,
+          category: data.category,
+          quantity: data.quantity,
+          unit: data.unit,
+          criticalLevel: data.criticalLevel,
+          notes: data.notes || null,
+        },
+      });
+    });
+
+    if (!item) {
       return NextResponse.json({ error: "Kalem bulunamadi" }, { status: 404 });
     }
-
-    const data = parsed.data;
-    const item = await prisma.inventoryItem.update({
-      where: { id },
-      data: {
-        name: data.name,
-        category: data.category,
-        quantity: data.quantity,
-        unit: data.unit,
-        criticalLevel: data.criticalLevel,
-        notes: data.notes || null,
-      },
-    });
 
     await logAudit(authz.session.user, "UPDATE", "InventoryItem", item.id, item.name);
 
@@ -64,12 +67,16 @@ export async function DELETE(
     if ("error" in authz) return authz.error;
 
     const { id } = await params;
-    const existing = await prisma.inventoryItem.findUnique({ where: { id } });
+    const existing = await withTenant(authz.session.user.tenantId, async (db) => {
+      const existing = await db.inventoryItem.findFirst({ where: { id } });
+      if (!existing) return null;
+      await db.inventoryItem.delete({ where: { id } });
+      return existing;
+    });
+
     if (!existing) {
       return NextResponse.json({ error: "Kalem bulunamadi" }, { status: 404 });
     }
-
-    await prisma.inventoryItem.delete({ where: { id } });
     await logAudit(authz.session.user, "DELETE", "InventoryItem", id, existing.name);
     return NextResponse.json({ success: true });
   } catch (error) {

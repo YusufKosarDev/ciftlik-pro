@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { auth } from "@/lib/auth";
 import { canWrite } from "@/lib/authz";
 import { FeedForm } from "@/components/feed-form";
@@ -9,19 +9,21 @@ function formatDate(date: Date): string {
 }
 
 export default async function YemPage() {
-  const [feedItems, logs] = await Promise.all([
-    prisma.inventoryItem.findMany({
-      where: { category: "FEED" },
-      orderBy: { name: "asc" },
-    }),
-    prisma.feedLog.findMany({
-      orderBy: { date: "desc" },
-      take: 50,
-      include: { inventoryItem: { select: { name: true, unit: true } } },
-    }),
-  ]);
-
   const session = await auth();
+  const [feedItems, logs] = await withTenant(session!.user.tenantId, (db) =>
+    Promise.all([
+      db.inventoryItem.findMany({
+        where: { category: "FEED" },
+        orderBy: { name: "asc" },
+      }),
+      db.feedLog.findMany({
+        orderBy: { date: "desc" },
+        take: 50,
+        include: { inventoryItem: { select: { name: true, unit: true } } },
+      }),
+    ])
+  );
+
   const canEdit = session ? canWrite(session.user.role, "inventory") : false;
 
   const criticalCount = feedItems.filter((i) => i.quantity <= i.criticalLevel).length;

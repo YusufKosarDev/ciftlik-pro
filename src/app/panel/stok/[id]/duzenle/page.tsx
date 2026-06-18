@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { InventoryForm } from "@/components/inventory-form";
 import { requirePageWrite } from "@/lib/authz";
 
@@ -9,10 +9,12 @@ export default async function StokDuzenlePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requirePageWrite("inventory");
+  const session = await requirePageWrite("inventory");
 
   const { id } = await params;
-  const item = await prisma.inventoryItem.findUnique({ where: { id } });
+  const item = await withTenant(session.user.tenantId, (db) =>
+    db.inventoryItem.findFirst({ where: { id } })
+  );
 
   if (!item) {
     notFound();

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { auth } from "@/lib/auth";
 import { canWrite } from "@/lib/authz";
 import { speciesLabels, genderLabels, statusLabels, breedingStatusLabels } from "@/lib/labels";
@@ -91,28 +91,30 @@ export default async function HayvanDetayPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const animal = await prisma.animal.findUnique({
-    where: { id },
-    include: {
-      healthRecords: { orderBy: { date: "desc" } },
-      vaccinations: { orderBy: { date: "desc" } },
-      milkYields: { orderBy: { date: "desc" } },
-      breedingRecords: { orderBy: { breedingDate: "desc" } },
-      weightRecords: { orderBy: { date: "desc" } },
-      mother: { select: { id: true, tagNumber: true, name: true } },
-      offspring: {
-        select: { id: true, tagNumber: true, name: true },
-        orderBy: { tagNumber: "asc" },
+  const session = await auth();
+  const animal = await withTenant(session!.user.tenantId, (db) =>
+    db.animal.findFirst({
+      where: { id },
+      include: {
+        healthRecords: { orderBy: { date: "desc" } },
+        vaccinations: { orderBy: { date: "desc" } },
+        milkYields: { orderBy: { date: "desc" } },
+        breedingRecords: { orderBy: { breedingDate: "desc" } },
+        weightRecords: { orderBy: { date: "desc" } },
+        mother: { select: { id: true, tagNumber: true, name: true } },
+        offspring: {
+          select: { id: true, tagNumber: true, name: true },
+          orderBy: { tagNumber: "asc" },
+        },
       },
-    },
-  });
+    })
+  );
 
   if (!animal) {
     notFound();
   }
 
   // Rol bazli yetkiler: hayvan duzenleme, tibbi kayit (saglik/asi), sut verimi
-  const session = await auth();
   const role = session?.user.role;
   const canEditAnimal = role ? canWrite(role, "animals") : false;
   const canMedical = role ? canWrite(role, "animalMedical") : false;

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 
@@ -13,12 +13,16 @@ export async function DELETE(
     if ("error" in authz) return authz.error;
 
     const { id } = await params;
-    const existing = await prisma.weightRecord.findUnique({ where: { id } });
+    const existing = await withTenant(authz.session.user.tenantId, async (db) => {
+      const existing = await db.weightRecord.findFirst({ where: { id } });
+      if (!existing) return null;
+      await db.weightRecord.delete({ where: { id } });
+      return existing;
+    });
+
     if (!existing) {
       return NextResponse.json({ error: "Kayit bulunamadi" }, { status: 404 });
     }
-
-    await prisma.weightRecord.delete({ where: { id } });
     await logAudit(authz.session.user, "DELETE", "WeightRecord", id, `${existing.weightKg} kg`);
     return NextResponse.json({ success: true });
   } catch (error) {

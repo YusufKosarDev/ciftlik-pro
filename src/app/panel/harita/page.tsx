@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { auth } from "@/lib/auth";
 import { canWrite } from "@/lib/authz";
 import { FarmMap } from "@/components/farm-map";
@@ -12,13 +12,16 @@ import {
 } from "@/lib/farm-map";
 
 export default async function HaritaPage() {
-  const [fields, structures] = await Promise.all([
-    prisma.field.findMany({
-      orderBy: { createdAt: "asc" },
-      include: { crops: { select: { status: true, plantedDate: true } } },
-    }),
-    prisma.structure.findMany({ orderBy: { createdAt: "asc" } }),
-  ]);
+  const session = await auth();
+  const [fields, structures] = await withTenant(session!.user.tenantId, (db) =>
+    Promise.all([
+      db.field.findMany({
+        orderBy: { createdAt: "asc" },
+        include: { crops: { select: { status: true, plantedDate: true } } },
+      }),
+      db.structure.findMany({ orderBy: { createdAt: "asc" } }),
+    ])
+  );
 
   const fieldInput: FieldMapInput[] = fields.map((f) => ({
     id: f.id,
@@ -42,7 +45,6 @@ export default async function HaritaPage() {
   const structureRects = layoutStructures(structureInput);
 
   // Tarla veya yapi yazma yetkisi olan, yerlesimi surukleyip kaydedebilir.
-  const session = await auth();
   const role = session?.user.role;
   const editable = role
     ? canWrite(role, "fields") || canWrite(role, "structures")

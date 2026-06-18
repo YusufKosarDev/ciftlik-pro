@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { auth } from "@/lib/auth";
 import { DEMO_EMAIL } from "@/lib/authz";
 
@@ -19,10 +19,12 @@ export async function POST() {
 
     const isDemo = (session.user.email ?? "").toLowerCase() === DEMO_EMAIL;
     if (!isDemo) {
-      await prisma.user.update({
-        where: { id: session.user.id },
-        data: { onboardedAt: new Date() },
-      });
+      await withTenant(session.user.tenantId, (db) =>
+        db.user.update({
+          where: { id: session.user.id },
+          data: { onboardedAt: new Date() },
+        })
+      );
     }
 
     return NextResponse.json({ success: true });
@@ -47,10 +49,12 @@ export async function DELETE() {
 
     const isDemo = (session.user.email ?? "").toLowerCase() === DEMO_EMAIL;
     if (!isDemo) {
-      await prisma.user.update({
-        where: { id: session.user.id },
-        data: { onboardedAt: null },
-      });
+      await withTenant(session.user.tenantId, (db) =>
+        db.user.update({
+          where: { id: session.user.id },
+          data: { onboardedAt: null },
+        })
+      );
     }
 
     return NextResponse.json({ success: true });

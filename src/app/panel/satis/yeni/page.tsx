@@ -1,14 +1,16 @@
 import { requirePageWrite } from "@/lib/authz";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { SaleForm } from "@/components/sale-form";
 
 export default async function YeniSatisPage() {
-  await requirePageWrite("sales");
+  const session = await requirePageWrite("sales");
 
-  const customers = await prisma.customer.findMany({
-    select: { id: true, name: true },
-    orderBy: { name: "asc" },
-  });
+  const customers = await withTenant(session.user.tenantId, (db) =>
+    db.customer.findMany({
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    })
+  );
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">

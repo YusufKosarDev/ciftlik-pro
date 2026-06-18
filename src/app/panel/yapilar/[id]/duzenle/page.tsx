@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { StructureForm } from "@/components/structure-form";
 import { requirePageWrite } from "@/lib/authz";
 
@@ -9,10 +9,12 @@ export default async function YapiDuzenlePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requirePageWrite("structures");
+  const session = await requirePageWrite("structures");
 
   const { id } = await params;
-  const structure = await prisma.structure.findUnique({ where: { id } });
+  const structure = await withTenant(session.user.tenantId, (db) =>
+    db.structure.findFirst({ where: { id } })
+  );
 
   if (!structure) {
     notFound();

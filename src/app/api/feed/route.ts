@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { feedSchema } from "@/lib/validations/feed";
@@ -25,10 +25,11 @@ export async function POST(request: Request) {
     }
 
     const data = parsed.data;
+    const tenantId = authz.session.user.tenantId;
 
-    const item = await prisma.inventoryItem.findUnique({
-      where: { id: data.inventoryItemId },
-    });
+    const item = await withTenant(tenantId, (db) =>
+      db.inventoryItem.findFirst({ where: { id: data.inventoryItemId } })
+    );
     if (!item) {
       return NextResponse.json({ error: "Yem kalemi bulunamadi" }, { status: 404 });
     }
@@ -50,15 +51,15 @@ export async function POST(request: Request) {
     // istek olsa bile stok asla eksiye dusmez. count === 0 ise tx geri alinir.
     let log;
     try {
-      log = await prisma.$transaction(async (tx) => {
-        const updated = await tx.inventoryItem.updateMany({
+      log = await withTenant(tenantId, async (db) => {
+        const updated = await db.inventoryItem.updateMany({
           where: { id: data.inventoryItemId, quantity: { gte: data.quantity } },
           data: { quantity: { decrement: data.quantity } },
         });
         if (updated.count === 0) {
           throw new InsufficientStockError();
         }
-        return tx.feedLog.create({
+        return db.feedLog.create({
           data: {
             inventoryItemId: data.inventoryItemId,
             date: new Date(data.date),
@@ -70,10 +71,12 @@ export async function POST(request: Request) {
     } catch (err) {
       if (err instanceof InsufficientStockError) {
         // Esnek erisim sirasinda baska bir istek stogu tuketmis olabilir.
-        const fresh = await prisma.inventoryItem.findUnique({
-          where: { id: data.inventoryItemId },
-          select: { quantity: true, unit: true },
-        });
+        const fresh = await withTenant(tenantId, (db) =>
+          db.inventoryItem.findFirst({
+            where: { id: data.inventoryItemId },
+            select: { quantity: true, unit: true },
+          })
+        );
         return NextResponse.json(
           { error: `Yetersiz stok: mevcut ${fresh?.quantity ?? 0} ${fresh?.unit ?? item.unit}` },
           { status: 400 }

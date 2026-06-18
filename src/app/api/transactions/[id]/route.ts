@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { transactionSchema } from "@/lib/validations/transaction";
@@ -24,22 +24,25 @@ export async function PUT(
       );
     }
 
-    const existing = await prisma.transaction.findUnique({ where: { id } });
-    if (!existing) {
+    const data = parsed.data;
+    const transaction = await withTenant(authz.session.user.tenantId, async (db) => {
+      const existing = await db.transaction.findFirst({ where: { id } });
+      if (!existing) return null;
+      return db.transaction.update({
+        where: { id },
+        data: {
+          type: data.type,
+          amount: data.amount,
+          category: data.category,
+          date: new Date(data.date),
+          description: data.description || null,
+        },
+      });
+    });
+
+    if (!transaction) {
       return NextResponse.json({ error: "Islem bulunamadi" }, { status: 404 });
     }
-
-    const data = parsed.data;
-    const transaction = await prisma.transaction.update({
-      where: { id },
-      data: {
-        type: data.type,
-        amount: data.amount,
-        category: data.category,
-        date: new Date(data.date),
-        description: data.description || null,
-      },
-    });
 
     await logAudit(
       authz.session.user,
@@ -69,12 +72,16 @@ export async function DELETE(
     if ("error" in authz) return authz.error;
 
     const { id } = await params;
-    const existing = await prisma.transaction.findUnique({ where: { id } });
+    const existing = await withTenant(authz.session.user.tenantId, async (db) => {
+      const existing = await db.transaction.findFirst({ where: { id } });
+      if (!existing) return null;
+      await db.transaction.delete({ where: { id } });
+      return existing;
+    });
+
     if (!existing) {
       return NextResponse.json({ error: "Islem bulunamadi" }, { status: 404 });
     }
-
-    await prisma.transaction.delete({ where: { id } });
     await logAudit(
       authz.session.user,
       "DELETE",

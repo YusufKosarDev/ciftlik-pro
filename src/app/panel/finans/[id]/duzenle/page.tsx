@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { TransactionForm } from "@/components/transaction-form";
 import { requirePageWrite } from "@/lib/authz";
 
@@ -9,10 +9,12 @@ export default async function IslemDuzenlePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requirePageWrite("transactions");
+  const session = await requirePageWrite("transactions");
 
   const { id } = await params;
-  const transaction = await prisma.transaction.findUnique({ where: { id } });
+  const transaction = await withTenant(session.user.tenantId, (db) =>
+    db.transaction.findFirst({ where: { id } })
+  );
 
   if (!transaction) {
     notFound();

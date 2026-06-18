@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { vaccinationSchema } from "@/lib/validations/vaccination";
@@ -24,21 +24,24 @@ export async function POST(
       );
     }
 
-    const animal = await prisma.animal.findUnique({ where: { id } });
-    if (!animal) {
+    const data = parsed.data;
+    const vaccination = await withTenant(authz.session.user.tenantId, async (db) => {
+      const animal = await db.animal.findFirst({ where: { id } });
+      if (!animal) return null;
+      return db.vaccination.create({
+        data: {
+          animalId: id,
+          name: data.name,
+          date: new Date(data.date),
+          nextDate: data.nextDate ? new Date(data.nextDate) : null,
+          notes: data.notes || null,
+        },
+      });
+    });
+
+    if (!vaccination) {
       return NextResponse.json({ error: "Hayvan bulunamadi" }, { status: 404 });
     }
-
-    const data = parsed.data;
-    const vaccination = await prisma.vaccination.create({
-      data: {
-        animalId: id,
-        name: data.name,
-        date: new Date(data.date),
-        nextDate: data.nextDate ? new Date(data.nextDate) : null,
-        notes: data.notes || null,
-      },
-    });
 
     await logAudit(authz.session.user, "CREATE", "Vaccination", vaccination.id, vaccination.name);
 

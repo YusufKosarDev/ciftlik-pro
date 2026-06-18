@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { saleSchema } from "@/lib/validations/sale";
@@ -27,21 +27,19 @@ export async function POST(request: Request) {
 
     const data = parsed.data;
 
-    // Musteri (opsiyonel): verildiyse mevcut olmali; adi islem aciklamasinda kullanilir.
-    let customerName: string | null = null;
-    if (data.customerId) {
-      const customer = await prisma.customer.findUnique({
-        where: { id: data.customerId },
-        select: { name: true },
-      });
-      if (!customer) {
-        return NextResponse.json({ error: "Secilen musteri bulunamadi" }, { status: 400 });
+    const result = await withTenant(authz.session.user.tenantId, async (db) => {
+      // Musteri (opsiyonel): verildiyse mevcut olmali; adi islem aciklamasinda kullanilir.
+      let customerName: string | null = null;
+      if (data.customerId) {
+        const customer = await db.customer.findFirst({
+          where: { id: data.customerId },
+          select: { name: true },
+        });
+        if (!customer) return { error: "Secilen musteri bulunamadi" } as const;
+        customerName = customer.name;
       }
-      customerName = customer.name;
-    }
 
-    const sale = await prisma.$transaction(async (tx) => {
-      const transaction = await tx.transaction.create({
+      const transaction = await db.transaction.create({
         data: {
           type: "INCOME",
           amount: data.amount,
@@ -50,7 +48,7 @@ export async function POST(request: Request) {
           description: saleDescription(data.item, customerName),
         },
       });
-      return tx.sale.create({
+      const sale = await db.sale.create({
         data: {
           item: data.item,
           customerId: data.customerId || null,
@@ -62,7 +60,13 @@ export async function POST(request: Request) {
           transactionId: transaction.id,
         },
       });
+      return { sale };
     });
+
+    if ("error" in result) {
+      return NextResponse.json({ error: result.error }, { status: 400 });
+    }
+    const { sale } = result;
 
     await logAudit(authz.session.user, "CREATE", "Sale", sale.id, `${sale.item} (${sale.amount})`);
 

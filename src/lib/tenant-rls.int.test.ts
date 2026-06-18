@@ -11,7 +11,9 @@ const run = Boolean(process.env.RUN_DB_TESTS);
 const APP_URL = process.env.APP_USER_DATABASE_URL;
 
 describe.skipIf(!run || !APP_URL)("RLS izolasyonu (app_user, gercek DB)", () => {
-  const appPrisma = new PrismaClient({ datasources: { db: { url: APP_URL! } } });
+  // PrismaClient'i collection sirasinda degil, suite calisirken olustur; aksi
+  // halde APP_URL tanimsizken (skip durumu) constructor patlar.
+  let appPrisma: PrismaClient;
   const stamp = Date.now();
   const A = `rls-a-${stamp}`;
   const B = `rls-b-${stamp}`;
@@ -30,6 +32,7 @@ describe.skipIf(!run || !APP_URL)("RLS izolasyonu (app_user, gercek DB)", () => 
   }
 
   beforeAll(async () => {
+    appPrisma = new PrismaClient({ datasources: { db: { url: APP_URL! } } });
     // Kurulum SUPERUSER ile (RLS bypass) — iki tenant + ikisine birer hayvan.
     await prisma.tenant.createMany({
       data: [

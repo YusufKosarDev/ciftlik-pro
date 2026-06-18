@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { saleSchema } from "@/lib/validations/sale";
@@ -24,43 +24,39 @@ export async function PUT(
       );
     }
 
-    const existing = await prisma.sale.findUnique({ where: { id } });
-    if (!existing) {
-      return NextResponse.json({ error: "Satis bulunamadi" }, { status: 404 });
-    }
-
     const data = parsed.data;
 
-    let customerName: string | null = null;
-    if (data.customerId) {
-      const customer = await prisma.customer.findUnique({
-        where: { id: data.customerId },
-        select: { name: true },
-      });
-      if (!customer) {
-        return NextResponse.json({ error: "Secilen musteri bulunamadi" }, { status: 400 });
+    const result = await withTenant(authz.session.user.tenantId, async (db) => {
+      const existing = await db.sale.findFirst({ where: { id } });
+      if (!existing) return { notFound: true } as const;
+
+      let customerName: string | null = null;
+      if (data.customerId) {
+        const customer = await db.customer.findFirst({
+          where: { id: data.customerId },
+          select: { name: true },
+        });
+        if (!customer) return { error: "Secilen musteri bulunamadi" } as const;
+        customerName = customer.name;
       }
-      customerName = customer.name;
-    }
 
-    const txData = {
-      type: "INCOME" as const,
-      amount: data.amount,
-      category: "Satış",
-      date: new Date(data.date),
-      description: saleDescription(data.item, customerName),
-    };
+      const txData = {
+        type: "INCOME" as const,
+        amount: data.amount,
+        category: "Satış",
+        date: new Date(data.date),
+        description: saleDescription(data.item, customerName),
+      };
 
-    const sale = await prisma.$transaction(async (tx) => {
       // Bagli gelir islemini guncelle; yoksa yeniden olustur (eski/legacy kayit).
       let transactionId = existing.transactionId;
       if (transactionId) {
-        await tx.transaction.updateMany({ where: { id: transactionId }, data: txData });
+        await db.transaction.updateMany({ where: { id: transactionId }, data: txData });
       } else {
-        const created = await tx.transaction.create({ data: txData });
+        const created = await db.transaction.create({ data: txData });
         transactionId = created.id;
       }
-      return tx.sale.update({
+      const sale = await db.sale.update({
         where: { id },
         data: {
           item: data.item,
@@ -73,7 +69,16 @@ export async function PUT(
           transactionId,
         },
       });
+      return { sale };
     });
+
+    if ("notFound" in result) {
+      return NextResponse.json({ error: "Satis bulunamadi" }, { status: 404 });
+    }
+    if ("error" in result) {
+      return NextResponse.json({ error: result.error }, { status: 400 });
+    }
+    const { sale } = result;
 
     await logAudit(authz.session.user, "UPDATE", "Sale", sale.id, `${sale.item} (${sale.amount})`);
 
@@ -97,19 +102,20 @@ export async function DELETE(
     if ("error" in authz) return authz.error;
 
     const { id } = await params;
-    const existing = await prisma.sale.findUnique({ where: { id } });
+    const existing = await withTenant(authz.session.user.tenantId, async (db) => {
+      const existing = await db.sale.findFirst({ where: { id } });
+      if (!existing) return null;
+      await db.sale.delete({ where: { id } });
+      if (existing.transactionId) {
+        // deleteMany: islem zaten silinmisse hata firlatmaz.
+        await db.transaction.deleteMany({ where: { id: existing.transactionId } });
+      }
+      return existing;
+    });
+
     if (!existing) {
       return NextResponse.json({ error: "Satis bulunamadi" }, { status: 404 });
     }
-
-    await prisma.$transaction(async (tx) => {
-      await tx.sale.delete({ where: { id } });
-      if (existing.transactionId) {
-        // deleteMany: islem zaten silinmisse hata firlatmaz.
-        await tx.transaction.deleteMany({ where: { id: existing.transactionId } });
-      }
-    });
-
     await logAudit(authz.session.user, "DELETE", "Sale", id, `${existing.item} (${existing.amount})`);
 
     return NextResponse.json({ success: true });

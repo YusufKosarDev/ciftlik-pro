@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { CropForm } from "@/components/crop-form";
 import { requirePageWrite } from "@/lib/authz";
 
@@ -9,14 +9,16 @@ export default async function EkimDuzenlePage({
 }: {
   params: Promise<{ id: string; cropId: string }>;
 }) {
-  await requirePageWrite("fields");
+  const session = await requirePageWrite("fields");
 
   const { id, cropId } = await params;
 
-  const [field, crop] = await Promise.all([
-    prisma.field.findUnique({ where: { id }, select: { id: true, name: true } }),
-    prisma.crop.findUnique({ where: { id: cropId } }),
-  ]);
+  const [field, crop] = await withTenant(session.user.tenantId, (db) =>
+    Promise.all([
+      db.field.findFirst({ where: { id }, select: { id: true, name: true } }),
+      db.crop.findFirst({ where: { id: cropId } }),
+    ])
+  );
 
   if (!field || !crop || crop.fieldId !== id) {
     notFound();

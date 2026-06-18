@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { taskSchema } from "@/lib/validations/task";
@@ -24,22 +24,25 @@ export async function PUT(
       );
     }
 
-    const existing = await prisma.task.findUnique({ where: { id } });
-    if (!existing) {
+    const data = parsed.data;
+    const task = await withTenant(authz.session.user.tenantId, async (db) => {
+      const existing = await db.task.findFirst({ where: { id } });
+      if (!existing) return null;
+      return db.task.update({
+        where: { id },
+        data: {
+          title: data.title,
+          description: data.description || null,
+          assignedToId: data.assignedToId || null,
+          status: data.status,
+          dueDate: data.dueDate ? new Date(data.dueDate) : null,
+        },
+      });
+    });
+
+    if (!task) {
       return NextResponse.json({ error: "Gorev bulunamadi" }, { status: 404 });
     }
-
-    const data = parsed.data;
-    const task = await prisma.task.update({
-      where: { id },
-      data: {
-        title: data.title,
-        description: data.description || null,
-        assignedToId: data.assignedToId || null,
-        status: data.status,
-        dueDate: data.dueDate ? new Date(data.dueDate) : null,
-      },
-    });
 
     await logAudit(authz.session.user, "UPDATE", "Task", task.id, task.title);
 
@@ -63,12 +66,16 @@ export async function DELETE(
     if ("error" in authz) return authz.error;
 
     const { id } = await params;
-    const existing = await prisma.task.findUnique({ where: { id } });
+    const existing = await withTenant(authz.session.user.tenantId, async (db) => {
+      const existing = await db.task.findFirst({ where: { id } });
+      if (!existing) return null;
+      await db.task.delete({ where: { id } });
+      return existing;
+    });
+
     if (!existing) {
       return NextResponse.json({ error: "Gorev bulunamadi" }, { status: 404 });
     }
-
-    await prisma.task.delete({ where: { id } });
     await logAudit(authz.session.user, "DELETE", "Task", id, existing.title);
     return NextResponse.json({ success: true });
   } catch (error) {

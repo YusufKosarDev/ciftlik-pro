@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { Badge } from "@/components/ui/badge";
 import { auditActionLabels } from "@/lib/labels";
 import type { AuditAction } from "@prisma/client";
@@ -23,10 +23,12 @@ export default async function DenetimPage() {
     redirect("/panel");
   }
 
-  const logs = await prisma.auditLog.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 100,
-  });
+  const logs = await withTenant(session!.user.tenantId, (db) =>
+    db.auditLog.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    })
+  );
 
   return (
     <div className="space-y-6">

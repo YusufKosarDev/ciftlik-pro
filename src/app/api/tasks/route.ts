@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { taskSchema } from "@/lib/validations/task";
@@ -20,15 +20,17 @@ export async function POST(request: Request) {
     }
 
     const data = parsed.data;
-    const task = await prisma.task.create({
-      data: {
-        title: data.title,
-        description: data.description || null,
-        assignedToId: data.assignedToId || null,
-        status: data.status,
-        dueDate: data.dueDate ? new Date(data.dueDate) : null,
-      },
-    });
+    const task = await withTenant(authz.session.user.tenantId, (db) =>
+      db.task.create({
+        data: {
+          title: data.title,
+          description: data.description || null,
+          assignedToId: data.assignedToId || null,
+          status: data.status,
+          dueDate: data.dueDate ? new Date(data.dueDate) : null,
+        },
+      })
+    );
 
     await logAudit(authz.session.user, "CREATE", "Task", task.id, task.title);
 

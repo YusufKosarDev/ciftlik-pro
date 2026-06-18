@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { fieldSchema } from "@/lib/validations/field";
@@ -20,14 +20,16 @@ export async function POST(request: Request) {
     }
 
     const data = parsed.data;
-    const field = await prisma.field.create({
-      data: {
-        name: data.name,
-        area: data.area,
-        location: data.location || null,
-        notes: data.notes || null,
-      },
-    });
+    const field = await withTenant(authz.session.user.tenantId, (db) =>
+      db.field.create({
+        data: {
+          name: data.name,
+          area: data.area,
+          location: data.location || null,
+          notes: data.notes || null,
+        },
+      })
+    );
 
     await logAudit(authz.session.user, "CREATE", "Field", field.id, field.name);
 

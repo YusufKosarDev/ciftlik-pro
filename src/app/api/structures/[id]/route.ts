@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { structureSchema } from "@/lib/validations/structure";
@@ -25,20 +25,23 @@ export async function PUT(
       );
     }
 
-    const existing = await prisma.structure.findUnique({ where: { id } });
-    if (!existing) {
+    const data = parsed.data;
+    const structure = await withTenant(authz.session.user.tenantId, async (db) => {
+      const existing = await db.structure.findFirst({ where: { id } });
+      if (!existing) return null;
+      return db.structure.update({
+        where: { id },
+        data: {
+          name: data.name,
+          type: data.type,
+          notes: data.notes || null,
+        },
+      });
+    });
+
+    if (!structure) {
       return NextResponse.json({ error: "Yapi bulunamadi" }, { status: 404 });
     }
-
-    const data = parsed.data;
-    const structure = await prisma.structure.update({
-      where: { id },
-      data: {
-        name: data.name,
-        type: data.type,
-        notes: data.notes || null,
-      },
-    });
 
     await logAudit(authz.session.user, "UPDATE", "Structure", structure.id, structure.name);
 
@@ -62,12 +65,16 @@ export async function DELETE(
     if ("error" in authz) return authz.error;
 
     const { id } = await params;
-    const existing = await prisma.structure.findUnique({ where: { id } });
+    const existing = await withTenant(authz.session.user.tenantId, async (db) => {
+      const existing = await db.structure.findFirst({ where: { id } });
+      if (!existing) return null;
+      await db.structure.delete({ where: { id } });
+      return existing;
+    });
+
     if (!existing) {
       return NextResponse.json({ error: "Yapi bulunamadi" }, { status: 404 });
     }
-
-    await prisma.structure.delete({ where: { id } });
     await logAudit(authz.session.user, "DELETE", "Structure", id, existing.name);
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -99,15 +106,18 @@ export async function PATCH(
       );
     }
 
-    const existing = await prisma.structure.findUnique({ where: { id } });
-    if (!existing) {
+    const structure = await withTenant(authz.session.user.tenantId, async (db) => {
+      const existing = await db.structure.findFirst({ where: { id } });
+      if (!existing) return null;
+      return db.structure.update({
+        where: { id },
+        data: { posX: parsed.data.posX, posY: parsed.data.posY },
+      });
+    });
+
+    if (!structure) {
       return NextResponse.json({ error: "Yapi bulunamadi" }, { status: 404 });
     }
-
-    const structure = await prisma.structure.update({
-      where: { id },
-      data: { posX: parsed.data.posX, posY: parsed.data.posY },
-    });
 
     return NextResponse.json({ structure });
   } catch (error) {

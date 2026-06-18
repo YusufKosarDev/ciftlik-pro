@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { transactionSchema } from "@/lib/validations/transaction";
@@ -20,15 +20,17 @@ export async function POST(request: Request) {
     }
 
     const data = parsed.data;
-    const transaction = await prisma.transaction.create({
-      data: {
-        type: data.type,
-        amount: data.amount,
-        category: data.category,
-        date: new Date(data.date),
-        description: data.description || null,
-      },
-    });
+    const transaction = await withTenant(authz.session.user.tenantId, (db) =>
+      db.transaction.create({
+        data: {
+          type: data.type,
+          amount: data.amount,
+          category: data.category,
+          date: new Date(data.date),
+          description: data.description || null,
+        },
+      })
+    );
 
     await logAudit(
       authz.session.user,
