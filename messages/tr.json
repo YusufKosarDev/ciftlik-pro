@@ -9,7 +9,22 @@
     "demo": "Demo olarak gez",
     "demoHint": "Kayıt gerektirmez · örnek verilerle inceleyin",
     "errorInvalid": "E-posta veya parola hatalı",
-    "errorDemo": "Demo girişi şu an kullanılamıyor"
+    "errorDemo": "Demo girişi şu an kullanılamıyor",
+    "noAccount": "Hesabın yok mu?",
+    "signupLink": "Çiftliğini oluştur"
+  },
+  "Signup": {
+    "title": "Çiftliğini oluştur",
+    "subtitle": "Ücretsiz başla — kendi izole çiftliğini yönet",
+    "farmName": "Çiftlik adı",
+    "name": "Ad Soyad",
+    "email": "E-posta",
+    "password": "Parola",
+    "submit": "Çiftliği oluştur",
+    "haveAccount": "Zaten hesabın var mı?",
+    "loginLink": "Giriş yap",
+    "errorGeneric": "Kayıt başarısız. Lütfen tekrar deneyin.",
+    "errorConflict": "Bu e-posta adresi zaten kayıtlı"
   },
   "Language": {
     "aria": "Dil seçimi",

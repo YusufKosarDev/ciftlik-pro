@@ -5,18 +5,17 @@ import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Wheat, Mail, Lock, Sprout, AlertCircle } from "lucide-react";
+import { Sprout, Building2, User, Mail, Lock, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LanguageSwitcher } from "@/components/language-switcher";
 
-export default function GirisPage() {
+export default function KayitPage() {
   const router = useRouter();
-  const t = useTranslations("Login");
+  const t = useTranslations("Signup");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [demoLoading, setDemoLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -24,38 +23,29 @@ export default function GirisPage() {
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
+    const farmName = String(formData.get("farmName"));
+    const name = String(formData.get("name"));
     const email = String(formData.get("email"));
     const password = String(formData.get("password"));
 
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
+    const res = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ farmName, name, email, password }),
     });
 
-    setLoading(false);
-
-    if (result?.error) {
-      setError(t("errorInvalid"));
+    if (!res.ok) {
+      setLoading(false);
+      setError(res.status === 409 ? t("errorConflict") : t("errorGeneric"));
       return;
     }
 
-    router.push("/panel");
-    router.refresh();
-  }
-
-  // Ziyaretçiler için: kayıt gerektirmeyen demo (WORKER) hesabıyla giriş.
-  async function handleDemo() {
-    setError(null);
-    setDemoLoading(true);
-    const result = await signIn("credentials", {
-      email: "demo@ciftlik.com",
-      password: "demo1234",
-      redirect: false,
-    });
-    setDemoLoading(false);
+    // Kayit basarili → ayni kimlik bilgileriyle otomatik giris yap.
+    const result = await signIn("credentials", { email, password, redirect: false });
+    setLoading(false);
     if (result?.error) {
-      setError(t("errorDemo"));
+      // Nadiren: kayit oldu ama otomatik giris basarisiz → giris sayfasina yonlendir.
+      router.push("/giris");
       return;
     }
     router.push("/panel");
@@ -70,7 +60,7 @@ export default function GirisPage() {
         </div>
         <div className="mb-6 text-center">
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400">
-            <Wheat className="h-7 w-7" />
+            <Sprout className="h-7 w-7" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">{t("title")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{t("subtitle")}</p>
@@ -78,18 +68,26 @@ export default function GirisPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
+            <Label htmlFor="farmName">{t("farmName")}</Label>
+            <div className="relative">
+              <Building2 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input id="farmName" name="farmName" required maxLength={60} placeholder="Yeşil Vadi Çiftliği" className="pl-9" />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="name">{t("name")}</Label>
+            <div className="relative">
+              <User className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input id="name" name="name" required maxLength={60} autoComplete="name" placeholder="Ad Soyad" className="pl-9" />
+            </div>
+          </div>
+
+          <div>
             <Label htmlFor="email">{t("email")}</Label>
             <div className="relative">
               <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                required
-                autoComplete="email"
-                placeholder="ornek@ciftlik.com"
-                className="pl-9"
-              />
+              <Input id="email" name="email" type="email" required autoComplete="email" placeholder="ornek@ciftlik.com" className="pl-9" />
             </div>
           </div>
 
@@ -97,15 +95,7 @@ export default function GirisPage() {
             <Label htmlFor="password">{t("password")}</Label>
             <div className="relative">
               <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                required
-                autoComplete="current-password"
-                placeholder="••••••••"
-                className="pl-9"
-              />
+              <Input id="password" name="password" type="password" required minLength={8} maxLength={72} autoComplete="new-password" placeholder="••••••••" className="pl-9" />
             </div>
           </div>
 
@@ -121,30 +111,10 @@ export default function GirisPage() {
           </Button>
         </form>
 
-        <div className="my-4 flex items-center gap-3 text-xs text-muted-foreground">
-          <span className="h-px flex-1 bg-muted" />
-          {t("or")}
-          <span className="h-px flex-1 bg-muted" />
-        </div>
-
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleDemo}
-          loading={demoLoading}
-          className="w-full"
-        >
-          <Sprout className="h-4 w-4" />
-          {t("demo")}
-        </Button>
-        <p className="mt-2 text-center text-xs text-muted-foreground">
-          {t("demoHint")}
-        </p>
-
         <p className="mt-4 text-center text-sm text-muted-foreground">
-          {t("noAccount")}{" "}
-          <Link href="/kayit" className="font-medium text-green-700 dark:text-green-400 hover:underline">
-            {t("signupLink")}
+          {t("haveAccount")}{" "}
+          <Link href="/giris" className="font-medium text-green-700 dark:text-green-400 hover:underline">
+            {t("loginLink")}
           </Link>
         </p>
       </div>

@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
+import type { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { authConfig } from "@/lib/auth.config";
 import { rateLimit, resetRateLimit, clientIp } from "@/lib/rate-limit";
@@ -41,9 +42,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: normalizedEmail },
-        });
+        // Giris tenant BILINMEDEN gerceklesir; User'da RLS (FORCE) etkin oldugundan
+        // non-superuser rolle dogrudan findUnique 0 satir donerdi. Bu yuzden aramayi
+        // RLS-bypass eden SECURITY DEFINER fonksiyonla yapiyoruz (bkz. migration
+        // 20260618167000_auth_lookup_function). E-posta global benzersiz oldugundan
+        // tek satir doner.
+        const rows = await prisma.$queryRaw<
+          Array<{
+            id: string;
+            name: string | null;
+            email: string;
+            password: string;
+            role: Role;
+            tenantId: string;
+            onboardedAt: Date | null;
+          }>
+        >`SELECT * FROM auth_user_by_email(${normalizedEmail})`;
+        const user = rows[0];
         // Kullanici yoksa bcrypt'i bosa calistirmayiz; parola yanlissa karsilastirma false doner.
         const isValid = user ? await bcrypt.compare(password, user.password) : false;
         if (!user || !isValid) {

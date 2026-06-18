@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
@@ -53,14 +54,26 @@ export async function POST(request: Request) {
     const passwordHash = await hashPassword(password);
 
     // 4) Kullaniciyi olustur. Yeni kullanici, kaydi olusturan ADMIN'in tenant'ina
-    // baglanir (tenantId withTenant tarafindan otomatik enjekte edilir).
-    const user = await withTenant(tenantId, (db) =>
-      db.user.create({
-        data: { tenantId, name, email, password: passwordHash, role },
-        // Parolayi asla geri dondurmuyoruz
-        select: { id: true, name: true, email: true, role: true, createdAt: true },
-      })
-    );
+    // baglanir (tenantId acikca verilir; withTenant RLS baglamini ayarlar).
+    let user;
+    try {
+      user = await withTenant(tenantId, (db) =>
+        db.user.create({
+          data: { tenantId, name, email, password: passwordHash, role },
+          // Parolayi asla geri dondurmuyoruz
+          select: { id: true, name: true, email: true, role: true, createdAt: true },
+        })
+      );
+    } catch (err) {
+      // E-posta global benzersiz: baska bir tenant'ta zaten kayitliysa P2002.
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+        return NextResponse.json(
+          { error: "Bu e-posta adresi zaten kayitli" },
+          { status: 409 }
+        );
+      }
+      throw err;
+    }
 
     await logAudit(authz.session.user, "CREATE", "User", user.id, user.email);
 

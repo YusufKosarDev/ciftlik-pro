@@ -9,7 +9,22 @@
     "demo": "Browse as demo",
     "demoHint": "No sign-up required · explore with sample data",
     "errorInvalid": "Invalid email or password",
-    "errorDemo": "Demo sign-in is currently unavailable"
+    "errorDemo": "Demo sign-in is currently unavailable",
+    "noAccount": "Don't have an account?",
+    "signupLink": "Create your farm"
+  },
+  "Signup": {
+    "title": "Create your farm",
+    "subtitle": "Start free — manage your own isolated farm",
+    "farmName": "Farm name",
+    "name": "Full name",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Create farm",
+    "haveAccount": "Already have an account?",
+    "loginLink": "Sign in",
+    "errorGeneric": "Sign-up failed. Please try again.",
+    "errorConflict": "This email is already registered"
   },
   "Language": {
     "aria": "Language selection",

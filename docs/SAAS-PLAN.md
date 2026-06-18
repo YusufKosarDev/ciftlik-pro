@@ -150,10 +150,21 @@ CV-hazır canlı demo korunuyor.
 - ✅ **Üretim non-superuser rolü:** `prisma/rls-app-role.sql` + kurulum rehberi
   [`docs/PRODUCTION-RLS.md`](./PRODUCTION-RLS.md).
 
+**Faz 2 — tamamlandı:**
+
+- ✅ Public **"çiftlik oluştur"** kaydı (`/kayit` + `POST /api/auth/signup`): tek
+  transaction'da Tenant + ilk ADMIN; benzersiz slug; RLS-uyumlu (yeni tenant
+  bağlamı `set_config` ile ayarlanıp ADMIN yazılır); e-posta çakışması P2002→409.
+- ✅ **Personel davet akışı:** `Invitation` modeli (RLS dışı, token ile public
+  erişim), ADMIN davet oluşturma/iptal (`/api/invitations`), token'lı public
+  kabul (`/davet/[token]` + `/api/invitations/[token]/accept`) → davetli adını/
+  parolasını belirler, otomatik giriş. Personel sayfasında davet formu + bekleyen
+  davetler listesi.
+- ✅ **Login RLS uyumu:** `auth_user_by_email` SECURITY DEFINER fonksiyonu —
+  giriş, tenant bilinmeden non-superuser rolle de kullanıcıyı bulur.
+
 **Kalan:**
 
-- ⏳ **Faz 2** — public çiftlik kaydı + personel davet akışı (mevcut admin-only
-  register tenant-içi çalışıyor; public "çiftlik oluştur" + davet modeli henüz yok).
 - ⏳ **Faz 4** — per-tenant mağaza: vitrin tenant çözümleme (subdomain vs `/{slug}`),
   `Order`/`OrderItem` adoption + NOT NULL. (Şu an `/api/orders` ve `/magaza`
   tek-tenant/ertelenmiş.)

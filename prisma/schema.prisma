@@ -471,3 +471,25 @@ model OrderItem {
   @@index([orderId])
   @@index([productId])
 }
+
+// Personel daveti (tenant-ici). ADMIN bir e-posta + rol icin davet olusturur;
+// davetli, token'li baglantiyla kendi adini/parolasini belirleyip katilir.
+//
+// NOT: Bu tablo RLS DISIDIR — kabul akisi (public) daveti token ile, oturum/tenant
+// baglami OLMADAN okur. Token tahmin edilemez bir sirdir; tenantId yalnizca
+// kabul edildiginde olusturulacak User'i dogru tenant'a baglamak ve ADMIN'in
+// kendi davetlerini listelemesi (app-katmani filtre) icindir.
+model Invitation {
+  id          String    @id @default(cuid())
+  tenantId    String // Davet eden tenant
+  email       String // Davet edilen e-posta
+  role        Role      @default(WORKER)
+  token       String    @unique // Kabul baglantisindaki sir
+  invitedById String? // Daveti olusturan ADMIN (snapshot; iliski tutulmaz)
+  expiresAt   DateTime // Bu andan sonra kabul edilemez
+  acceptedAt  DateTime? // Kabul edildiyse zaman damgasi (tekrar kullanim engellenir)
+  createdAt   DateTime  @default(now())
+
+  @@index([tenantId])
+  @@index([email])
+}

@@ -73,6 +73,24 @@ APP_USER_DATABASE_URL="postgresql://ciftlik_app:…@HOST:PORT/DB?schema=public" 
 npx vitest run src/lib/tenant-rls.int.test.ts
 ```
 
+## Giriş (login) ve RLS
+
+Kimlik doğrulama, tenant **bilinmeden** (bağlam ayarlanmadan) kullanıcıyı
+e-postayla bulmak zorundadır — `User`'da FORCE RLS olduğundan non-superuser rol
+doğrudan 0 satır görürdü. Bunun için `auth_user_by_email(text)` adında bir
+**`SECURITY DEFINER`** fonksiyonu kullanılır (migration
+`20260618167000_auth_lookup_function`): fonksiyon, **sahibinin** yetkileriyle
+çalışır ve RLS'i yalnızca bu tek e-posta araması için bypass eder.
+
+> Fonksiyonun **sahibi**, RLS'i bypass eden bir rol olmalıdır (migration'ı
+> çalıştıran owner/superuser; managed Postgres'te proje sahibi rolü genelde
+> bypass eder). Migration'ları bu rolle çalıştırmak yeterlidir.
+
+Kayıt (`/api/auth/signup`) ve davet kabulü (`/api/invitations/[token]/accept`)
+yeni kullanıcıyı yazmadan önce aynı transaction'da `set_config('app.tenant_id', …)`
+ile bağlamı ayarlar; böylece `WITH CHECK` politikası geçerek non-superuser rolle
+de çalışır. `Invitation` tablosu RLS dışıdır (token ile public okuma).
+
 ## Notlar
 
 - `AuditLog`, `Order`, `OrderItem` kolonları `tenantId` için hâlâ **nullable**'dır:
