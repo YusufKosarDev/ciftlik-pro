@@ -1,59 +1,48 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { Store, ArrowRight } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { AddToCartButton } from "@/components/store/add-to-cart-button";
 
 export const metadata: Metadata = {
-  title: "Mağaza",
-  description: "Çiftlikten taze ürünler — sipariş verin.",
+  title: "Mağazalar",
+  description: "Çiftlik Pro üzerindeki çiftliklerin vitrinleri.",
 };
 
-function formatMoney(a: number): string {
-  return a.toLocaleString("tr-TR", { minimumFractionDigits: 2 }) + " TL";
-}
-
-// Herkese acik katalog. Kimlik gerektirmez; yalnizca aktif urunler listelenir.
-export default async function MagazaPage() {
-  const products = await prisma.product.findMany({
-    where: { active: true },
-    orderBy: { createdAt: "desc" },
+// Magaza dizini: her ciftligin (tenant) kendi vitrini /magaza/[slug] altindadir.
+// Tenant tablosu RLS disidir; tum vitrinler herkese acik listelenir.
+export default async function MagazaDizinPage() {
+  const farms = await prisma.tenant.findMany({
+    select: { name: true, slug: true },
+    orderBy: { name: "asc" },
   });
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground">Taze ürünler</h1>
-        <p className="text-sm text-muted-foreground">
-          Beğendiğiniz ürünleri sepete ekleyip sipariş bırakın — ödeme teslimatta.
+    <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+      <div className="mb-8 text-center">
+        <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400">
+          <Store className="h-7 w-7" />
+        </div>
+        <h1 className="text-2xl font-bold text-foreground">Çiftlik mağazaları</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Bir çiftlik seçin, taze ürünlerini görün ve sipariş bırakın.
         </p>
       </div>
 
-      {products.length === 0 ? (
+      {farms.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border bg-card p-12 text-center text-muted-foreground">
-          Şu anda satışta ürün yok.
+          Henüz mağaza yok.
         </p>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {products.map((p) => (
-            <div
-              key={p.id}
-              className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5 shadow-sm"
+        <div className="grid gap-3 sm:grid-cols-2">
+          {farms.map((f) => (
+            <Link
+              key={f.slug}
+              href={`/magaza/${f.slug}`}
+              className="group flex items-center justify-between rounded-xl border border-border bg-card p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
             >
-              <div>
-                <h2 className="font-semibold text-foreground">{p.name}</h2>
-                {p.description && (
-                  <p className="mt-1 text-sm text-muted-foreground">{p.description}</p>
-                )}
-              </div>
-              <p className="text-lg font-bold text-green-600 dark:text-green-400">
-                {formatMoney(p.price)}
-                {p.unit ? <span className="text-sm font-normal text-muted-foreground"> / {p.unit}</span> : null}
-              </p>
-              <div className="mt-auto">
-                <AddToCartButton
-                  product={{ productId: p.id, name: p.name, price: p.price, unit: p.unit }}
-                />
-              </div>
-            </div>
+              <span className="font-semibold text-foreground">{f.name}</span>
+              <ArrowRight className="h-4 w-4 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-green-600 dark:group-hover:text-green-400" />
+            </Link>
           ))}
         </div>
       )}

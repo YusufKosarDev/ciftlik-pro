@@ -3,6 +3,7 @@ import type { Prisma } from "@prisma/client";
 import { canWrite, requirePageView } from "@/lib/authz";
 import { parseListParams, type ListState } from "@/lib/list-query";
 import { withTenant } from "@/lib/tenant-prisma";
+import { prisma } from "@/lib/prisma";
 import { buttonVariants } from "@/components/ui/button";
 import { ProductsTable } from "@/components/tables/products-table";
 
@@ -41,6 +42,12 @@ export default async function UrunlerPage({
     return { products, total };
   });
 
+  // Bu tenant'in vitrin slug'i (kendi magazasina derin baglanti icin). Tenant RLS disi.
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: session.user.tenantId },
+    select: { slug: true },
+  });
+
   const canEdit = canWrite(session.user.role, "products");
   const list: ListState = { total, page, pageSize: take, q, sort, dir };
 
@@ -53,7 +60,10 @@ export default async function UrunlerPage({
           </h1>
           <p className="text-sm text-muted-foreground">
             Toplam {total} ürün · herkese açık{" "}
-            <Link href="/magaza" className="text-green-600 hover:underline dark:text-green-400">
+            <Link
+              href={tenant ? `/magaza/${tenant.slug}` : "/magaza"}
+              className="text-green-600 hover:underline dark:text-green-400"
+            >
               mağaza
             </Link>
           </p>

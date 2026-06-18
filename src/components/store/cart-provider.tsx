@@ -21,33 +21,41 @@ type CartContextValue = {
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
-const STORAGE_KEY = "ciftlik-cart";
 
-export function CartProvider({ children }: { children: React.ReactNode }) {
+// Sepet per-tenant'tir: her vitrinin (slug) kendi anahtari olur ki farkli
+// ciftliklerin sepetleri karismasin.
+export function CartProvider({
+  children,
+  storageKey = "ciftlik-cart",
+}: {
+  children: React.ReactNode;
+  storageKey?: string;
+}) {
   const [items, setItems] = useState<CartItem[]>([]);
 
-  // Sepeti mount sonrasi localStorage'dan yukle (SSR uyumsuzlugunu onlemek icin).
+  // Sepeti mount sonrasi (ve anahtar degisince) localStorage'dan yukle.
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setItems(JSON.parse(raw));
-      }
+      const raw = localStorage.getItem(storageKey);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setItems(raw ? JSON.parse(raw) : []);
     } catch {
       // bozuk veri: yoksay
     }
-  }, []);
+  }, [storageKey]);
 
   // Durumu gunceller ve localStorage'a yazar.
-  const update = useCallback((next: CartItem[]) => {
-    setItems(next);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    } catch {
-      // kota/erisim hatasi: yoksay
-    }
-  }, []);
+  const update = useCallback(
+    (next: CartItem[]) => {
+      setItems(next);
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(next));
+      } catch {
+        // kota/erisim hatasi: yoksay
+      }
+    },
+    [storageKey]
+  );
 
   const add = useCallback(
     (item: Omit<CartItem, "quantity">, qty = 1) => {

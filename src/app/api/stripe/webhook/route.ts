@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 
 // POST /api/stripe/webhook -> Stripe odeme bildirimleri. Imza STRIPE_WEBHOOK_SECRET
 // ile dogrulanir. checkout.session.completed gelince ilgili siparis PAID + CONFIRMED
@@ -30,12 +30,16 @@ export async function POST(request: Request) {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     const orderId = session.metadata?.orderId;
-    if (orderId) {
-      // updateMany: siparis bulunamazsa hata firlatmaz (idempotent).
-      await prisma.order.updateMany({
-        where: { id: orderId },
-        data: { paymentStatus: "PAID", status: "CONFIRMED" },
-      });
+    const tenantId = session.metadata?.tenantId;
+    if (orderId && tenantId) {
+      // Order RLS'e tabidir: siparis, olusturulurken metadata'ya yazilan tenant
+      // baglaminda guncellenir. updateMany idempotenttir (bulunmazsa hata yok).
+      await withTenant(tenantId, (db) =>
+        db.order.updateMany({
+          where: { id: orderId },
+          data: { paymentStatus: "PAID", status: "CONFIRMED" },
+        })
+      );
     }
   }
 

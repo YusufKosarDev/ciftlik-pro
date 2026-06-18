@@ -4,21 +4,21 @@ import Link from "next/link";
 import { Wheat, ShoppingCart } from "lucide-react";
 import { useCart } from "@/components/store/cart-provider";
 
-export function StoreHeader() {
+export function StoreHeader({ slug, farmName }: { slug: string; farmName: string }) {
   const { count } = useCart();
 
   return (
     <header className="border-b border-border bg-card">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 sm:px-6">
-        <Link href="/magaza" className="flex items-center gap-2.5 text-lg font-bold text-foreground">
+        <Link href={`/magaza/${slug}`} className="flex items-center gap-2.5 text-lg font-bold text-foreground">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-green-600 text-white">
             <Wheat className="h-5 w-5" />
           </span>
-          Çiftlik Pro · Mağaza
+          {farmName}
         </Link>
         <div className="flex items-center gap-4">
           <Link
-            href="/magaza/sepet"
+            href={`/magaza/${slug}/sepet`}
             className="relative inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-foreground transition hover:bg-muted"
           >
             <ShoppingCart className="h-4 w-4" />

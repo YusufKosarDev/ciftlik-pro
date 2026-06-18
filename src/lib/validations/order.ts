@@ -11,6 +11,8 @@ export const orderItemSchema = z.object({
 });
 
 export const orderSchema = z.object({
+  // Hangi ciftligin (tenant) vitrinine siparis veriliyor: /magaza/[slug] slug'i.
+  slug: z.string().trim().min(1, "Magaza secimi gecersiz"),
   items: z.array(orderItemSchema).min(1, "Sepet bos"),
   customerName: z
     .string()

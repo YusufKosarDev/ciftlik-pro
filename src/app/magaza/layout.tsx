@@ -1,15 +1,5 @@
-import { CartProvider } from "@/components/store/cart-provider";
-import { StoreHeader } from "@/components/store/store-header";
-
-// Magaza (herkese acik) duzeni: sepet durumu CartProvider'da tutulur, ust baslik
-// sepet sayacini gosterir.
+// Magaza kok duzeni. Sepet/baslik per-tenant oldugundan [slug] alt duzenindedir;
+// burada yalnizca ortak arka plan sarmalayicisi var (ornek: /magaza dizini).
 export default function MagazaLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <CartProvider>
-      <div className="min-h-screen bg-background">
-        <StoreHeader />
-        {children}
-      </div>
-    </CartProvider>
-  );
+  return <div className="min-h-screen bg-background">{children}</div>;
 }

@@ -14,7 +14,7 @@ function formatMoney(a: number): string {
   return a.toLocaleString("tr-TR", { minimumFractionDigits: 2 }) + " TL";
 }
 
-export function CartView() {
+export function CartView({ slug }: { slug: string }) {
   const { items, setQty, remove, total, count, clear } = useCart();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -27,6 +27,7 @@ export function CartView() {
 
     const fd = new FormData(e.currentTarget);
     const payload = {
+      slug,
       items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
       customerName: String(fd.get("customerName")),
       customerPhone: String(fd.get("customerPhone")),
@@ -68,7 +69,7 @@ export function CartView() {
         <p className="mt-1 text-sm text-muted-foreground">
           En kısa sürede sizinle iletişime geçilecek.
         </p>
-        <Link href="/magaza" className="mt-4 inline-block text-sm font-medium text-green-600 hover:underline dark:text-green-400">
+        <Link href={`/magaza/${slug}`} className="mt-4 inline-block text-sm font-medium text-green-600 hover:underline dark:text-green-400">
           ← Mağazaya dön
         </Link>
       </div>
@@ -79,7 +80,7 @@ export function CartView() {
     return (
       <div className="rounded-xl border border-dashed border-border bg-card p-12 text-center">
         <p className="text-muted-foreground">Sepetiniz boş.</p>
-        <Link href="/magaza" className="mt-3 inline-block text-sm font-medium text-green-600 hover:underline dark:text-green-400">
+        <Link href={`/magaza/${slug}`} className="mt-3 inline-block text-sm font-medium text-green-600 hover:underline dark:text-green-400">
           ← Ürünlere göz at
         </Link>
       </div>

@@ -163,13 +163,22 @@ CV-hazır canlı demo korunuyor.
 - ✅ **Login RLS uyumu:** `auth_user_by_email` SECURITY DEFINER fonksiyonu —
   giriş, tenant bilinmeden non-superuser rolle de kullanıcıyı bulur.
 
+**Faz 4 — tamamlandı (path tabanlı vitrin):**
+
+- ✅ **Tenant çözümleme: path `/magaza/[slug]`** (subdomain değil — DNS/altyapı
+  gerektirmez, Vercel'de ve localde çalışır). `/magaza` çiftlik dizinidir;
+  `/magaza/[slug]` o çiftliğin kataloğu; sepet slug'a özel localStorage anahtarı.
+- ✅ `Order`/`OrderItem` artık **tenantId NOT NULL** (RLS zaten 20 tabloyu
+  kapsıyordu). Sipariş, slug→tenant çözümüyle `withTenant` içinde oluşturulur;
+  ürün doğrulaması tenant-kapsamlı. Stripe metadata'sına `tenantId` yazılır;
+  webhook siparişi o tenant bağlamında günceller. seed/seed-demo tenantId'li.
+
 **Kalan:**
 
-- ⏳ **Faz 4** — per-tenant mağaza: vitrin tenant çözümleme (subdomain vs `/{slug}`),
-  `Order`/`OrderItem` adoption + NOT NULL. (Şu an `/api/orders` ve `/magaza`
-  tek-tenant/ertelenmiş.)
 - ⏳ **Faz 3 / 5** — faturalandırma, operasyon (KVKK ihraç/silme, süper-admin).
 - ⏳ Performans: `@@index([tenantId])` (RLS her sorguda `tenantId` filtreler).
+- ⏳ (Opsiyonel) Vitrin dizini cross-tenant ürün sayısı için SECURITY DEFINER
+  fonksiyonu — şu an tüm tenant'lar listeleniyor (boş vitrinler de).
 
 ---
 

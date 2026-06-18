@@ -13,6 +13,9 @@ const prisma = new PrismaClient();
 const DEMO_EMAIL = "demo@ciftlik.com";
 const DEMO_PASSWORD = "demo1234";
 
+// Tum demo verisi varsayilan tenant'a baglanir (backfill migration ile ayni id).
+const TENANT_ID = "default-tenant";
+
 // n gun once bir tarih (sut verimi / son islemler icin).
 function daysAgo(n) {
   const d = new Date();
@@ -21,6 +24,13 @@ function daysAgo(n) {
 }
 
 async function main() {
+  // 0) Varsayilan tenant — yoksa olustur (cok-kiracilik: tum demo verisi buna baglanir).
+  await prisma.tenant.upsert({
+    where: { id: TENANT_ID },
+    update: {},
+    create: { id: TENANT_ID, name: "Varsayilan Ciftlik", slug: "default" },
+  });
+
   // 1) Demo kullanici (WORKER) — varsa dokunma
   // Maliyet 12: src/lib/password-hash.ts BCRYPT_COST ile ayni.
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 12);
@@ -28,6 +38,7 @@ async function main() {
     where: { email: DEMO_EMAIL },
     update: {},
     create: {
+      tenantId: TENANT_ID,
       name: "Demo Kullanici",
       email: DEMO_EMAIL,
       password: passwordHash,
@@ -39,6 +50,7 @@ async function main() {
   if ((await prisma.field.count()) === 0) {
     await prisma.field.create({
       data: {
+        tenantId: TENANT_ID,
         name: "Dere Tarlasi",
         area: 25.5,
         location: "Koy alti",
@@ -46,13 +58,14 @@ async function main() {
         posY: 90,
         crops: {
           create: [
-            { name: "Bugday", plantedDate: new Date("2025-11-01"), status: "GROWING" },
+            { tenantId: TENANT_ID, name: "Bugday", plantedDate: new Date("2025-11-01"), status: "GROWING" },
           ],
         },
       },
     });
     await prisma.field.create({
       data: {
+        tenantId: TENANT_ID,
         name: "Tepe Tarlasi",
         area: 40,
         location: "Sirt",
@@ -60,13 +73,14 @@ async function main() {
         posY: 120,
         crops: {
           create: [
-            { name: "Arpa", plantedDate: new Date("2026-02-15"), status: "PLANTED" },
+            { tenantId: TENANT_ID, name: "Arpa", plantedDate: new Date("2026-02-15"), status: "PLANTED" },
           ],
         },
       },
     });
     await prisma.field.create({
       data: {
+        tenantId: TENANT_ID,
         name: "Cayir",
         area: 12,
         location: "Dere kenari",
@@ -74,7 +88,7 @@ async function main() {
         posY: 430,
         crops: {
           create: [
-            { name: "Yonca", plantedDate: new Date("2025-09-10"), status: "HARVESTED" },
+            { tenantId: TENANT_ID, name: "Yonca", plantedDate: new Date("2025-09-10"), status: "HARVESTED" },
           ],
         },
       },
@@ -85,9 +99,9 @@ async function main() {
   if ((await prisma.structure.count()) === 0) {
     await prisma.structure.createMany({
       data: [
-        { name: "Buyukbas Ahiri", type: "BARN", posX: 650, posY: 110, notes: "30 buyukbas kapasiteli" },
-        { name: "Tavuk Kumesi", type: "COOP", posX: 700, posY: 340 },
-        { name: "Yem Deposu", type: "STORAGE", posX: 430, posY: 440 },
+        { tenantId: TENANT_ID, name: "Buyukbas Ahiri", type: "BARN", posX: 650, posY: 110, notes: "30 buyukbas kapasiteli" },
+        { tenantId: TENANT_ID, name: "Tavuk Kumesi", type: "COOP", posX: 700, posY: 340 },
+        { tenantId: TENANT_ID, name: "Yem Deposu", type: "STORAGE", posX: 430, posY: 440 },
       ],
     });
   }
@@ -96,6 +110,7 @@ async function main() {
   if ((await prisma.animal.count()) === 0) {
     await prisma.animal.create({
       data: {
+        tenantId: TENANT_ID,
         tagNumber: "TR-001",
         name: "Sarikiz",
         species: "CATTLE",
@@ -105,25 +120,26 @@ async function main() {
         status: "ACTIVE",
         healthRecords: {
           create: [
-            { date: daysAgo(11), diagnosis: "Ayak enfeksiyonu", treatment: "Antibiyotik" },
+            { tenantId: TENANT_ID, date: daysAgo(11), diagnosis: "Ayak enfeksiyonu", treatment: "Antibiyotik" },
           ],
         },
         vaccinations: {
           create: [
-            { name: "Sap Asisi", date: new Date("2026-01-10"), nextDate: daysAgo(-40) },
+            { tenantId: TENANT_ID, name: "Sap Asisi", date: new Date("2026-01-10"), nextDate: daysAgo(-40) },
           ],
         },
         milkYields: {
           create: [
-            { date: daysAgo(2), amount: 13.5 },
-            { date: daysAgo(1), amount: 12.5 },
-            { date: daysAgo(0), amount: 14.0 },
+            { tenantId: TENANT_ID, date: daysAgo(2), amount: 13.5 },
+            { tenantId: TENANT_ID, date: daysAgo(1), amount: 12.5 },
+            { tenantId: TENANT_ID, date: daysAgo(0), amount: 14.0 },
           ],
         },
       },
     });
     await prisma.animal.create({
       data: {
+        tenantId: TENANT_ID,
         tagNumber: "TR-002",
         name: "Pamuk",
         species: "SHEEP",
@@ -135,6 +151,7 @@ async function main() {
     });
     await prisma.animal.create({
       data: {
+        tenantId: TENANT_ID,
         tagNumber: "TR-003",
         name: "Boncuk",
         species: "GOAT",
@@ -150,9 +167,9 @@ async function main() {
   if ((await prisma.inventoryItem.count()) === 0) {
     await prisma.inventoryItem.createMany({
       data: [
-        { name: "Arpa", category: "FEED", quantity: 500, unit: "kg", criticalLevel: 100 },
-        { name: "Antibiyotik", category: "MEDICINE", quantity: 5, unit: "adet", criticalLevel: 10 },
-        { name: "Traktor yagi", category: "EQUIPMENT", quantity: 20, unit: "litre", criticalLevel: 5 },
+        { tenantId: TENANT_ID, name: "Arpa", category: "FEED", quantity: 500, unit: "kg", criticalLevel: 100 },
+        { tenantId: TENANT_ID, name: "Antibiyotik", category: "MEDICINE", quantity: 5, unit: "adet", criticalLevel: 10 },
+        { tenantId: TENANT_ID, name: "Traktor yagi", category: "EQUIPMENT", quantity: 20, unit: "litre", criticalLevel: 5 },
       ],
     });
   }
@@ -161,11 +178,11 @@ async function main() {
   if ((await prisma.transaction.count()) === 0) {
     await prisma.transaction.createMany({
       data: [
-        { type: "INCOME", amount: 5000, category: "Sut satisi", date: daysAgo(10) },
-        { type: "EXPENSE", amount: 2000, category: "Yem alimi", date: daysAgo(8) },
-        { type: "INCOME", amount: 3500, category: "Sut satisi", date: daysAgo(45) },
-        { type: "EXPENSE", amount: 1200, category: "Ilac alimi", date: daysAgo(42) },
-        { type: "INCOME", amount: 4200, category: "Hayvan satisi", date: daysAgo(75) },
+        { tenantId: TENANT_ID, type: "INCOME", amount: 5000, category: "Sut satisi", date: daysAgo(10) },
+        { tenantId: TENANT_ID, type: "EXPENSE", amount: 2000, category: "Yem alimi", date: daysAgo(8) },
+        { tenantId: TENANT_ID, type: "INCOME", amount: 3500, category: "Sut satisi", date: daysAgo(45) },
+        { tenantId: TENANT_ID, type: "EXPENSE", amount: 1200, category: "Ilac alimi", date: daysAgo(42) },
+        { tenantId: TENANT_ID, type: "INCOME", amount: 4200, category: "Hayvan satisi", date: daysAgo(75) },
       ],
     });
   }
@@ -174,9 +191,9 @@ async function main() {
   if ((await prisma.task.count()) === 0) {
     await prisma.task.createMany({
       data: [
-        { title: "Ahir temizligi", assignedToId: demo.id, status: "PENDING", dueDate: daysAgo(-2) },
-        { title: "Yem siparisi ver", assignedToId: demo.id, status: "IN_PROGRESS", dueDate: daysAgo(-10) },
-        { title: "Sut tankini kontrol et", assignedToId: demo.id, status: "DONE", dueDate: daysAgo(3) },
+        { tenantId: TENANT_ID, title: "Ahir temizligi", assignedToId: demo.id, status: "PENDING", dueDate: daysAgo(-2) },
+        { tenantId: TENANT_ID, title: "Yem siparisi ver", assignedToId: demo.id, status: "IN_PROGRESS", dueDate: daysAgo(-10) },
+        { tenantId: TENANT_ID, title: "Sut tankini kontrol et", assignedToId: demo.id, status: "DONE", dueDate: daysAgo(3) },
       ],
     });
   }
@@ -185,9 +202,9 @@ async function main() {
   if ((await prisma.customer.count()) === 0) {
     await prisma.customer.createMany({
       data: [
-        { name: "Mehmet Yilmaz", phone: "0532 000 0001" },
-        { name: "Ayse Demir", phone: "0532 000 0002", email: "ayse@example.com" },
-        { name: "Koy Bakkali", phone: "0532 000 0003", notes: "Toptan alici" },
+        { tenantId: TENANT_ID, name: "Mehmet Yilmaz", phone: "0532 000 0001" },
+        { tenantId: TENANT_ID, name: "Ayse Demir", phone: "0532 000 0002", email: "ayse@example.com" },
+        { tenantId: TENANT_ID, name: "Koy Bakkali", phone: "0532 000 0003", notes: "Toptan alici" },
       ],
     });
   }
@@ -196,10 +213,10 @@ async function main() {
   if ((await prisma.product.count()) === 0) {
     await prisma.product.createMany({
       data: [
-        { name: "Koy Yumurtasi (15'li)", description: "Gezen tavuk, gunluk toplanir", price: 90, unit: "paket", active: true },
-        { name: "Cig Sut", description: "Gunluk sagim, soguk zincir", price: 35, unit: "litre", active: true },
-        { name: "Tulum Peyniri", description: "Tam yagli, olgunlastirilmis", price: 320, unit: "kg", active: true },
-        { name: "Cicek Bali", description: "Dogal, katkisiz", price: 450, unit: "kg", active: true },
+        { tenantId: TENANT_ID, name: "Koy Yumurtasi (15'li)", description: "Gezen tavuk, gunluk toplanir", price: 90, unit: "paket", active: true },
+        { tenantId: TENANT_ID, name: "Cig Sut", description: "Gunluk sagim, soguk zincir", price: 35, unit: "litre", active: true },
+        { tenantId: TENANT_ID, name: "Tulum Peyniri", description: "Tam yagli, olgunlastirilmis", price: 320, unit: "kg", active: true },
+        { tenantId: TENANT_ID, name: "Cicek Bali", description: "Dogal, katkisiz", price: 450, unit: "kg", active: true },
       ],
     });
   }
@@ -215,6 +232,7 @@ async function main() {
     for (const s of saleDefs) {
       const tx = await prisma.transaction.create({
         data: {
+          tenantId: TENANT_ID,
           type: "INCOME",
           amount: s.amount,
           category: "Satış",
@@ -224,6 +242,7 @@ async function main() {
       });
       await prisma.sale.create({
         data: {
+          tenantId: TENANT_ID,
           item: s.item,
           customerId: s.c?.id ?? null,
           quantity: s.quantity ?? null,
@@ -241,6 +260,7 @@ async function main() {
     const products = await prisma.product.findMany({ take: 4 });
     if (products.length >= 2) {
       const line = (p, qty) => ({
+        tenantId: TENANT_ID,
         productId: p.id,
         productName: p.name,
         unitPrice: p.price,
@@ -250,6 +270,7 @@ async function main() {
       const o1 = [line(products[0], 2), line(products[1], 3)];
       await prisma.order.create({
         data: {
+          tenantId: TENANT_ID,
           customerName: "Zeynep Kaya",
           customerPhone: "0533 111 2233",
           total: o1.reduce((s, it) => s + it.lineTotal, 0),
@@ -260,6 +281,7 @@ async function main() {
       const o2 = [line(products[2] ?? products[0], 1)];
       await prisma.order.create({
         data: {
+          tenantId: TENANT_ID,
           customerName: "Ali Vural",
           total: o2.reduce((s, it) => s + it.lineTotal, 0),
           status: "CONFIRMED",

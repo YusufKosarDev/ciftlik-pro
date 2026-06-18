@@ -24,8 +24,8 @@ enum Plan {
 
 // Kiraci (tenant) — her tenant bir ciftlik/isletmedir. Cok-kiracilik Faz 1:
 // backfill + NOT NULL + per-tenant unique + Postgres RLS tamamlandi. "tenantId"
-// 17 veri tablosunda zorunludur; AuditLog (sistem kayitlari icin nullable) ve
-// Order/OrderItem (per-tenant vitrin Faz 4'e kadar) nullable kalir.
+// 19 veri tablosunda zorunludur (Order/OrderItem dahil, per-tenant vitrin Faz 4).
+// Yalnizca AuditLog nullable kalir (LOGIN_FAILED gibi tenant'siz sistem kayitlari).
 model Tenant {
   id        String   @id @default(cuid())
   name      String // Ciftlik/isletme adi
@@ -438,7 +438,7 @@ enum PaymentStatus {
 // Magazadan verilen (odemesiz olabilen) siparis. Cok kalemlidir (OrderItem).
 model Order {
   id            String        @id @default(cuid())
-  tenantId      String?
+  tenantId      String
   customerName  String // Siparis veren ad
   customerPhone String? // Iletisim (opsiyonel)
   note          String?
@@ -458,7 +458,7 @@ model Order {
 // (urun sonradan degisse/silinse de siparis bozulmaz).
 model OrderItem {
   id          String   @id @default(cuid())
-  tenantId    String?
+  tenantId    String
   orderId     String
   order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId   String? // Iliskili urun (silinirse null; snapshot kalir)
