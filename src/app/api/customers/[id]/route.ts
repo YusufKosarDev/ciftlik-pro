@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
+import { withTenant } from "@/lib/tenant-prisma";
 import { customerSchema } from "@/lib/validations/customer";
 
 // PUT /api/customers/[id] -> musteriyi gunceller
@@ -23,21 +23,23 @@ export async function PUT(
       );
     }
 
-    const existing = await prisma.customer.findUnique({ where: { id } });
-    if (!existing) {
+    const data = parsed.data;
+    const customer = await withTenant(authz.session.user.tenantId, async (db) => {
+      const existing = await db.customer.findFirst({ where: { id } });
+      if (!existing) return null;
+      return db.customer.update({
+        where: { id },
+        data: {
+          name: data.name,
+          phone: data.phone || null,
+          email: data.email || null,
+          notes: data.notes || null,
+        },
+      });
+    });
+    if (!customer) {
       return NextResponse.json({ error: "Musteri bulunamadi" }, { status: 404 });
     }
-
-    const data = parsed.data;
-    const customer = await prisma.customer.update({
-      where: { id },
-      data: {
-        name: data.name,
-        phone: data.phone || null,
-        email: data.email || null,
-        notes: data.notes || null,
-      },
-    });
 
     await logAudit(authz.session.user, "UPDATE", "Customer", customer.id, customer.name);
 
@@ -62,13 +64,17 @@ export async function DELETE(
     if ("error" in authz) return authz.error;
 
     const { id } = await params;
-    const existing = await prisma.customer.findUnique({ where: { id } });
-    if (!existing) {
+    const deleted = await withTenant(authz.session.user.tenantId, async (db) => {
+      const existing = await db.customer.findFirst({ where: { id } });
+      if (!existing) return null;
+      await db.customer.delete({ where: { id } });
+      return existing;
+    });
+    if (!deleted) {
       return NextResponse.json({ error: "Musteri bulunamadi" }, { status: 404 });
     }
 
-    await prisma.customer.delete({ where: { id } });
-    await logAudit(authz.session.user, "DELETE", "Customer", id, existing.name);
+    await logAudit(authz.session.user, "DELETE", "Customer", id, deleted.name);
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -130,7 +130,7 @@ enum AnimalStatus {
 model Animal {
   id        String        @id @default(cuid())
   tenantId  String?
-  tagNumber String        @unique // Kulak kupesi numarasi (benzersiz)
+  tagNumber String // Kulak kupesi numarasi (tenant icinde benzersiz)
   name      String? // Istege bagli isim/lakap
   species   AnimalSpecies
   breed     String? // Cins/irk (orn. Holstein)
@@ -154,6 +154,7 @@ model Animal {
   breedingRecords BreedingRecord[]
   weightRecords   WeightRecord[]
 
+  @@unique([tenantId, tagNumber]) // Kulak numarasi tenant icinde benzersiz
   @@index([motherId])
 }
 

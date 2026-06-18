@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
+import { withTenant } from "@/lib/tenant-prisma";
 import { animalSchema } from "@/lib/validations/animal";
 
 // POST /api/animals -> yeni hayvan olusturur
@@ -24,59 +24,62 @@ export async function POST(request: Request) {
 
     const data = parsed.data;
 
-    // 3) Kulak numarasi zaten kayitli mi?
-    const existing = await prisma.animal.findUnique({
-      where: { tagNumber: data.tagNumber },
-    });
-    if (existing) {
-      return NextResponse.json(
-        { error: "Bu kulak numarasi zaten kayitli" },
-        { status: 409 }
-      );
-    }
+    // Tum okuma/yazma tenant baglaminda (RLS + forTenant): benzersizlik ve anne
+    // dogrulamasi artik TENANT-ICI yapilir.
+    const outcome = await withTenant(authz.session.user.tenantId, async (db) => {
+      // Kulak numarasi bu tenant'ta zaten kayitli mi? (findFirst: forTenant enjekte eder)
+      const existing = await db.animal.findFirst({ where: { tagNumber: data.tagNumber } });
+      if (existing) {
+        return { error: "Bu kulak numarasi zaten kayitli", status: 409 } as const;
+      }
 
-    // 4) Anne dogrulamasi: mevcut mu, disi mi, ayni turden mi?
-    if (data.motherId) {
-      const mother = await prisma.animal.findUnique({
-        where: { id: data.motherId },
-        select: { gender: true, species: true },
+      // Anne dogrulamasi: mevcut mu, disi mi, ayni turden mi?
+      if (data.motherId) {
+        const mother = await db.animal.findFirst({
+          where: { id: data.motherId },
+          select: { gender: true, species: true },
+        });
+        if (!mother) {
+          return { error: "Secilen anne hayvan bulunamadi", status: 404 } as const;
+        }
+        if (mother.gender !== "FEMALE") {
+          return { error: "Anne olarak yalnizca disi hayvan secilebilir", status: 400 } as const;
+        }
+        if (mother.species !== data.species) {
+          return { error: "Anne ve yavru ayni turden olmalidir", status: 400 } as const;
+        }
+      }
+
+      const animal = await db.animal.create({
+        data: {
+          tagNumber: data.tagNumber,
+          name: data.name || null,
+          species: data.species,
+          breed: data.breed || null,
+          gender: data.gender,
+          birthDate: data.birthDate ? new Date(data.birthDate) : null,
+          status: data.status,
+          imageUrl: data.imageUrl || null,
+          notes: data.notes || null,
+          motherId: data.motherId || null,
+        },
       });
-      if (!mother) {
-        return NextResponse.json({ error: "Secilen anne hayvan bulunamadi" }, { status: 404 });
-      }
-      if (mother.gender !== "FEMALE") {
-        return NextResponse.json(
-          { error: "Anne olarak yalnizca disi hayvan secilebilir" },
-          { status: 400 }
-        );
-      }
-      if (mother.species !== data.species) {
-        return NextResponse.json(
-          { error: "Anne ve yavru ayni turden olmalidir" },
-          { status: 400 }
-        );
-      }
-    }
-
-    // 4) Bos string'leri null'a cevir, tarihi Date'e donustur
-    const animal = await prisma.animal.create({
-      data: {
-        tagNumber: data.tagNumber,
-        name: data.name || null,
-        species: data.species,
-        breed: data.breed || null,
-        gender: data.gender,
-        birthDate: data.birthDate ? new Date(data.birthDate) : null,
-        status: data.status,
-        imageUrl: data.imageUrl || null,
-        notes: data.notes || null,
-        motherId: data.motherId || null,
-      },
+      return { animal } as const;
     });
 
-    await logAudit(authz.session.user, "CREATE", "Animal", animal.id, animal.tagNumber);
+    if ("error" in outcome) {
+      return NextResponse.json({ error: outcome.error }, { status: outcome.status });
+    }
 
-    return NextResponse.json({ animal }, { status: 201 });
+    await logAudit(
+      authz.session.user,
+      "CREATE",
+      "Animal",
+      outcome.animal.id,
+      outcome.animal.tagNumber
+    );
+
+    return NextResponse.json({ animal: outcome.animal }, { status: 201 });
   } catch (error) {
     console.error("Hayvan ekleme hatasi:", error);
     return NextResponse.json(

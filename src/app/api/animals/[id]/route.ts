@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
+import { withTenant } from "@/lib/tenant-prisma";
 import { animalSchema } from "@/lib/validations/animal";
 
-// PUT /api/animals/[id] -> hayvani gunceller
+// PUT /api/animals/[id] -> hayvani gunceller. Tum okuma/yazma tenant baglaminda
+// (RLS + forTenant); benzersizlik/soy kontrolleri TENANT-ICI yapilir.
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -26,107 +27,100 @@ export async function PUT(
 
     const data = parsed.data;
 
-    // Hayvan var mi?
-    const existing = await prisma.animal.findUnique({ where: { id } });
-    if (!existing) {
-      return NextResponse.json({ error: "Hayvan bulunamadi" }, { status: 404 });
-    }
+    const outcome = await withTenant(authz.session.user.tenantId, async (db) => {
+      const existing = await db.animal.findFirst({ where: { id } });
+      if (!existing) {
+        return { error: "Hayvan bulunamadi", status: 404 } as const;
+      }
 
-    // Kulak numarasi baska bir hayvanda kullaniliyor mu?
-    const tagOwner = await prisma.animal.findUnique({
-      where: { tagNumber: data.tagNumber },
-    });
-    if (tagOwner && tagOwner.id !== id) {
-      return NextResponse.json(
-        { error: "Bu kulak numarasi baska bir hayvanda kayitli" },
-        { status: 409 }
-      );
-    }
+      // Kulak numarasi bu tenant'ta baska bir hayvanda kullaniliyor mu?
+      const tagOwner = await db.animal.findFirst({ where: { tagNumber: data.tagNumber } });
+      if (tagOwner && tagOwner.id !== id) {
+        return { error: "Bu kulak numarasi baska bir hayvanda kayitli", status: 409 } as const;
+      }
 
-    // Hayvan kendi annesi olamaz.
-    if (data.motherId && data.motherId === id) {
-      return NextResponse.json(
-        { error: "Bir hayvan kendi annesi olarak secilemez" },
-        { status: 400 }
-      );
-    }
+      if (data.motherId && data.motherId === id) {
+        return { error: "Bir hayvan kendi annesi olarak secilemez", status: 400 } as const;
+      }
 
-    // Dongu engelle: secilen anne, bu hayvanin soyundan (alt nesil) biri olamaz.
-    // Annenin ata zincirini yukari yuruyup bu hayvana ulasiyor muyuz, bakariz.
-    if (data.motherId) {
-      let cursor: string | null = data.motherId;
-      const seen = new Set<string>();
-      while (cursor && !seen.has(cursor)) {
-        if (cursor === id) {
-          return NextResponse.json(
-            { error: "Secilen anne bu hayvanin soyundan; bu ataama dongu olusturur" },
-            { status: 400 }
-          );
-        }
-        seen.add(cursor);
-        const parent: { motherId: string | null } | null =
-          await prisma.animal.findUnique({
+      // Dongu engelle: secilen anne, bu hayvanin soyundan biri olamaz.
+      if (data.motherId) {
+        let cursor: string | null = data.motherId;
+        const seen = new Set<string>();
+        while (cursor && !seen.has(cursor)) {
+          if (cursor === id) {
+            return {
+              error: "Secilen anne bu hayvanin soyundan; bu ataama dongu olusturur",
+              status: 400,
+            } as const;
+          }
+          seen.add(cursor);
+          const parent: { motherId: string | null } | null = await db.animal.findFirst({
             where: { id: cursor },
             select: { motherId: true },
           });
-        cursor = parent?.motherId ?? null;
+          cursor = parent?.motherId ?? null;
+        }
+
+        const mother = await db.animal.findFirst({
+          where: { id: data.motherId },
+          select: { gender: true, species: true },
+        });
+        if (!mother) {
+          return { error: "Secilen anne hayvan bulunamadi", status: 404 } as const;
+        }
+        if (mother.gender !== "FEMALE") {
+          return { error: "Anne olarak yalnizca disi hayvan secilebilir", status: 400 } as const;
+        }
+        if (mother.species !== data.species) {
+          return { error: "Anne ve yavru ayni turden olmalidir", status: 400 } as const;
+        }
       }
 
-      // Anne cinsiyet + tur dogrulamasi
-      const mother = await prisma.animal.findUnique({
-        where: { id: data.motherId },
-        select: { gender: true, species: true },
+      // Tur degisiyorsa yavrularla tutarsizlik olmamali.
+      if (data.species !== existing.species) {
+        const mismatchedOffspring = await db.animal.count({
+          where: { motherId: id, species: { not: data.species } },
+        });
+        if (mismatchedOffspring > 0) {
+          return {
+            error: "Bu hayvanin yavrulari farkli turden; tur degistirilemez",
+            status: 400,
+          } as const;
+        }
+      }
+
+      const animal = await db.animal.update({
+        where: { id },
+        data: {
+          tagNumber: data.tagNumber,
+          name: data.name || null,
+          species: data.species,
+          breed: data.breed || null,
+          gender: data.gender,
+          birthDate: data.birthDate ? new Date(data.birthDate) : null,
+          status: data.status,
+          imageUrl: data.imageUrl || null,
+          notes: data.notes || null,
+          motherId: data.motherId || null,
+        },
       });
-      if (!mother) {
-        return NextResponse.json({ error: "Secilen anne hayvan bulunamadi" }, { status: 404 });
-      }
-      if (mother.gender !== "FEMALE") {
-        return NextResponse.json(
-          { error: "Anne olarak yalnizca disi hayvan secilebilir" },
-          { status: 400 }
-        );
-      }
-      if (mother.species !== data.species) {
-        return NextResponse.json(
-          { error: "Anne ve yavru ayni turden olmalidir" },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Tur degisiyorsa, bu hayvanin mevcut yavrulariyla tutarsizlik olusmamali.
-    // (Anne ve yavru ayni turden olmali; yavrular bu hayvani anne gosteriyor.)
-    if (data.species !== existing.species) {
-      const mismatchedOffspring = await prisma.animal.count({
-        where: { motherId: id, species: { not: data.species } },
-      });
-      if (mismatchedOffspring > 0) {
-        return NextResponse.json(
-          { error: "Bu hayvanin yavrulari farkli turden; tur degistirilemez" },
-          { status: 400 }
-        );
-      }
-    }
-
-    const animal = await prisma.animal.update({
-      where: { id },
-      data: {
-        tagNumber: data.tagNumber,
-        name: data.name || null,
-        species: data.species,
-        breed: data.breed || null,
-        gender: data.gender,
-        birthDate: data.birthDate ? new Date(data.birthDate) : null,
-        status: data.status,
-        imageUrl: data.imageUrl || null,
-        notes: data.notes || null,
-        motherId: data.motherId || null,
-      },
+      return { animal } as const;
     });
 
-    await logAudit(authz.session.user, "UPDATE", "Animal", animal.id, animal.tagNumber);
+    if ("error" in outcome) {
+      return NextResponse.json({ error: outcome.error }, { status: outcome.status });
+    }
 
-    return NextResponse.json({ animal });
+    await logAudit(
+      authz.session.user,
+      "UPDATE",
+      "Animal",
+      outcome.animal.id,
+      outcome.animal.tagNumber
+    );
+
+    return NextResponse.json({ animal: outcome.animal });
   } catch (error) {
     console.error("Hayvan guncelleme hatasi:", error);
     return NextResponse.json(
@@ -147,13 +141,18 @@ export async function DELETE(
 
     const { id } = await params;
 
-    const existing = await prisma.animal.findUnique({ where: { id } });
-    if (!existing) {
+    const deleted = await withTenant(authz.session.user.tenantId, async (db) => {
+      const existing = await db.animal.findFirst({ where: { id } });
+      if (!existing) return null;
+      await db.animal.delete({ where: { id } });
+      return existing;
+    });
+
+    if (!deleted) {
       return NextResponse.json({ error: "Hayvan bulunamadi" }, { status: 404 });
     }
 
-    await prisma.animal.delete({ where: { id } });
-    await logAudit(authz.session.user, "DELETE", "Animal", id, existing.tagNumber);
+    await logAudit(authz.session.user, "DELETE", "Animal", id, deleted.tagNumber);
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -61,4 +61,21 @@ describe.skipIf(!run)("tenant izolasyonu (integration, gercek DB)", () => {
       await dbB.animal.count({ where: { tagNumber: { in: [tagA, tagB] } } })
     ).toBe(1);
   });
+
+  it("ayni kulak numarasi farkli tenant'larda kullanilabilir (per-tenant unique)", async () => {
+    const shared = `SHARED-${stamp}`;
+    try {
+      const a = await forTenant(A).animal.create({
+        data: { tagNumber: shared, species: "CATTLE", gender: "FEMALE" },
+      });
+      const b = await forTenant(B).animal.create({
+        data: { tagNumber: shared, species: "GOAT", gender: "FEMALE" },
+      });
+      expect(a.tenantId).toBe(A);
+      expect(b.tenantId).toBe(B);
+      expect(a.id).not.toBe(b.id);
+    } finally {
+      await prisma.animal.deleteMany({ where: { tagNumber: shared } });
+    }
+  });
 });

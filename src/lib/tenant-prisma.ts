@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
 
 // Tenant'a kapsanmis Prisma client (Cok-kiracilik Faz 1, app-katmani izolasyon).
 //
@@ -68,13 +67,5 @@ export async function withTenant<T>(
   });
 }
 
-// Mevcut oturumun tenant'i icin withTenant. Cagiranlar yalnizca sorgularini
-// sarar: `const animals = await withCurrentTenant((db) => db.animal.findMany());`
-export async function withCurrentTenant<T>(
-  fn: (db: Parameters<Parameters<TenantPrisma["$transaction"]>[0]>[0]) => Promise<T>
-): Promise<T> {
-  const session = await auth();
-  const tenantId = session?.user?.tenantId;
-  if (!tenantId) throw new Error("Tenant baglami yok (oturum gerekli)");
-  return withTenant(tenantId, fn);
-}
+// withTenant'in fn'ine gecen kapsanmis tx tipi (cagiranlar icin kisayol).
+export type TenantDb = Parameters<Parameters<TenantPrisma["$transaction"]>[0]>[0];

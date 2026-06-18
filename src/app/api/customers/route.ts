@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
+import { withTenant } from "@/lib/tenant-prisma";
 import { customerSchema } from "@/lib/validations/customer";
 
 // POST /api/customers -> yeni musteri olusturur
@@ -20,14 +20,16 @@ export async function POST(request: Request) {
     }
 
     const data = parsed.data;
-    const customer = await prisma.customer.create({
-      data: {
-        name: data.name,
-        phone: data.phone || null,
-        email: data.email || null,
-        notes: data.notes || null,
-      },
-    });
+    const customer = await withTenant(authz.session.user.tenantId, (db) =>
+      db.customer.create({
+        data: {
+          name: data.name,
+          phone: data.phone || null,
+          email: data.email || null,
+          notes: data.notes || null,
+        },
+      })
+    );
 
     await logAudit(authz.session.user, "CREATE", "Customer", customer.id, customer.name);
 
