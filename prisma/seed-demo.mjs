@@ -25,10 +25,11 @@ function daysAgo(n) {
 
 async function main() {
   // 0) Varsayilan tenant — yoksa olustur (cok-kiracilik: tum demo verisi buna baglanir).
+  // Demo/showcase tenant PRO'dur (sinirsiz); yeni kayitlar FREE baslar.
   await prisma.tenant.upsert({
     where: { id: TENANT_ID },
-    update: {},
-    create: { id: TENANT_ID, name: "Varsayilan Ciftlik", slug: "default" },
+    update: { plan: "PRO" },
+    create: { id: TENANT_ID, name: "Varsayilan Ciftlik", slug: "default", plan: "PRO" },
   });
 
   // 1) Demo kullanici (WORKER) — varsa dokunma

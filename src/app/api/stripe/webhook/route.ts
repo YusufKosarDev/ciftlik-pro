@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
+import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant-prisma";
 
 // POST /api/stripe/webhook -> Stripe odeme bildirimleri. Imza STRIPE_WEBHOOK_SECRET
@@ -29,17 +30,33 @@ export async function POST(request: Request) {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
-    const orderId = session.metadata?.orderId;
     const tenantId = session.metadata?.tenantId;
-    if (orderId && tenantId) {
-      // Order RLS'e tabidir: siparis, olusturulurken metadata'ya yazilan tenant
-      // baglaminda guncellenir. updateMany idempotenttir (bulunmazsa hata yok).
-      await withTenant(tenantId, (db) =>
-        db.order.updateMany({
-          where: { id: orderId },
-          data: { paymentStatus: "PAID", status: "CONFIRMED" },
-        })
-      );
+
+    if (session.mode === "subscription" && tenantId) {
+      // Abonelik basladi -> tenant PRO. Tenant RLS disidir.
+      await prisma.tenant.update({ where: { id: tenantId }, data: { plan: "PRO" } });
+    } else {
+      // Magaza siparisi odemesi.
+      const orderId = session.metadata?.orderId;
+      if (orderId && tenantId) {
+        // Order RLS'e tabidir: siparis, olusturulurken metadata'ya yazilan tenant
+        // baglaminda guncellenir. updateMany idempotenttir (bulunmazsa hata yok).
+        await withTenant(tenantId, (db) =>
+          db.order.updateMany({
+            where: { id: orderId },
+            data: { paymentStatus: "PAID", status: "CONFIRMED" },
+          })
+        );
+      }
+    }
+  }
+
+  // Abonelik iptal/sona erdi -> tenant FREE'ye doner.
+  if (event.type === "customer.subscription.deleted") {
+    const sub = event.data.object as Stripe.Subscription;
+    const tenantId = sub.metadata?.tenantId;
+    if (tenantId) {
+      await prisma.tenant.update({ where: { id: tenantId }, data: { plan: "FREE" } });
     }
   }
 

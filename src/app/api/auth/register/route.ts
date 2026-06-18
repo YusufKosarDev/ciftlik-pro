@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { withTenant } from "@/lib/tenant-prisma";
+import { canAddRecord } from "@/lib/plan";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { registerSchema } from "@/lib/validations/auth";
@@ -38,6 +39,18 @@ export async function POST(request: Request) {
 
     const { name, email, password, role } = parsed.data;
     const tenantId = authz.session.user.tenantId;
+
+    // Plan limiti (FREE: en fazla 3 personel). Hard block.
+    const limit = await canAddRecord(tenantId, "users");
+    if (!limit.allowed) {
+      return NextResponse.json(
+        {
+          error: `FREE planda en fazla ${limit.limit} personel ekleyebilirsiniz. Daha fazlası için PRO'ya yükseltin.`,
+          code: "PLAN_LIMIT",
+        },
+        { status: 403 }
+      );
+    }
 
     // 2) E-posta zaten kayitli mi? (aktif tenant icinde)
     const existing = await withTenant(tenantId, (db) =>

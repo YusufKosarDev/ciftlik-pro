@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { randomBytes } from "crypto";
 import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
+import { canAddRecord } from "@/lib/plan";
 import { logAudit } from "@/lib/audit";
 import { inviteSchema } from "@/lib/validations/auth";
 import { sendEmail } from "@/lib/email";
@@ -26,6 +27,19 @@ export async function POST(request: Request) {
 
     const { email, role } = parsed.data;
     const tenantId = authz.session.user.tenantId;
+
+    // Plan limiti (FREE: en fazla 3 personel). Limit doluysa davet de gonderilmez.
+    const limit = await canAddRecord(tenantId, "users");
+    if (!limit.allowed) {
+      return NextResponse.json(
+        {
+          error: `FREE planda en fazla ${limit.limit} personel olabilir. Davet için PRO'ya yükseltin.`,
+          code: "PLAN_LIMIT",
+        },
+        { status: 403 }
+      );
+    }
+
     const token = randomBytes(32).toString("base64url");
     const expiresAt = new Date(Date.now() + INVITE_TTL_DAYS * 24 * 60 * 60 * 1000);
 

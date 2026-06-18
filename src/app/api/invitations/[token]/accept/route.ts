@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { canAddRecord } from "@/lib/plan";
 import { acceptInviteSchema } from "@/lib/validations/auth";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 import { hashPassword } from "@/lib/password-hash";
@@ -37,6 +38,15 @@ export async function POST(
       return NextResponse.json(
         { error: "Davet gecersiz veya suresi dolmus" },
         { status: 410 }
+      );
+    }
+
+    // Plan limiti (davet gonderildikten sonra dolmus olabilir). Hard block.
+    const limit = await canAddRecord(invitation.tenantId, "users");
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: "Çiftlik personel limitine ulaşıldı. Lütfen yöneticiyle iletişime geçin." },
+        { status: 403 }
       );
     }
 

@@ -189,9 +189,20 @@ CV-hazır canlı demo korunuyor.
 - ⏳ **Süper-admin paneli** ertelendi: platform-rolü mimarisi + cross-tenant
   erişim (RLS bypass / SECURITY DEFINER) gerektirir.
 
+**Faz 3 — tamamlandı (env-gated faturalandırma):**
+
+- ✅ **Plan limitleri:** FREE = 25 aktif hayvan + 3 personel; PRO sınırsız
+  (`src/lib/plan.ts`). Limit aşımında **hard block (403)** — hayvan ekleme,
+  register, davet oluşturma ve davet kabulü uçlarında.
+- ✅ **Yükseltme akışı (env-gated):** `POST /api/billing/checkout` — Stripe +
+  `STRIPE_PRO_PRICE_ID` varsa gerçek **Subscription Checkout** (webhook
+  `checkout.session.completed`/`customer.subscription.deleted` → `Tenant.plan`);
+  yoksa demo doğrudan PRO yapar. `/api/billing/downgrade` (demo) FREE'ye döner.
+- ✅ **Abonelik sayfası** `/panel/abonelik` (ADMIN): plan + kullanım çubukları +
+  yükselt/düşür. Profilden link. Demo (default-tenant) PRO; yeni kayıtlar FREE.
+
 **Kalan:**
 
-- ⏳ **Faz 3** — faturalandırma (Stripe Billing, planlar/limitler).
 - ⏳ **Faz 5 (kalan)** — süper-admin paneli, tenant başına metrik/loglama.
 - ⏳ (Opsiyonel) Vitrin dizini cross-tenant ürün sayısı için SECURITY DEFINER
   fonksiyonu — şu an tüm tenant'lar listeleniyor (boş vitrinler de).

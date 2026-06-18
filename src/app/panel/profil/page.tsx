@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { roleLabels } from "@/lib/labels";
+import { Badge } from "@/components/ui/badge";
 import { PasswordChangeForm } from "@/components/password-change-form";
 import { RestartTourButton } from "@/components/restart-tour-button";
 import { AccountDangerZone } from "@/components/account-danger-zone";
@@ -26,7 +28,7 @@ export default async function ProfilPage() {
   const tenant = isAdmin
     ? await prisma.tenant.findUnique({
         where: { id: session.user.tenantId },
-        select: { name: true },
+        select: { name: true, plan: true },
       })
     : null;
 
@@ -41,6 +43,19 @@ export default async function ProfilPage() {
         <Row label="E-posta" value={session.user.email ?? "-"} />
         <Row label="Rol" value={roleLabels[session.user.role]} />
       </div>
+
+      {isAdmin && tenant && (
+        <Link
+          href="/panel/abonelik"
+          className="flex items-center justify-between rounded-xl border border-border bg-card p-5 transition hover:border-green-400 hover:shadow-sm"
+        >
+          <div>
+            <p className="font-medium text-foreground">Abonelik & plan</p>
+            <p className="text-sm text-muted-foreground">Plan limitlerini görüntüle, PRO&apos;ya yükselt</p>
+          </div>
+          <Badge tone={tenant.plan === "PRO" ? "green" : "blue"}>{tenant.plan}</Badge>
+        </Link>
+      )}
 
       <PasswordChangeForm />
 

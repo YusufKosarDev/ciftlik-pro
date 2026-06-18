@@ -19,10 +19,12 @@ async function main() {
   // Cok-kiracilik: tum seed verisi tek bir varsayilan tenant'a baglanir.
   // (Backfill migration ile ayni sabit id.)
   const TENANT_ID = "default-tenant";
+  // Demo/showcase tenant PRO'dur (sinirsiz); boylece ana demo limit'e takilmaz.
+  // Yeni kayitlar (public signup) FREE baslar ve limitleri dogal gosterir.
   await prisma.tenant.upsert({
     where: { id: TENANT_ID },
-    update: {},
-    create: { id: TENANT_ID, name: "Varsayilan Ciftlik", slug: "default" },
+    update: { plan: "PRO" },
+    create: { id: TENANT_ID, name: "Varsayilan Ciftlik", slug: "default", plan: "PRO" },
   });
 
   // Kullanicilar (seed kullanicilari "mevcut" sayilir; hos geldin turunu

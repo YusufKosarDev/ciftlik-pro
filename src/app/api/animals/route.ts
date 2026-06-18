@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { withTenant } from "@/lib/tenant-prisma";
+import { canAddRecord } from "@/lib/plan";
 import { animalSchema } from "@/lib/validations/animal";
 
 // POST /api/animals -> yeni hayvan olusturur
@@ -23,6 +24,18 @@ export async function POST(request: Request) {
     }
 
     const data = parsed.data;
+
+    // 3) Plan limiti (FREE: en fazla 25 aktif hayvan). Hard block.
+    const limit = await canAddRecord(authz.session.user.tenantId, "animals");
+    if (!limit.allowed) {
+      return NextResponse.json(
+        {
+          error: `FREE planda en fazla ${limit.limit} aktif hayvan ekleyebilirsiniz. Daha fazlası için PRO'ya yükseltin.`,
+          code: "PLAN_LIMIT",
+        },
+        { status: 403 }
+      );
+    }
 
     // Tum okuma/yazma tenant baglaminda (RLS + forTenant): benzersizlik ve anne
     // dogrulamasi artik TENANT-ICI yapilir.
