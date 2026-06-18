@@ -9,12 +9,14 @@ declare module "next-auth" {
     user: {
       id: string;
       role: Role;
+      tenantId: string; // Cok-kiracilik: kullanicinin ait oldugu tenant
       onboarded: boolean; // Hos geldin turunu tamamladi mi (JWT'den)
     } & DefaultSession["user"];
   }
 
   interface User {
     role: Role;
+    tenantId?: string | null;
     onboarded?: boolean;
   }
 }
@@ -23,6 +25,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     id: string;
     role: Role;
+    tenantId: string;
     onboarded: boolean;
   }
 }

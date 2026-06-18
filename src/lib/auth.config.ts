@@ -42,6 +42,7 @@ export const authConfig = {
       if (user) {
         token.id = user.id as string;
         token.role = user.role;
+        token.tenantId = user.tenantId ?? "";
         token.onboarded = user.onboarded ?? false;
       }
       if (trigger === "update" && typeof session?.onboarded === "boolean") {
@@ -54,6 +55,7 @@ export const authConfig = {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as Role;
+        session.user.tenantId = (token.tenantId as string) ?? "";
         session.user.onboarded = Boolean(token.onboarded);
       }
       return session;
