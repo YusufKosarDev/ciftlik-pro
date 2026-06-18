@@ -11,7 +11,7 @@ rol bazlı yetkilendirmeyle tek panelden yöneten tam yığın Çiftlik Yönetim
 [![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Coverage](https://img.shields.io/badge/coverage-~95%25%20(lib)-success?logo=vitest&logoColor=white)](#test--kalite)
-[![Tests](https://img.shields.io/badge/tests-200%2B%20unit%20%2B%207%20e2e-success)](#test--kalite)
+[![Tests](https://img.shields.io/badge/tests-240%2B%20unit%20%2B%207%20e2e-success)](#test--kalite)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 🔗 **Canlı Demo: [ciftlik-pro.vercel.app](https://ciftlik-pro.vercel.app)**
@@ -34,22 +34,24 @@ single role-based dashboard. _(The detailed documentation below is in Turkish.)_
   sensitive pages. No public sign-up; visitors explore via a read-only demo.
 - **Domain modules** — animal tracking (health, vaccinations, milk yield, weight,
   breeding & lineage), fields & crops with per-crop economics, inventory/feed with
-  transactional stock deduction, finance, sales (auto-posted to finance as income),
-  calendar, tasks, a 2D farm map, and an onboarding tour.
+  transactional stock deduction, finance, **sales & customers** (each sale auto-posts
+  an income transaction), a **public storefront** (`/magaza`) with a cart and
+  payment-free or **Stripe** checkout, calendar, tasks, a 2D farm map, and onboarding.
 - **Security hardening** — HTTP security headers (CSP/HSTS/…), brute-force rate
   limiting on login/register, bcrypt (cost 12), `http(s)`-only image URLs, audited
   failed logins, and a full write **audit log**.
 - **Performance** — server-side pagination/search/sort (DB `where`/`orderBy`/
   `skip`/`take` + `count`) with date-range indexes, finance aggregates via
   `groupBy`, and lazy-loaded charts (`next/dynamic`).
-- **Modern UI** — sidebar layout, dark mode (semantic color tokens), a ⌘K command
-  palette, dashboard trend deltas, and an accessible component system.
-- **Quality** — end-to-end type safety (Zod + Prisma), **200+ unit/component tests**
+- **Modern UI & i18n** — sidebar layout, dark mode (semantic color tokens), a ⌘K
+  command palette, dashboard trend deltas, and a Turkish/English i18n foundation
+  (next-intl).
+- **Quality** — end-to-end type safety (Zod + Prisma), **240+ unit/component tests**
   (Vitest + Testing Library) and **7 e2e tests** (Playwright), run on every PR in CI
   against a real PostgreSQL service.
 
 **Stack:** Next.js 16 (App Router, RSC) · TypeScript · PostgreSQL + Prisma 6 ·
-Auth.js · Tailwind CSS · Zod · Recharts · Vitest + Playwright · Docker · Vercel.
+Auth.js · Tailwind CSS · Zod · Stripe · next-intl · Recharts · Vitest + Playwright · Vercel.
 
 🔗 **Live demo:** [ciftlik-pro.vercel.app](https://ciftlik-pro.vercel.app) — use the
 **"Demo olarak gez"** (Browse as demo) button, or `demo@ciftlik.com` / `demo1234`.
@@ -58,29 +60,26 @@ Auth.js · Tailwind CSS · Zod · Recharts · Vitest + Playwright · Docker · V
 
 ## 📸 Ekran Görüntüleri
 
-**Canlı demo** — panel, hayvanlar, hayvan detayı, harita, yem ve takvim arasında kısa tur:
+**Panel (Dashboard)** — sol sidebar, özet kartları (gerçek "bu ay" trend
+göstergeleriyle) ve aylık gelir-gider grafiği:
 
-![Canlı demo](docs/screenshots/demo.gif)
+![Dashboard](docs/screenshots/dashboard.png)
 
-**Hoş geldin turu** — ilk girişte role özel, çok adımlı tanıtım:
+| 🌙 Dark mode | 🛒 Herkese açık mağaza (`/magaza`) |
+| ------------ | ---------------------------------- |
+| ![Dark mode](docs/screenshots/dashboard-dark.png) | ![Mağaza](docs/screenshots/store.png) |
+
+| Hayvanlar (sunucu-tarafı aranabilir tablo) | Hayvan detayı (süt/ağırlık grafikleri) |
+| ------------------------------------------ | -------------------------------------- |
+| ![Hayvanlar](docs/screenshots/animals.png) | ![Hayvan detayı](docs/screenshots/animal-detail.png) |
+
+| 2D Çiftlik Haritası | Takvim (aşı/görev/hasat/doğum) |
+| ------------------- | ------------------------------ |
+| ![Harita](docs/screenshots/map.png) | ![Takvim](docs/screenshots/calendar.png) |
+
+**Hoş geldin turu (onboarding)** — ilk girişte role özel, çok adımlı tanıtım:
 
 ![Hoş geldin turu](docs/screenshots/onboarding.png)
-
-| Panel (Dashboard) | 2D Çiftlik Haritası |
-| ----------------- | ------------------- |
-| ![Dashboard](docs/screenshots/dashboard.png) | ![Harita](docs/screenshots/map.png) |
-
-| Hayvanlar (aranabilir tablo) | Finans |
-| ---------------------------- | ------ |
-| ![Hayvanlar](docs/screenshots/animals.png) | ![Finans](docs/screenshots/finance.png) |
-
-| Takvim (aşı/görev/hasat/doğum) | Yem Yönetimi |
-| ------------------------------ | ------------ |
-| ![Takvim](docs/screenshots/calendar.png) | ![Yem](docs/screenshots/feed.png) |
-
-**Hayvan detayı** — sağlık, aşı, süt verimi & ağırlık grafikleri, üreme ve soy:
-
-![Hayvan detayı](docs/screenshots/animal-detail.png)
 
 ## ✨ Özellikler
 
@@ -95,14 +94,20 @@ Auth.js · Tailwind CSS · Zod · Recharts · Vitest + Playwright · Docker · V
 - **Stok & yem** — yem/ilaç/ekipman takibi, kritik seviye uyarısı; yem tüketimi
   stoğu otomatik düşürür (transactional).
 - **Finans** — gelir-gider kayıtları, net bakiye özeti, aylık grafik.
-- **Satış** — ürün/hayvan satış kayıtları (müşteri, miktar, tutar); her satış
-  otomatik olarak **gelir işlemi** üretip finansa yansır (transactional).
+- **Satış & Müşteri** — satış kayıtları müşteriye bağlanır; her satış otomatik bir
+  **gelir işlemi** üretip finansa yansır (transactional). Müşteri detayında satış
+  geçmişi ve toplam ciro.
+- **Mağaza & Sipariş** — herkese açık katalog (`/magaza`), `localStorage` sepeti ve
+  çok-kalemli sipariş; **Stripe** yapılandırıldıysa ödeme, yoksa "ödeme teslimatta".
+  Admin tarafında ürün CRUD + sipariş durum yönetimi.
 - **Takvim** — aşı, görev, hasat ve doğumlar tek aylık takvimde.
 - **Personel & görevler** — çalışanlara görev atama, gecikme uyarısı.
 - **Dashboard** — özet kartları (gerçek "bu ay" trend göstergeleriyle), kritik
   stok / geciken görev / yaklaşan aşı uyarıları.
-- **Modern arayüz** — sol sidebar düzeni, dark mode (tema değiştirici), `⌘K`
+- **Modern arayüz** — sol sidebar düzeni, dark mode (semantik renk token'ları), `⌘K`
   komut paleti (hızlı gezinme + eylem) ve `cva` tabanlı tasarım sistemi.
+- **Çok dillilik (i18n)** — next-intl altyapısı (cookie-locale, varsayılan TR);
+  giriş ekranı ve panel kabuğu TR/EN.
 - **Hoş geldin turu (onboarding)** — ilk panel girişinde role özel, çok adımlı
   tanıtım modal'ı; Profil'den istenildiğinde yeniden başlatılabilir.
 - **Aranabilir tablolar** — tüm liste modüllerinde **sunucu-tarafı (DB)** arama,
@@ -116,18 +121,22 @@ Auth.js · Tailwind CSS · Zod · Recharts · Vitest + Playwright · Docker · V
   (API) hem hassas okuma (sayfa) düzeyinde uygulanır.
 - **Uçtan uca tip güvenliği** — Zod şemaları hem istemci hem sunucuda doğrular;
   Prisma ile veritabanı tipleri.
-- **Test & CI/CD** — 200+ birim/bileşen testi (Vitest + Testing Library) + 7 uçtan uca test (Playwright),
+- **Test & CI/CD** — 240+ birim/bileşen testi (Vitest + Testing Library) + 7 uçtan uca test (Playwright),
   GitHub Actions'ta gerçek PostgreSQL servisiyle her PR'da çalışır.
+- **Transactional bütünlük** — yem tüketimi stoğu atomik düşürür (TOCTOU'ya karşı
+  koşullu `updateMany`); satış + bağlı gelir işlemi ve sepet → çok-kalemli sipariş
+  tek `$transaction` içinde, fiyat/ad **snapshot**'larıyla oluşturulur.
 - **Serverless-doğru veritabanı** — pooled (`DATABASE_URL`) + direct
   (`DIRECT_URL`) ayrımıyla Vercel + Neon/Supabase'e hazır.
 - **Sunucu-tarafı listeleme** — arama/sıralama/sayfalama veritabanında yapılır
   (`where` / `orderBy` / `skip` / `take` + `count`); büyük tablolarda bellek/ağ
   yükü sabit kalır. Sık filtrelenen tarih kolonlarında DB index'leri.
-- **Performans-odaklı yükleme** — ağır grafik kütüphanesi (Recharts) `next/dynamic`
-  ile tembel (ssr:false) yüklenir; görseller lazy. Finans özet/kırılımı `groupBy`
-  ile DB'de hesaplanır (tüm satırları belleğe çekmeden).
+- **Performans-odaklı yükleme** — Recharts `next/dynamic` (ssr:false) ile tembel
+  yüklenir; görseller lazy. Finans özet/kırılımı `groupBy` ile DB'de hesaplanır.
+- **Opsiyonel/env-gated entegrasyonlar** — Stripe ödeme ve Resend e-posta yalnızca
+  ilgili anahtarlar tanımlıysa devreye girer; yoksa uygulama sorunsuz çalışır.
 - **Yeniden kullanılabilir tasarım sistemi** — `cva` tabanlı Button/Badge
-  primitive'leri ve URL-güdümlü jenerik `DataTable` bileşeni.
+  primitive'leri, URL-güdümlü jenerik `DataTable` ve semantik token tabanlı dark mode.
 
 ## 🧱 Mimari
 
@@ -158,7 +167,7 @@ kullanıcıya açıktır; **yazma** ise role göre kısıtlanır:
 | **Admin**     | Tüm modüller + personel yönetimi + denetim günlüğü                  |
 | **Çalışan**   | Hayvan, süt, ağırlık, tarla/ekim, stok/yem, yapılar, üreme         |
 | **Veteriner** | Sağlık & aşı, üreme, ağırlık                                        |
-| **Muhasebeci**| Finans (gelir-gider), Satış                                         |
+| **Muhasebeci**| Finans, Satış, Müşteri, Ürün/Mağaza, Sipariş yönetimi               |
 
 Sertleştirme önlemleri:
 
@@ -184,6 +193,8 @@ Sertleştirme önlemleri:
 - [Auth.js (NextAuth v5)](https://authjs.dev/) — kimlik doğrulama
 - [Tailwind CSS](https://tailwindcss.com/) — arayüz
 - [Zod](https://zod.dev/) — veri doğrulama
+- [Stripe](https://stripe.com/) — ödeme (opsiyonel, env-gated)
+- [next-intl](https://next-intl.dev/) — çok dillilik · [next-themes](https://github.com/pacocoursey/next-themes) — dark mode
 - [Recharts](https://recharts.org/) — grafikler
 - [Vitest](https://vitest.dev/) + [Playwright](https://playwright.dev/) — test
 - [Docker](https://www.docker.com/) — yerel veritabanı
@@ -263,13 +274,14 @@ Seed çalıştırıldıysa:
 | `npm test`         | Birim testleri (Vitest)           |
 | `npm run test:e2e` | Uçtan uca testler (Playwright)    |
 | `npm run db:seed`  | Veritabanını örnek veriyle doldur |
+| `npm run db:seed-demo` | Demo verisi + salt-okunur demo hesabı (idempotent) |
 
 ## Test & Kalite
 
 - **Birim testleri (Vitest):** doğrulama şemaları, RBAC yetkilendirme, hız sınırı,
   liste sorgu parametreleri, finans/harita/tarih/takvim yardımcıları + UI bileşenleri
   (Testing Library: Badge/Button/EmptyState/DataTable/OnboardingModal) — `npm test`
-  (200+ test). Kapsam raporu için
+  (240+ test). Kapsam raporu için
   `npm run test:coverage` (iş mantığı `src/lib` için ~%95 satır kapsamı).
 - **Uçtan uca testler (Playwright):** kimlik doğrulama, hayvan CRUD akışı ve
   RBAC erişim engeli — `npm run test:e2e` (7 test).
@@ -313,6 +325,11 @@ src/
    | `ADMIN_EMAIL`    | İlk yönetici e-postası                         |
    | `ADMIN_PASSWORD` | İlk yönetici parolası (en az 8 karakter)       |
    | `ADMIN_NAME`     | İlk yönetici adı (opsiyonel)                   |
+
+   > **Opsiyonel (env-gated):** `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET`
+   > (mağaza ödemesi), `RESEND_API_KEY` + `ALERT_EMAIL_FROM` (e-posta uyarıları),
+   > `CRON_SECRET` (cron koruması). Tanımlı değilse ilgili özellik zarif biçimde
+   > devre dışı kalır. Tümü `.env.example`'da listelidir.
 
 4. **Şemayı üretim DB'sine uygulayın** (ilk deploy'dan önce, yerelden):
 
