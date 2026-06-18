@@ -181,6 +181,95 @@ async function main() {
     });
   }
 
+  // 8) Musteriler
+  if ((await prisma.customer.count()) === 0) {
+    await prisma.customer.createMany({
+      data: [
+        { name: "Mehmet Yilmaz", phone: "0532 000 0001" },
+        { name: "Ayse Demir", phone: "0532 000 0002", email: "ayse@example.com" },
+        { name: "Koy Bakkali", phone: "0532 000 0003", notes: "Toptan alici" },
+      ],
+    });
+  }
+
+  // 9) Magaza urunleri (herkese acik katalog)
+  if ((await prisma.product.count()) === 0) {
+    await prisma.product.createMany({
+      data: [
+        { name: "Koy Yumurtasi (15'li)", description: "Gezen tavuk, gunluk toplanir", price: 90, unit: "paket", active: true },
+        { name: "Cig Sut", description: "Gunluk sagim, soguk zincir", price: 35, unit: "litre", active: true },
+        { name: "Tulum Peyniri", description: "Tam yagli, olgunlastirilmis", price: 320, unit: "kg", active: true },
+        { name: "Cicek Bali", description: "Dogal, katkisiz", price: 450, unit: "kg", active: true },
+      ],
+    });
+  }
+
+  // 10) Satislar — her biri otomatik bir gelir (INCOME) islemi uretir (finansa yansir)
+  if ((await prisma.sale.count()) === 0) {
+    const customers = await prisma.customer.findMany({ take: 3 });
+    const saleDefs = [
+      { item: "Cig Sut 50L", c: customers[0], quantity: 50, unit: "litre", amount: 1750, date: daysAgo(5) },
+      { item: "Tulum Peyniri 8kg", c: customers[1], quantity: 8, unit: "kg", amount: 2560, date: daysAgo(12) },
+      { item: "Damizlik Inek", c: customers[2], amount: 18000, date: daysAgo(30) },
+    ];
+    for (const s of saleDefs) {
+      const tx = await prisma.transaction.create({
+        data: {
+          type: "INCOME",
+          amount: s.amount,
+          category: "Satış",
+          date: s.date,
+          description: s.c ? `${s.item} — ${s.c.name}` : s.item,
+        },
+      });
+      await prisma.sale.create({
+        data: {
+          item: s.item,
+          customerId: s.c?.id ?? null,
+          quantity: s.quantity ?? null,
+          unit: s.unit ?? null,
+          amount: s.amount,
+          date: s.date,
+          transactionId: tx.id,
+        },
+      });
+    }
+  }
+
+  // 11) Magaza siparisleri (kalemli) — biri bekliyor, biri onaylandi+odendi
+  if ((await prisma.order.count()) === 0) {
+    const products = await prisma.product.findMany({ take: 4 });
+    if (products.length >= 2) {
+      const line = (p, qty) => ({
+        productId: p.id,
+        productName: p.name,
+        unitPrice: p.price,
+        quantity: qty,
+        lineTotal: p.price * qty,
+      });
+      const o1 = [line(products[0], 2), line(products[1], 3)];
+      await prisma.order.create({
+        data: {
+          customerName: "Zeynep Kaya",
+          customerPhone: "0533 111 2233",
+          total: o1.reduce((s, it) => s + it.lineTotal, 0),
+          status: "PENDING",
+          items: { create: o1 },
+        },
+      });
+      const o2 = [line(products[2] ?? products[0], 1)];
+      await prisma.order.create({
+        data: {
+          customerName: "Ali Vural",
+          total: o2.reduce((s, it) => s + it.lineTotal, 0),
+          status: "CONFIRMED",
+          paymentStatus: "PAID",
+          items: { create: o2 },
+        },
+      });
+    }
+  }
+
   console.log("Demo veri yuklendi.");
   console.log(`Demo giris: ${DEMO_EMAIL} / ${DEMO_PASSWORD}`);
 }
