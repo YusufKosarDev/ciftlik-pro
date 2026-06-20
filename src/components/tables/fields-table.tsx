@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { Field } from "@prisma/client";
 import { Wheat } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { DataTable, type Column } from "@/components/data-table";
 import { DeleteButton } from "@/components/delete-button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -18,10 +19,13 @@ export function FieldsTable({
   canEdit: boolean;
   list: ListState;
 }) {
+  const t = useTranslations("Fields");
+  const tc = useTranslations("Common");
+
   const columns: Column<Field>[] = [
     {
       key: "name",
-      header: "Ad",
+      header: t("name"),
       sortKey: "name",
       cell: (f) => (
         <Link
@@ -34,13 +38,13 @@ export function FieldsTable({
     },
     {
       key: "area",
-      header: "Alan (dönüm)",
+      header: t("area"),
       sortKey: "area",
       cell: (f) => f.area,
     },
     {
       key: "location",
-      header: "Konum",
+      header: t("location"),
       sortKey: "location",
       cell: (f) => f.location ?? "-",
     },
@@ -49,7 +53,7 @@ export function FieldsTable({
   if (canEdit) {
     columns.push({
       key: "actions",
-      header: "İşlemler",
+      header: tc("actions"),
       headerClassName: "text-right",
       className: "text-right",
       cell: (f) => (
@@ -58,9 +62,9 @@ export function FieldsTable({
             href={`/panel/tarlalar/${f.id}/duzenle`}
             className="text-sm font-medium text-green-600 dark:text-green-400 hover:underline"
           >
-            Düzenle
+            {tc("edit")}
           </Link>
-          <DeleteButton endpoint={`/api/fields/${f.id}`} itemLabel={f.name} kind="Tarla" />
+          <DeleteButton endpoint={`/api/fields/${f.id}`} itemLabel={f.name} kind={t("kind")} />
         </div>
       ),
     });
@@ -72,15 +76,15 @@ export function FieldsTable({
       columns={columns}
       list={list}
       searchable
-      searchPlaceholder="Ad veya konum ara..."
+      searchPlaceholder={t("searchPlaceholder")}
       emptyState={
         <EmptyState
           icon={<Wheat className="h-6 w-6" />}
-          title="Henüz tarla eklenmemiş"
+          title={t("empty")}
           action={
             canEdit ? (
               <Link href="/panel/tarlalar/yeni" className={buttonVariants({ size: "sm" })}>
-                Tarla ekle
+                {t("add")}
               </Link>
             ) : undefined
           }

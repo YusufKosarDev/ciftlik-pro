@@ -206,5 +206,34 @@
     "motherNone": "— No mother selected —",
     "imageUrl": "Image URL",
     "notes": "Notes"
+  },
+  "Fields": {
+    "title": "Fields",
+    "new": "New Field",
+    "add": "Add field",
+    "kind": "Field",
+    "saved": "Field saved.",
+    "empty": "No fields added yet",
+    "searchPlaceholder": "Search name or location...",
+    "name": "Name",
+    "nameLabel": "Field Name",
+    "area": "Area (decare)",
+    "location": "Location",
+    "locationLabel": "Location / Area",
+    "notes": "Notes"
+  },
+  "Crops": {
+    "name": "Crop Name",
+    "status": "Status",
+    "plantedDate": "Planting Date",
+    "harvestDate": "Harvest Date",
+    "cost": "Cost (TL)",
+    "revenue": "Harvest Revenue (TL)",
+    "yieldAmount": "Yield (kg)",
+    "note": "Note",
+    "added": "Crop record added.",
+    "updated": "Crop record updated.",
+    "submitAdd": "Add Crop Record",
+    "submitUpdate": "Update"
   }
 }

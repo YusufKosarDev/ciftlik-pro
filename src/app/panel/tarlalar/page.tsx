@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import type { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { canWrite } from "@/lib/authz";
@@ -42,19 +43,21 @@ export default async function TarlalarPage({
     return { fields, total };
   });
   const list: ListState = { total, page, pageSize: take, q, sort, dir };
+  const t = await getTranslations("Fields");
+  const tc = await getTranslations("Common");
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
-            <span>🌾</span> Tarlalar
+            <span>🌾</span> {t("title")}
           </h1>
-          <p className="text-sm text-muted-foreground">Toplam {total} kayit</p>
+          <p className="text-sm text-muted-foreground">{tc("totalRecords", { count: total })}</p>
         </div>
         {canEdit && (
           <Link href="/panel/tarlalar/yeni" className={buttonVariants({ size: "sm" })}>
-            + Yeni Tarla
+            + {t("new")}
           </Link>
         )}
       </div>

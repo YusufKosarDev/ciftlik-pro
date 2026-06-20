@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { cropStatusLabels } from "@/lib/labels";
+import { useLabels } from "@/lib/use-labels";
 import { toDateInputValue } from "@/lib/date";
 import type { Crop } from "@prisma/client";
 
@@ -19,6 +20,9 @@ type Props = {
 
 export function CropForm({ fieldId, crop }: Props) {
   const router = useRouter();
+  const t = useTranslations("Crops");
+  const tc = useTranslations("Common");
+  const { cropStatusLabels } = useLabels();
   const isEdit = Boolean(crop);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -55,11 +59,11 @@ export function CropForm({ fieldId, crop }: Props) {
 
     if (!res.ok) {
       const data = await res.json().catch(() => null);
-      setError(data?.error ?? "Kayit basarisiz, lutfen tekrar deneyin");
+      setError(data?.error ?? tc("saveFailed"));
       return;
     }
 
-    toast.success(isEdit ? "Ekim kaydı güncellendi." : "Ekim kaydı eklendi.");
+    toast.success(isEdit ? t("updated") : t("added"));
     if (!isEdit) form.reset();
     router.push(`/panel/tarlalar/${fieldId}`);
     router.refresh();
@@ -70,7 +74,7 @@ export function CropForm({ fieldId, crop }: Props) {
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label htmlFor="cname" className="mb-1 block text-xs font-medium text-muted-foreground">
-            Ürün Adı *
+            {t("name")} *
           </label>
           <input
             id="cname"
@@ -83,7 +87,7 @@ export function CropForm({ fieldId, crop }: Props) {
         </div>
         <div>
           <label htmlFor="cstatus" className="mb-1 block text-xs font-medium text-muted-foreground">
-            Durum
+            {t("status")}
           </label>
           <select
             id="cstatus"
@@ -100,7 +104,7 @@ export function CropForm({ fieldId, crop }: Props) {
         </div>
         <div>
           <label htmlFor="cplanted" className="mb-1 block text-xs font-medium text-muted-foreground">
-            Ekim Tarihi *
+            {t("plantedDate")} *
           </label>
           <input
             id="cplanted"
@@ -113,7 +117,7 @@ export function CropForm({ fieldId, crop }: Props) {
         </div>
         <div>
           <label htmlFor="charvest" className="mb-1 block text-xs font-medium text-muted-foreground">
-            Hasat Tarihi
+            {t("harvestDate")}
           </label>
           <input
             id="charvest"
@@ -128,7 +132,7 @@ export function CropForm({ fieldId, crop }: Props) {
       <div className="grid gap-3 sm:grid-cols-3">
         <div>
           <label htmlFor="ccost" className="mb-1 block text-xs font-medium text-muted-foreground">
-            Gider (TL)
+            {t("cost")}
           </label>
           <input
             id="ccost"
@@ -142,7 +146,7 @@ export function CropForm({ fieldId, crop }: Props) {
         </div>
         <div>
           <label htmlFor="crev" className="mb-1 block text-xs font-medium text-muted-foreground">
-            Hasat Geliri (TL)
+            {t("revenue")}
           </label>
           <input
             id="crev"
@@ -156,7 +160,7 @@ export function CropForm({ fieldId, crop }: Props) {
         </div>
         <div>
           <label htmlFor="cyield" className="mb-1 block text-xs font-medium text-muted-foreground">
-            Verim (kg)
+            {t("yieldAmount")}
           </label>
           <input
             id="cyield"
@@ -172,7 +176,7 @@ export function CropForm({ fieldId, crop }: Props) {
 
       <div>
         <label htmlFor="cnotes" className="mb-1 block text-xs font-medium text-muted-foreground">
-          Not
+          {t("note")}
         </label>
         <input
           id="cnotes"
@@ -188,7 +192,7 @@ export function CropForm({ fieldId, crop }: Props) {
       )}
 
       <Button type="submit" loading={loading}>
-        {isEdit ? "Güncelle" : "Ekim Kaydı Ekle"}
+        {isEdit ? t("submitUpdate") : t("submitAdd")}
       </Button>
     </form>
   );

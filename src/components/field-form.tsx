@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -13,6 +14,8 @@ const labelClass = "mb-1 block text-sm font-medium text-foreground";
 
 export function FieldForm({ field }: { field?: Field }) {
   const router = useRouter();
+  const t = useTranslations("Fields");
+  const tc = useTranslations("Common");
   const isEdit = Boolean(field);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -43,11 +46,11 @@ export function FieldForm({ field }: { field?: Field }) {
 
     if (!res.ok) {
       const data = await res.json().catch(() => null);
-      setError(data?.error ?? "Kayit basarisiz, lutfen tekrar deneyin");
+      setError(data?.error ?? tc("saveFailed"));
       return;
     }
 
-    toast.success("Tarla kaydedildi.");
+    toast.success(t("saved"));
     router.push("/panel/tarlalar");
     router.refresh();
   }
@@ -60,7 +63,7 @@ export function FieldForm({ field }: { field?: Field }) {
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="name" className={labelClass}>
-            Tarla Adi *
+            {t("nameLabel")} *
           </label>
           <input
             id="name"
@@ -74,7 +77,7 @@ export function FieldForm({ field }: { field?: Field }) {
 
         <div>
           <label htmlFor="area" className={labelClass}>
-            Alan (donum) *
+            {t("area")} *
           </label>
           <input
             id="area"
@@ -90,7 +93,7 @@ export function FieldForm({ field }: { field?: Field }) {
 
         <div>
           <label htmlFor="location" className={labelClass}>
-            Konum / Mevki
+            {t("locationLabel")}
           </label>
           <input
             id="location"
@@ -104,7 +107,7 @@ export function FieldForm({ field }: { field?: Field }) {
 
       <div>
         <label htmlFor="notes" className={labelClass}>
-          Notlar
+          {t("notes")}
         </label>
         <textarea
           id="notes"
@@ -124,10 +127,10 @@ export function FieldForm({ field }: { field?: Field }) {
           href="/panel/tarlalar"
           className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
         >
-          Iptal
+          {tc("cancel")}
         </Link>
         <Button type="submit" loading={loading}>
-          Kaydet
+          {tc("save")}
         </Button>
       </div>
     </form>

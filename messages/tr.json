@@ -206,5 +206,34 @@
     "motherNone": "— Anne seçilmedi —",
     "imageUrl": "Görsel URL",
     "notes": "Notlar"
+  },
+  "Fields": {
+    "title": "Tarlalar",
+    "new": "Yeni Tarla",
+    "add": "Tarla ekle",
+    "kind": "Tarla",
+    "saved": "Tarla kaydedildi.",
+    "empty": "Henüz tarla eklenmemiş",
+    "searchPlaceholder": "Ad veya konum ara...",
+    "name": "Ad",
+    "nameLabel": "Tarla Adı",
+    "area": "Alan (dönüm)",
+    "location": "Konum",
+    "locationLabel": "Konum / Mevki",
+    "notes": "Notlar"
+  },
+  "Crops": {
+    "name": "Ürün Adı",
+    "status": "Durum",
+    "plantedDate": "Ekim Tarihi",
+    "harvestDate": "Hasat Tarihi",
+    "cost": "Gider (TL)",
+    "revenue": "Hasat Geliri (TL)",
+    "yieldAmount": "Verim (kg)",
+    "note": "Not",
+    "added": "Ekim kaydı eklendi.",
+    "updated": "Ekim kaydı güncellendi.",
+    "submitAdd": "Ekim Kaydı Ekle",
+    "submitUpdate": "Güncelle"
   }
 }
