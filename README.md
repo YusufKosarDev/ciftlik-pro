@@ -218,7 +218,9 @@ Sertleştirme önlemleri:
   `X-Content-Type-Options`, `Referrer-Policy` ve `Permissions-Policy` (`next.config.ts`).
 - **Brute-force koruması** — giriş ve kayıt uçlarında IP / e-posta bazlı hız sınırı
   (`src/lib/rate-limit.ts`); başarısız giriş denemeleri denetim günlüğüne
-  (`LOGIN_FAILED`) yazılır.
+  (`LOGIN_FAILED`) yazılır. *Not: Bellek içi (in-memory Map) çalıştığından serverless
+  (Vercel) dağıtımlarda kararsızlık gösterir; dağıtık üretim ortamlarında Upstash Redis
+  veya veritabanı tabanlı bir rate-limiter'a geçilmesi önerilir.*
 - **Güvenli görsel URL'leri** — hayvan görseli yalnızca `http(s)` URL kabul eder
   (Zod); `javascript:` / `data:` şemaları reddedilir (CSP `img-src` ile uyumlu).
 - **Çift taraflı doğrulama** — Zod şemaları hem istemcide hem her yazma ucunda sunucuda çalışır.
