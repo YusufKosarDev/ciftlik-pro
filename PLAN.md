@@ -4,6 +4,14 @@ Tek bir çiftliğin tüm operasyonlarını (hayvan, tarla, stok, finans, satış
 tek panelden yöneten, rol bazlı yetkilendirmeye sahip, modern bir
 Çiftlik Yönetim Sistemi (ERP).
 
+> **Not (güncel durum):** Bu belge **tek-çiftlik (single-tenant)** ürünün
+> orijinal yol haritasıdır ve Faz 0–12 büyük ölçüde tamamlanmıştır. Proje daha
+> sonra **çok-kiracılı (multi-tenant) SaaS**'a dönüştürülmüştür; bu dönüşümün
+> mimarisi, fazları ve durumu ayrı bir belgededir:
+> **[`docs/SAAS-PLAN.md`](docs/SAAS-PLAN.md)** (Postgres RLS izolasyonu, public
+> çiftlik kaydı + personel daveti, plan limitleri + Stripe Billing, per-tenant
+> mağaza, KVKK veri ihracı/silme). SaaS çalışması `feat/saas-phase1` dalındadır.
+
 ---
 
 ## 1. Vizyon
