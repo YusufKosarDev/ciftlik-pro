@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import type { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { canWrite } from "@/lib/authz";
@@ -50,26 +51,28 @@ export default async function StokPage({
 
   const criticalCount = criticalRows[0]?.count ?? 0;
   const list: ListState = { total, page, pageSize: take, q, sort, dir };
+  const t = await getTranslations("Inventory");
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
-            <span>📦</span> Stok & Envanter
+            <span>📦</span> {t("title")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Toplam {total} kalem
+            {t("totalItems", { count: total })}
             {criticalCount > 0 && (
               <span className="ml-2 text-red-600">
-                · {criticalCount} kalem kritik seviyede
+                {" "}
+                {t("criticalSuffix", { count: criticalCount })}
               </span>
             )}
           </p>
         </div>
         {canEdit && (
           <Link href="/panel/stok/yeni" className={buttonVariants({ size: "sm" })}>
-            + Yeni Kalem
+            + {t("new")}
           </Link>
         )}
       </div>

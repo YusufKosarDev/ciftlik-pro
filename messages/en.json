@@ -235,5 +235,26 @@
     "updated": "Crop record updated.",
     "submitAdd": "Add Crop Record",
     "submitUpdate": "Update"
+  },
+  "Inventory": {
+    "title": "Stock & Inventory",
+    "new": "New Item",
+    "add": "Add item",
+    "kind": "Inventory item",
+    "saved": "Inventory item saved.",
+    "empty": "No inventory items added yet",
+    "searchPlaceholder": "Search item or category...",
+    "totalItems": "{count} item(s) total",
+    "criticalSuffix": "· {count} item(s) at critical level",
+    "item": "Item",
+    "category": "Category",
+    "quantity": "Quantity",
+    "critical": "Critical",
+    "criticalBadge": "Critical",
+    "nameLabel": "Item Name",
+    "unit": "Unit",
+    "unitPlaceholder": "kg, unit, liter...",
+    "criticalLevel": "Critical Level",
+    "notes": "Notes"
   }
 }

@@ -3,12 +3,13 @@
 import Link from "next/link";
 import type { InventoryItem } from "@prisma/client";
 import { Package } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { DataTable, type Column } from "@/components/data-table";
 import { DeleteButton } from "@/components/delete-button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { inventoryCategoryLabels } from "@/lib/labels";
+import { useLabels } from "@/lib/use-labels";
 import type { ListState } from "@/lib/list-query";
 
 export function InventoryTable({
@@ -20,22 +21,26 @@ export function InventoryTable({
   canEdit: boolean;
   list: ListState;
 }) {
+  const t = useTranslations("Inventory");
+  const tc = useTranslations("Common");
+  const { inventoryCategoryLabels } = useLabels();
+
   const columns: Column<InventoryItem>[] = [
     {
       key: "name",
-      header: "Kalem",
+      header: t("item"),
       sortKey: "name",
       cell: (i) => <span className="font-medium text-foreground">{i.name}</span>,
     },
     {
       key: "category",
-      header: "Kategori",
+      header: t("category"),
       sortKey: "category",
       cell: (i) => inventoryCategoryLabels[i.category],
     },
     {
       key: "quantity",
-      header: "Miktar",
+      header: t("quantity"),
       sortKey: "quantity",
       cell: (i) => {
         const isCritical = i.quantity <= i.criticalLevel;
@@ -44,7 +49,7 @@ export function InventoryTable({
             {i.quantity} {i.unit}
             {isCritical && (
               <Badge tone="red" className="ml-2">
-                Kritik
+                {t("criticalBadge")}
               </Badge>
             )}
           </span>
@@ -53,7 +58,7 @@ export function InventoryTable({
     },
     {
       key: "criticalLevel",
-      header: "Kritik",
+      header: t("critical"),
       sortKey: "criticalLevel",
       cell: (i) => (
         <span className="text-muted-foreground">
@@ -66,7 +71,7 @@ export function InventoryTable({
   if (canEdit) {
     columns.push({
       key: "actions",
-      header: "İşlemler",
+      header: tc("actions"),
       headerClassName: "text-right",
       className: "text-right",
       cell: (i) => (
@@ -75,12 +80,12 @@ export function InventoryTable({
             href={`/panel/stok/${i.id}/duzenle`}
             className="text-sm font-medium text-green-600 dark:text-green-400 hover:underline"
           >
-            Düzenle
+            {tc("edit")}
           </Link>
           <DeleteButton
             endpoint={`/api/inventory/${i.id}`}
             itemLabel={i.name}
-            kind="Stok kalemi"
+            kind={t("kind")}
           />
         </div>
       ),
@@ -93,15 +98,15 @@ export function InventoryTable({
       columns={columns}
       list={list}
       searchable
-      searchPlaceholder="Kalem veya kategori ara..."
+      searchPlaceholder={t("searchPlaceholder")}
       emptyState={
         <EmptyState
           icon={<Package className="h-6 w-6" />}
-          title="Henüz stok kalemi eklenmemiş"
+          title={t("empty")}
           action={
             canEdit ? (
               <Link href="/panel/stok/yeni" className={buttonVariants({ size: "sm" })}>
-                Kalem ekle
+                {t("add")}
               </Link>
             ) : undefined
           }

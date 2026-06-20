@@ -235,5 +235,26 @@
     "updated": "Ekim kaydı güncellendi.",
     "submitAdd": "Ekim Kaydı Ekle",
     "submitUpdate": "Güncelle"
+  },
+  "Inventory": {
+    "title": "Stok & Envanter",
+    "new": "Yeni Kalem",
+    "add": "Kalem ekle",
+    "kind": "Stok kalemi",
+    "saved": "Stok kalemi kaydedildi.",
+    "empty": "Henüz stok kalemi eklenmemiş",
+    "searchPlaceholder": "Kalem veya kategori ara...",
+    "totalItems": "Toplam {count} kalem",
+    "criticalSuffix": "· {count} kalem kritik seviyede",
+    "item": "Kalem",
+    "category": "Kategori",
+    "quantity": "Miktar",
+    "critical": "Kritik",
+    "criticalBadge": "Kritik",
+    "nameLabel": "Kalem Adı",
+    "unit": "Birim",
+    "unitPlaceholder": "kg, adet, litre...",
+    "criticalLevel": "Kritik Seviye",
+    "notes": "Notlar"
   }
 }

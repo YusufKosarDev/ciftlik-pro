@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { inventoryCategoryLabels } from "@/lib/labels";
+import { useLabels } from "@/lib/use-labels";
 import type { InventoryItem } from "@prisma/client";
 
 const inputClass =
@@ -14,6 +15,9 @@ const labelClass = "mb-1 block text-sm font-medium text-foreground";
 
 export function InventoryForm({ item }: { item?: InventoryItem }) {
   const router = useRouter();
+  const t = useTranslations("Inventory");
+  const tc = useTranslations("Common");
+  const { inventoryCategoryLabels } = useLabels();
   const isEdit = Boolean(item);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -46,11 +50,11 @@ export function InventoryForm({ item }: { item?: InventoryItem }) {
 
     if (!res.ok) {
       const data = await res.json().catch(() => null);
-      setError(data?.error ?? "Kayit basarisiz, lutfen tekrar deneyin");
+      setError(data?.error ?? tc("saveFailed"));
       return;
     }
 
-    toast.success("Stok kalemi kaydedildi.");
+    toast.success(t("saved"));
     router.push("/panel/stok");
     router.refresh();
   }
@@ -63,7 +67,7 @@ export function InventoryForm({ item }: { item?: InventoryItem }) {
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="name" className={labelClass}>
-            Kalem Adi *
+            {t("nameLabel")} *
           </label>
           <input
             id="name"
@@ -77,7 +81,7 @@ export function InventoryForm({ item }: { item?: InventoryItem }) {
 
         <div>
           <label htmlFor="category" className={labelClass}>
-            Kategori *
+            {t("category")} *
           </label>
           <select
             id="category"
@@ -96,7 +100,7 @@ export function InventoryForm({ item }: { item?: InventoryItem }) {
 
         <div>
           <label htmlFor="quantity" className={labelClass}>
-            Miktar *
+            {t("quantity")} *
           </label>
           <input
             id="quantity"
@@ -112,14 +116,14 @@ export function InventoryForm({ item }: { item?: InventoryItem }) {
 
         <div>
           <label htmlFor="unit" className={labelClass}>
-            Birim *
+            {t("unit")} *
           </label>
           <input
             id="unit"
             name="unit"
             type="text"
             required
-            placeholder="kg, adet, litre..."
+            placeholder={t("unitPlaceholder")}
             defaultValue={item?.unit ?? ""}
             className={inputClass}
           />
@@ -127,7 +131,7 @@ export function InventoryForm({ item }: { item?: InventoryItem }) {
 
         <div>
           <label htmlFor="criticalLevel" className={labelClass}>
-            Kritik Seviye
+            {t("criticalLevel")}
           </label>
           <input
             id="criticalLevel"
@@ -143,7 +147,7 @@ export function InventoryForm({ item }: { item?: InventoryItem }) {
 
       <div>
         <label htmlFor="notes" className={labelClass}>
-          Notlar
+          {t("notes")}
         </label>
         <textarea
           id="notes"
@@ -163,10 +167,10 @@ export function InventoryForm({ item }: { item?: InventoryItem }) {
           href="/panel/stok"
           className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
         >
-          Iptal
+          {tc("cancel")}
         </Link>
         <Button type="submit" loading={loading}>
-          Kaydet
+          {tc("save")}
         </Button>
       </div>
     </form>
