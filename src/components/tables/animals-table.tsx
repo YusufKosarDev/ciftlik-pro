@@ -3,12 +3,13 @@
 import Link from "next/link";
 import type { Animal } from "@prisma/client";
 import { PawPrint } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { DataTable, type Column } from "@/components/data-table";
 import { DeleteButton } from "@/components/delete-button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { speciesLabels, genderLabels, statusLabels } from "@/lib/labels";
+import { useLabels } from "@/lib/use-labels";
 import type { ListState } from "@/lib/list-query";
 
 const statusTone = {
@@ -26,10 +27,14 @@ export function AnimalsTable({
   canEdit: boolean;
   list: ListState;
 }) {
+  const t = useTranslations("Animals");
+  const tc = useTranslations("Common");
+  const { speciesLabels, genderLabels, statusLabels } = useLabels();
+
   const columns: Column<Animal>[] = [
     {
       key: "tagNumber",
-      header: "Kulak No",
+      header: t("tagNumber"),
       sortKey: "tagNumber",
       cell: (a) => (
         <Link
@@ -40,17 +45,17 @@ export function AnimalsTable({
         </Link>
       ),
     },
-    { key: "name", header: "Ad", sortKey: "name", cell: (a) => a.name ?? "-" },
+    { key: "name", header: t("name"), sortKey: "name", cell: (a) => a.name ?? "-" },
     {
       key: "species",
-      header: "Tür",
+      header: t("species"),
       sortKey: "species",
       cell: (a) => speciesLabels[a.species],
     },
-    { key: "gender", header: "Cinsiyet", cell: (a) => genderLabels[a.gender] },
+    { key: "gender", header: t("gender"), cell: (a) => genderLabels[a.gender] },
     {
       key: "status",
-      header: "Durum",
+      header: t("status"),
       sortKey: "status",
       cell: (a) => <Badge tone={statusTone[a.status]}>{statusLabels[a.status]}</Badge>,
     },
@@ -59,7 +64,7 @@ export function AnimalsTable({
   if (canEdit) {
     columns.push({
       key: "actions",
-      header: "İşlemler",
+      header: tc("actions"),
       headerClassName: "text-right",
       className: "text-right",
       cell: (a) => (
@@ -68,12 +73,12 @@ export function AnimalsTable({
             href={`/panel/hayvanlar/${a.id}/duzenle`}
             className="text-sm font-medium text-green-600 dark:text-green-400 hover:underline"
           >
-            Düzenle
+            {tc("edit")}
           </Link>
           <DeleteButton
             endpoint={`/api/animals/${a.id}`}
             itemLabel={a.name ?? a.tagNumber}
-            kind="Hayvan"
+            kind={t("kind")}
           />
         </div>
       ),
@@ -86,15 +91,15 @@ export function AnimalsTable({
       columns={columns}
       list={list}
       searchable
-      searchPlaceholder="Kulak no, ad veya ırk ara..."
+      searchPlaceholder={t("searchPlaceholder")}
       emptyState={
         <EmptyState
           icon={<PawPrint className="h-6 w-6" />}
-          title="Henüz hayvan eklenmemiş"
+          title={t("empty")}
           action={
             canEdit ? (
               <Link href="/panel/hayvanlar/yeni" className={buttonVariants({ size: "sm" })}>
-                Hayvan ekle
+                {t("add")}
               </Link>
             ) : undefined
           }

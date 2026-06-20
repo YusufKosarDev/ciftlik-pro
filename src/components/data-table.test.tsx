@@ -1,6 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, act } from "@testing-library/react";
+import { screen, fireEvent, act } from "@testing-library/react";
+import { renderWithIntl as render } from "@/test-utils";
 import { DataTable, type Column } from "./data-table";
 import type { ListState } from "@/lib/list-query";
 

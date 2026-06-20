@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
@@ -11,15 +12,17 @@ import { Button } from "@/components/ui/button";
 export function DeleteButton({
   endpoint,
   itemLabel,
-  kind = "Kayit",
+  kind,
 }: {
   endpoint: string;
   itemLabel: string;
   kind?: string;
 }) {
   const router = useRouter();
+  const t = useTranslations("Delete");
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const kindLabel = kind ?? t("defaultKind");
 
   async function handleConfirm() {
     setLoading(true);
@@ -28,11 +31,11 @@ export function DeleteButton({
 
     if (!res.ok) {
       const data = await res.json().catch(() => null);
-      toast.error(data?.error ?? "Silme işlemi başarısız oldu.");
+      toast.error(data?.error ?? t("failed"));
       return;
     }
 
-    toast.success(`"${itemLabel}" silindi.`);
+    toast.success(t("deleted", { item: itemLabel }));
     setOpen(false);
     router.refresh();
   }
@@ -42,23 +45,23 @@ export function DeleteButton({
       <AlertDialog.Trigger asChild>
         <button className="inline-flex items-center gap-1 text-sm font-medium text-red-600 transition hover:underline">
           <Trash2 className="h-3.5 w-3.5" />
-          Sil
+          {t("trigger")}
         </button>
       </AlertDialog.Trigger>
       <AlertDialog.Portal>
         <AlertDialog.Overlay className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" />
         <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-card p-6 shadow-xl focus:outline-none">
           <AlertDialog.Title className="text-lg font-bold text-foreground">
-            {kind} silinsin mi?
+            {t("confirmTitle", { kind: kindLabel })}
           </AlertDialog.Title>
           <AlertDialog.Description className="mt-1 text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">{itemLabel}</span> kalıcı
-            olarak silinecek. Bu işlem geri alınamaz.
+            <span className="font-medium text-foreground">{itemLabel}</span>{" "}
+            {t("confirmBody")}
           </AlertDialog.Description>
           <div className="mt-5 flex justify-end gap-3">
             <AlertDialog.Cancel asChild>
               <Button variant="secondary" size="sm" disabled={loading}>
-                İptal
+                {t("cancel")}
               </Button>
             </AlertDialog.Cancel>
             <Button
@@ -71,7 +74,7 @@ export function DeleteButton({
               }}
             >
               <Trash2 className="h-4 w-4" />
-              Sil
+              {t("confirm")}
             </Button>
           </div>
         </AlertDialog.Content>

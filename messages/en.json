@@ -55,7 +55,35 @@
   "Common": {
     "search": "Search...",
     "logout": "Sign out",
-    "profile": "Profile"
+    "profile": "Profile",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save",
+    "actions": "Actions",
+    "back": "Back",
+    "totalRecords": "{count} record(s) total",
+    "loading": "Loading...",
+    "saveFailed": "Save failed, please try again",
+    "none": "-",
+    "required": "*"
+  },
+  "Table": {
+    "noMatch": "No records match “{q}”.",
+    "noRecords": "No records found.",
+    "records": "{count} record(s)",
+    "prevPage": "Previous page",
+    "nextPage": "Next page"
+  },
+  "Delete": {
+    "trigger": "Delete",
+    "confirmTitle": "Delete {kind}?",
+    "confirmBody": "will be permanently deleted. This action cannot be undone.",
+    "cancel": "Cancel",
+    "confirm": "Delete",
+    "deleted": "\"{item}\" deleted.",
+    "failed": "Delete failed.",
+    "defaultKind": "Record"
   },
   "Command": {
     "placeholder": "Go to a page or search an action...",
@@ -87,5 +115,96 @@
     "noOverdueTasks": "No overdue tasks.",
     "upcomingVaccinations": "Upcoming Vaccinations",
     "noUpcomingVaccinations": "No upcoming vaccinations."
+  },
+  "Labels": {
+    "species": {
+      "CATTLE": "Cattle",
+      "SHEEP": "Sheep",
+      "GOAT": "Goat",
+      "CHICKEN": "Chicken",
+      "OTHER": "Other"
+    },
+    "gender": {
+      "FEMALE": "Female",
+      "MALE": "Male"
+    },
+    "animalStatus": {
+      "ACTIVE": "Active",
+      "SOLD": "Sold",
+      "DECEASED": "Deceased"
+    },
+    "cropStatus": {
+      "PLANTED": "Planted",
+      "GROWING": "Growing",
+      "HARVESTED": "Harvested"
+    },
+    "inventoryCategory": {
+      "FEED": "Feed",
+      "MEDICINE": "Medicine",
+      "EQUIPMENT": "Equipment",
+      "OTHER": "Other"
+    },
+    "transactionType": {
+      "INCOME": "Income",
+      "EXPENSE": "Expense"
+    },
+    "taskStatus": {
+      "PENDING": "Pending",
+      "IN_PROGRESS": "In progress",
+      "DONE": "Done"
+    },
+    "breedingStatus": {
+      "PLANNED": "Planned",
+      "PREGNANT": "Pregnant",
+      "BORN": "Born",
+      "FAILED": "Failed"
+    },
+    "structureType": {
+      "BARN": "Barn",
+      "COOP": "Coop",
+      "STORAGE": "Storage",
+      "OTHER": "Other"
+    },
+    "auditAction": {
+      "CREATE": "Create",
+      "UPDATE": "Update",
+      "DELETE": "Delete",
+      "LOGIN_FAILED": "Failed login"
+    },
+    "role": {
+      "ADMIN": "Admin",
+      "WORKER": "Worker",
+      "VET": "Vet",
+      "ACCOUNTANT": "Accountant"
+    },
+    "orderStatus": {
+      "PENDING": "Pending",
+      "CONFIRMED": "Confirmed",
+      "CANCELLED": "Cancelled"
+    },
+    "paymentStatus": {
+      "UNPAID": "Unpaid",
+      "PAID": "Paid"
+    }
+  },
+  "Animals": {
+    "title": "Animals",
+    "new": "New Animal",
+    "add": "Add animal",
+    "kind": "Animal",
+    "saved": "Animal saved.",
+    "empty": "No animals added yet",
+    "searchPlaceholder": "Search tag no, name or breed...",
+    "tagNumber": "Tag No",
+    "name": "Name",
+    "species": "Species",
+    "breed": "Breed",
+    "gender": "Gender",
+    "birthDate": "Birth Date",
+    "status": "Status",
+    "mother": "Mother (lineage)",
+    "motherNone": "— No mother selected —",
+    "imageUrl": "Image URL",
+    "notes": "Notes"
   }
 }

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Search,
   ChevronUp,
@@ -33,7 +34,7 @@ export function DataTable<T extends { id: string }>({
   columns,
   list,
   searchable = false,
-  searchPlaceholder = "Ara...",
+  searchPlaceholder,
   emptyState,
 }: {
   data: T[];
@@ -46,6 +47,8 @@ export function DataTable<T extends { id: string }>({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const t = useTranslations("Table");
+  const tCommon = useTranslations("Common");
 
   // URL parametrelerini gunceller; bos/null degerler kaldirilir. scroll:false ile
   // sayfa basina kaymayi onleriz.
@@ -92,7 +95,7 @@ export function DataTable<T extends { id: string }>({
           <Input
             value={term}
             onChange={(e) => setTerm(e.target.value)}
-            placeholder={searchPlaceholder}
+            placeholder={searchPlaceholder ?? tCommon("search")}
             className="pl-9"
           />
         </div>
@@ -101,12 +104,12 @@ export function DataTable<T extends { id: string }>({
       {data.length === 0 ? (
         list.q.trim() ? (
           <p className="rounded-xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">
-            “{list.q}” ile eşleşen kayıt bulunamadı.
+            {t("noMatch", { q: list.q })}
           </p>
         ) : (
           emptyState ?? (
             <p className="rounded-xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">
-              Kayıt bulunamadı.
+              {t("noRecords")}
             </p>
           )
         )
@@ -163,13 +166,13 @@ export function DataTable<T extends { id: string }>({
 
           {pageCount > 1 && (
             <div className="flex items-center justify-between text-sm text-muted-foreground">
-              <span>{list.total} kayıt</span>
+              <span>{t("records", { count: list.total })}</span>
               <div className="flex items-center gap-2">
                 <button
                   disabled={list.page <= 1}
                   onClick={() => goToPage(list.page - 1)}
                   className="rounded-lg border border-border p-1.5 transition hover:bg-muted disabled:opacity-40"
-                  aria-label="Önceki sayfa"
+                  aria-label={t("prevPage")}
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
@@ -180,7 +183,7 @@ export function DataTable<T extends { id: string }>({
                   disabled={list.page >= pageCount}
                   onClick={() => goToPage(list.page + 1)}
                   className="rounded-lg border border-border p-1.5 transition hover:bg-muted disabled:opacity-40"
-                  aria-label="Sonraki sayfa"
+                  aria-label={t("nextPage")}
                 >
                   <ChevronRight className="h-4 w-4" />
                 </button>

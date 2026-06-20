@@ -55,7 +55,35 @@
   "Common": {
     "search": "Ara...",
     "logout": "Çıkış yap",
-    "profile": "Profil"
+    "profile": "Profil",
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "cancel": "İptal",
+    "save": "Kaydet",
+    "actions": "İşlemler",
+    "back": "Geri",
+    "totalRecords": "Toplam {count} kayıt",
+    "loading": "Yükleniyor...",
+    "saveFailed": "Kayıt başarısız, lütfen tekrar deneyin",
+    "none": "-",
+    "required": "*"
+  },
+  "Table": {
+    "noMatch": "“{q}” ile eşleşen kayıt bulunamadı.",
+    "noRecords": "Kayıt bulunamadı.",
+    "records": "{count} kayıt",
+    "prevPage": "Önceki sayfa",
+    "nextPage": "Sonraki sayfa"
+  },
+  "Delete": {
+    "trigger": "Sil",
+    "confirmTitle": "{kind} silinsin mi?",
+    "confirmBody": "kalıcı olarak silinecek. Bu işlem geri alınamaz.",
+    "cancel": "İptal",
+    "confirm": "Sil",
+    "deleted": "\"{item}\" silindi.",
+    "failed": "Silme işlemi başarısız oldu.",
+    "defaultKind": "Kayıt"
   },
   "Command": {
     "placeholder": "Sayfaya git veya eylem ara...",
@@ -87,5 +115,96 @@
     "noOverdueTasks": "Geciken görev yok.",
     "upcomingVaccinations": "Yaklaşan Aşılar",
     "noUpcomingVaccinations": "Yaklaşan aşı yok."
+  },
+  "Labels": {
+    "species": {
+      "CATTLE": "Sığır",
+      "SHEEP": "Koyun",
+      "GOAT": "Keçi",
+      "CHICKEN": "Tavuk",
+      "OTHER": "Diğer"
+    },
+    "gender": {
+      "FEMALE": "Dişi",
+      "MALE": "Erkek"
+    },
+    "animalStatus": {
+      "ACTIVE": "Aktif",
+      "SOLD": "Satıldı",
+      "DECEASED": "Öldü"
+    },
+    "cropStatus": {
+      "PLANTED": "Ekildi",
+      "GROWING": "Büyüyor",
+      "HARVESTED": "Hasat edildi"
+    },
+    "inventoryCategory": {
+      "FEED": "Yem",
+      "MEDICINE": "İlaç",
+      "EQUIPMENT": "Ekipman",
+      "OTHER": "Diğer"
+    },
+    "transactionType": {
+      "INCOME": "Gelir",
+      "EXPENSE": "Gider"
+    },
+    "taskStatus": {
+      "PENDING": "Bekliyor",
+      "IN_PROGRESS": "Devam ediyor",
+      "DONE": "Tamamlandı"
+    },
+    "breedingStatus": {
+      "PLANNED": "Planlandı",
+      "PREGNANT": "Gebe",
+      "BORN": "Doğdu",
+      "FAILED": "Başarısız"
+    },
+    "structureType": {
+      "BARN": "Ahır",
+      "COOP": "Kümes",
+      "STORAGE": "Depo",
+      "OTHER": "Diğer"
+    },
+    "auditAction": {
+      "CREATE": "Oluşturma",
+      "UPDATE": "Güncelleme",
+      "DELETE": "Silme",
+      "LOGIN_FAILED": "Başarısız giriş"
+    },
+    "role": {
+      "ADMIN": "Yönetici",
+      "WORKER": "Çalışan",
+      "VET": "Veteriner",
+      "ACCOUNTANT": "Muhasebeci"
+    },
+    "orderStatus": {
+      "PENDING": "Bekliyor",
+      "CONFIRMED": "Onaylandı",
+      "CANCELLED": "İptal"
+    },
+    "paymentStatus": {
+      "UNPAID": "Ödenmedi",
+      "PAID": "Ödendi"
+    }
+  },
+  "Animals": {
+    "title": "Hayvanlar",
+    "new": "Yeni Hayvan",
+    "add": "Hayvan ekle",
+    "kind": "Hayvan",
+    "saved": "Hayvan kaydedildi.",
+    "empty": "Henüz hayvan eklenmemiş",
+    "searchPlaceholder": "Kulak no, ad veya ırk ara...",
+    "tagNumber": "Kulak No",
+    "name": "Ad",
+    "species": "Tür",
+    "breed": "Cins / Irk",
+    "gender": "Cinsiyet",
+    "birthDate": "Doğum Tarihi",
+    "status": "Durum",
+    "mother": "Anne (soy)",
+    "motherNone": "— Anne seçilmedi —",
+    "imageUrl": "Görsel URL",
+    "notes": "Notlar"
   }
 }

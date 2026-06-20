@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { speciesLabels, genderLabels, statusLabels } from "@/lib/labels";
+import { useLabels } from "@/lib/use-labels";
 import { toDateInputValue } from "@/lib/date";
 import type { Animal } from "@prisma/client";
 
@@ -24,6 +25,9 @@ type Props = {
 
 export function AnimalForm({ animal, mothers = [] }: Props) {
   const router = useRouter();
+  const t = useTranslations("Animals");
+  const tc = useTranslations("Common");
+  const { speciesLabels, genderLabels, statusLabels } = useLabels();
   const isEdit = Boolean(animal);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -60,11 +64,11 @@ export function AnimalForm({ animal, mothers = [] }: Props) {
 
     if (!res.ok) {
       const data = await res.json().catch(() => null);
-      setError(data?.error ?? "Kayit basarisiz, lutfen tekrar deneyin");
+      setError(data?.error ?? tc("saveFailed"));
       return;
     }
 
-    toast.success("Hayvan kaydedildi.");
+    toast.success(t("saved"));
     router.push("/panel/hayvanlar");
     router.refresh();
   }
@@ -77,7 +81,7 @@ export function AnimalForm({ animal, mothers = [] }: Props) {
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="tagNumber" className={labelClass}>
-            Kulak No *
+            {t("tagNumber")} *
           </label>
           <input
             id="tagNumber"
@@ -91,7 +95,7 @@ export function AnimalForm({ animal, mothers = [] }: Props) {
 
         <div>
           <label htmlFor="name" className={labelClass}>
-            Ad
+            {t("name")}
           </label>
           <input
             id="name"
@@ -104,7 +108,7 @@ export function AnimalForm({ animal, mothers = [] }: Props) {
 
         <div>
           <label htmlFor="species" className={labelClass}>
-            Tur *
+            {t("species")} *
           </label>
           <select
             id="species"
@@ -123,7 +127,7 @@ export function AnimalForm({ animal, mothers = [] }: Props) {
 
         <div>
           <label htmlFor="breed" className={labelClass}>
-            Cins / Irk
+            {t("breed")}
           </label>
           <input
             id="breed"
@@ -136,7 +140,7 @@ export function AnimalForm({ animal, mothers = [] }: Props) {
 
         <div>
           <label htmlFor="gender" className={labelClass}>
-            Cinsiyet *
+            {t("gender")} *
           </label>
           <select
             id="gender"
@@ -155,7 +159,7 @@ export function AnimalForm({ animal, mothers = [] }: Props) {
 
         <div>
           <label htmlFor="birthDate" className={labelClass}>
-            Dogum Tarihi
+            {t("birthDate")}
           </label>
           <input
             id="birthDate"
@@ -168,7 +172,7 @@ export function AnimalForm({ animal, mothers = [] }: Props) {
 
         <div>
           <label htmlFor="status" className={labelClass}>
-            Durum
+            {t("status")}
           </label>
           <select
             id="status"
@@ -188,7 +192,7 @@ export function AnimalForm({ animal, mothers = [] }: Props) {
       {mothers.length > 0 && (
         <div>
           <label htmlFor="motherId" className={labelClass}>
-            Anne (soy)
+            {t("mother")}
           </label>
           <select
             id="motherId"
@@ -196,7 +200,7 @@ export function AnimalForm({ animal, mothers = [] }: Props) {
             defaultValue={animal?.motherId ?? ""}
             className={inputClass}
           >
-            <option value="">— Anne seçilmedi —</option>
+            <option value="">{t("motherNone")}</option>
             {mothers.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.tagNumber}
@@ -209,7 +213,7 @@ export function AnimalForm({ animal, mothers = [] }: Props) {
 
       <div>
         <label htmlFor="imageUrl" className={labelClass}>
-          Gorsel URL
+          {t("imageUrl")}
         </label>
         <input
           id="imageUrl"
@@ -223,7 +227,7 @@ export function AnimalForm({ animal, mothers = [] }: Props) {
 
       <div>
         <label htmlFor="notes" className={labelClass}>
-          Notlar
+          {t("notes")}
         </label>
         <textarea
           id="notes"
@@ -243,10 +247,10 @@ export function AnimalForm({ animal, mothers = [] }: Props) {
           href="/panel/hayvanlar"
           className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
         >
-          Iptal
+          {tc("cancel")}
         </Link>
         <Button type="submit" loading={loading}>
-          Kaydet
+          {tc("save")}
         </Button>
       </div>
     </form>
