@@ -5,6 +5,7 @@ import { parseListParams, type ListState } from "@/lib/list-query";
 import { withTenant } from "@/lib/tenant-prisma";
 import { buttonVariants } from "@/components/ui/button";
 import { SalesTable } from "@/components/tables/sales-table";
+import { getTranslations } from "next-intl/server";
 
 function formatMoney(amount: number): string {
   return amount.toLocaleString("tr-TR", { minimumFractionDigits: 2 }) + " TL";
@@ -18,6 +19,8 @@ export default async function SatisPage({
   // Satis ticari/finansal veridir: yalnizca menusunde gorunen roller (ADMIN,
   // ACCOUNTANT) acabilir.
   const session = await requirePageView("/panel/satis");
+  const t = await getTranslations("Sales");
+  const tc = await getTranslations("Common");
 
   const { page, q, sort, dir, skip, take } = parseListParams(await searchParams, {
     sortableKeys: ["date", "item", "customer", "amount"],
@@ -64,15 +67,15 @@ export default async function SatisPage({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
-            <span>🛒</span> Satış
+            <span>🛒</span> {t("title")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Toplam {total} kayıt · {formatMoney(totalAmount)} ciro
+            {tc("totalRecords", { count: total })} · {formatMoney(totalAmount)} ciro
           </p>
         </div>
         {canEdit && (
           <Link href="/panel/satis/yeni" className={buttonVariants({ size: "sm" })}>
-            + Yeni Satış
+            + {t("new")}
           </Link>
         )}
       </div>

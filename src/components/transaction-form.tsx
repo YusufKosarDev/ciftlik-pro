@@ -3,14 +3,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { transactionTypeLabels } from "@/lib/labels";
+import { useLabels } from "@/lib/use-labels";
 import { toDateInputValue } from "@/lib/date";
 import type { Transaction } from "@prisma/client";
 
 const inputClass =
-  "w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500";
+  "w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500";
 const labelClass = "mb-1 block text-sm font-medium text-foreground";
 
 export function TransactionForm({ transaction }: { transaction?: Transaction }) {
@@ -18,6 +19,9 @@ export function TransactionForm({ transaction }: { transaction?: Transaction }) 
   const isEdit = Boolean(transaction);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const t = useTranslations("Finance");
+  const tc = useTranslations("Common");
+  const { transactionTypeLabels } = useLabels();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -46,11 +50,11 @@ export function TransactionForm({ transaction }: { transaction?: Transaction }) 
 
     if (!res.ok) {
       const data = await res.json().catch(() => null);
-      setError(data?.error ?? "Kayit basarisiz, lutfen tekrar deneyin");
+      setError(data?.error ?? tc("saveFailed"));
       return;
     }
 
-    toast.success("İşlem kaydedildi.");
+    toast.success(t("saved"));
     router.push("/panel/finans");
     router.refresh();
   }
@@ -63,7 +67,7 @@ export function TransactionForm({ transaction }: { transaction?: Transaction }) 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="type" className={labelClass}>
-            Tur *
+            {t("type")} *
           </label>
           <select
             id="type"
@@ -82,7 +86,7 @@ export function TransactionForm({ transaction }: { transaction?: Transaction }) 
 
         <div>
           <label htmlFor="amount" className={labelClass}>
-            Tutar (TL) *
+            {t("amount")} (TL) *
           </label>
           <input
             id="amount"
@@ -98,7 +102,7 @@ export function TransactionForm({ transaction }: { transaction?: Transaction }) 
 
         <div>
           <label htmlFor="category" className={labelClass}>
-            Kategori *
+            {t("category")} *
           </label>
           <input
             id="category"
@@ -113,7 +117,7 @@ export function TransactionForm({ transaction }: { transaction?: Transaction }) 
 
         <div>
           <label htmlFor="date" className={labelClass}>
-            Tarih *
+            {t("date")} *
           </label>
           <input
             id="date"
@@ -128,7 +132,7 @@ export function TransactionForm({ transaction }: { transaction?: Transaction }) 
 
       <div>
         <label htmlFor="description" className={labelClass}>
-          Aciklama
+          {t("description")}
         </label>
         <textarea
           id="description"
@@ -148,10 +152,10 @@ export function TransactionForm({ transaction }: { transaction?: Transaction }) 
           href="/panel/finans"
           className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
         >
-          Iptal
+          {tc("cancel")}
         </Link>
         <Button type="submit" loading={loading}>
-          Kaydet
+          {tc("save")}
         </Button>
       </div>
     </form>

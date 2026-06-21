@@ -5,6 +5,7 @@ import { parseListParams, type ListState } from "@/lib/list-query";
 import { withTenant } from "@/lib/tenant-prisma";
 import { buttonVariants } from "@/components/ui/button";
 import { TransactionsTable } from "@/components/tables/transactions-table";
+import { getTranslations } from "next-intl/server";
 
 function formatMoney(amount: number): string {
   return amount.toLocaleString("tr-TR", { minimumFractionDigits: 2 }) + " TL";
@@ -14,16 +15,18 @@ function BreakdownList({
   title,
   rows,
   tone,
+  emptyText,
 }: {
   title: string;
   rows: { category: string; total: number }[];
   tone: "green" | "red";
+  emptyText: string;
 }) {
   return (
     <div className="rounded-xl border border-border bg-card p-5">
       <h3 className="mb-3 font-semibold text-foreground">{title}</h3>
       {rows.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Kayit yok.</p>
+        <p className="text-sm text-muted-foreground">{emptyText}</p>
       ) : (
         <ul className="space-y-2 text-sm">
           {rows.map((r) => (
@@ -48,6 +51,7 @@ export default async function FinansPage({
   // Finans hassas veridir: yalnizca menusunde finans gorunen roller
   // (ADMIN, ACCOUNTANT) bu sayfayi acabilir. Digerleri panele yonlenir.
   const session = await requirePageView("/panel/finans");
+  const t = await getTranslations("Finance");
 
   const { page, q, sort, dir, skip, take } = parseListParams(await searchParams, {
     sortableKeys: ["date", "type", "category", "amount"],
@@ -65,22 +69,22 @@ export default async function FinansPage({
     : {};
 
   // Tablo: aranan/sayfalanan kayitlar. Ozet ve kategori kirilimi ise TUM
-  // islemler uzerinden DB'de gruplanir (bellege cekmeden) — arama/sayfadan bagimsiz.
+  // islemler uzerinden DB'de gruplanir (belleğe cekmeden) — arama/sayfadan bagimsiz.
   const { transactions, total, grouped } = await withTenant(session.user.tenantId, async (db) => {
-  const [transactions, total, grouped] = await Promise.all([
-    db.transaction.findMany({
-      where,
-      orderBy: { [sort]: dir } as Prisma.TransactionOrderByWithRelationInput,
-      skip,
-      take,
-    }),
-    db.transaction.count({ where }),
-    db.transaction.groupBy({
-      by: ["type", "category"],
-      _sum: { amount: true },
-      orderBy: { _sum: { amount: "desc" } },
-    }),
-  ]);
+    const [transactions, total, grouped] = await Promise.all([
+      db.transaction.findMany({
+        where,
+        orderBy: { [sort]: dir } as Prisma.TransactionOrderByWithRelationInput,
+        skip,
+        take,
+      }),
+      db.transaction.count({ where }),
+      db.transaction.groupBy({
+        by: ["type", "category"],
+        _sum: { amount: true },
+        orderBy: { _sum: { amount: "desc" } },
+      }),
+    ]);
     return { transactions, total, grouped };
   });
 
@@ -102,7 +106,7 @@ export default async function FinansPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
-          <span>💰</span> Finans
+          <span>💰</span> {t("title")}
         </h1>
         <div className="flex items-center gap-2">
           {/* Dosya indirme ucnoktasi; sayfa navigasyonu degil, bu yuzden <a download>. */}
@@ -115,7 +119,7 @@ export default async function FinansPage({
           </a>
           {canEdit && (
             <Link href="/panel/finans/yeni" className={buttonVariants({ size: "sm" })}>
-              + Yeni Islem
+              + {t("new")}
             </Link>
           )}
         </div>
@@ -124,19 +128,19 @@ export default async function FinansPage({
       {/* Ozet kartlari */}
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-xl border border-border bg-card p-5">
-          <p className="text-sm text-muted-foreground">Toplam Gelir</p>
+          <p className="text-sm text-muted-foreground">{t("income")}</p>
           <p className="mt-1 text-xl font-bold text-green-600">
             {formatMoney(totalIncome)}
           </p>
         </div>
         <div className="rounded-xl border border-border bg-card p-5">
-          <p className="text-sm text-muted-foreground">Toplam Gider</p>
+          <p className="text-sm text-muted-foreground">{t("expense")}</p>
           <p className="mt-1 text-xl font-bold text-red-600">
             {formatMoney(totalExpense)}
           </p>
         </div>
         <div className="rounded-xl border border-border bg-card p-5">
-          <p className="text-sm text-muted-foreground">Net Bakiye</p>
+          <p className="text-sm text-muted-foreground">{t("title")} Net Bakiye</p>
           <p
             className={`mt-1 text-xl font-bold ${
               balance >= 0 ? "text-green-600" : "text-red-600"
@@ -150,8 +154,18 @@ export default async function FinansPage({
       {/* Kategori kirilimi */}
       {grouped.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2">
-          <BreakdownList title="Gelir — Kategori Kırılımı" rows={income} tone="green" />
-          <BreakdownList title="Gider — Kategori Kırılımı" rows={expense} tone="red" />
+          <BreakdownList
+            title={`${t("income")} — ${t("breakdown")}`}
+            rows={income}
+            tone="green"
+            emptyText={t("noRecords")}
+          />
+          <BreakdownList
+            title={`${t("expense")} — ${t("breakdown")}`}
+            rows={expense}
+            tone="red"
+            emptyText={t("noRecords")}
+          />
         </div>
       )}
 
