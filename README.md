@@ -12,7 +12,7 @@ Sistemi (ERP) — hayvan, tarla, stok, finans, satış, mağaza ve personel tek 
 [![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Coverage](https://img.shields.io/badge/coverage-~95%25%20(lib)-success?logo=vitest&logoColor=white)](#test--kalite)
-[![Tests](https://img.shields.io/badge/tests-256%20unit%20%2B%207%20e2e-success)](#test--kalite)
+[![Tests](https://img.shields.io/badge/tests-265%20unit%20%2B%207%20e2e-success)](#test--kalite)
 [![Multi-tenant](https://img.shields.io/badge/multi--tenant-Postgres%20RLS-4169E1)](#-çok-kiracılık-multi-tenant-saas)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -54,15 +54,17 @@ in Turkish.)_
   an income transaction), a **per-tenant public storefront** (`/magaza/[slug]`) with
   a cart and payment-free or **Stripe** checkout, calendar, tasks, a 2D farm map, and onboarding.
 - **Security hardening** — HTTP security headers (CSP/HSTS/…), brute-force rate
-  limiting on login/register, bcrypt (cost 12), `http(s)`-only image URLs, audited
-  failed logins, and a full write **audit log**.
+  limiting on login/register, asynchronous scrypt hashing (with legacy bcrypt
+  compatibility), http(s)-only image URLs, audited failed logins, and a full
+  write audit log.
 - **Performance** — server-side pagination/search/sort (DB `where`/`orderBy`/
-  `skip`/`take` + `count`) with date-range indexes, finance aggregates via
-  `groupBy`, and lazy-loaded charts (`next/dynamic`).
+  `skip`/`take` + `count`) with date-range indexes, database-level critical stock
+  filtering, parallelized cron tenant processing, unstable_cache for storefronts,
+  and lazy-loaded charts (`next/dynamic`).
 - **Modern UI & i18n** — sidebar layout, dark mode (semantic color tokens), a ⌘K
   command palette, dashboard trend deltas, and a Turkish/English i18n foundation
   (next-intl).
-- **Quality** — end-to-end type safety (Zod + Prisma), **256 unit/component tests**
+- **Quality** — end-to-end type safety (Zod + Prisma), **265 unit/component tests**
   (Vitest + Testing Library), tenant-isolation integration tests (real Postgres,
   non-superuser role) and **7 e2e tests** (Playwright), run on every PR in CI
   against a real PostgreSQL service.
@@ -108,7 +110,7 @@ göstergeleriyle) ve aylık gelir-gider grafiği:
 - **Kimlik doğrulama & RBAC** — giriş ve rol bazlı erişim (Admin, Çalışan,
   Veteriner, Muhasebeci). **Herkese açık çiftlik kaydı** (`/kayit`) tek
   transaction'da Tenant + sahip-ADMIN oluşturur; personel ise **token'lı davetle**
-  tenant içinde eklenir. Parolalar bcrypt (maliyet 12) ile hash'lenir.
+  tenant içinde eklenir. Parolalar asenkron scrypt ile hash'lenir (eski bcrypt şifreleriyle geriye dönük tam uyumludur).
 - **Planlar & faturalandırma** — FREE/PRO planları ve zorlanan limitler (aktif
   hayvan / personel koltuğu); env-gated **Stripe abonelik** akışı (webhook →
   `Tenant.plan`) ve kullanım panosu. **KVKK:** veri ihracı (JSON) + çiftlik silme.
@@ -152,7 +154,7 @@ göstergeleriyle) ve aylık gelir-gider grafiği:
   (API) hem hassas okuma (sayfa) düzeyinde uygulanır.
 - **Uçtan uca tip güvenliği** — Zod şemaları hem istemci hem sunucuda doğrular;
   Prisma ile veritabanı tipleri.
-- **Test & CI/CD** — 256 birim/bileşen testi (Vitest + Testing Library) +
+- **Test & CI/CD** — 265 birim/bileşen testi (Vitest + Testing Library) +
   tenant-izolasyon entegrasyon testleri + 7 uçtan uca test (Playwright),
   GitHub Actions'ta gerçek PostgreSQL servisiyle her PR'da çalışır.
 - **Transactional bütünlük** — yem tüketimi stoğu atomik düşürür (TOCTOU'ya karşı
@@ -213,7 +215,8 @@ Sertleştirme önlemleri:
   yalnızca **token'lı davetle** eklenir. Davet token'ları tahmin edilemez sırlardır,
   süre sınırlıdır ve tek kullanımlıktır. Ziyaretçiler salt-okunur **"Demo olarak gez"** ile gezer.
 - **Demo hesabı salt-okunurdur** — hiçbir yazma işlemi yapamaz (canlı demoda veri korunur).
-- **Parolalar bcrypt** (maliyet 12) ile hash'lenir; düz metin asla saklanmaz/dönülmez.
+- **Parolalar scrypt** ile hash'lenir (eski bcrypt şifreleriyle geriye dönük uyumludur);
+  sabit zamanlı karşılaştırma (`timingSafeEqual`) ve asenkron hashing ile olay döngüsü kilitlenme korumalıdır. Düz metin asla saklanmaz/dönülmez.
 - **HTTP güvenlik başlıkları** — tüm yanıtlara CSP, HSTS, `X-Frame-Options`,
   `X-Content-Type-Options`, `Referrer-Policy` ve `Permissions-Policy` (`next.config.ts`).
 - **Brute-force koruması** — giriş ve kayıt uçlarında IP / e-posta bazlı hız sınırı
@@ -351,7 +354,7 @@ Seed çalıştırıldıysa:
 - **Birim testleri (Vitest):** doğrulama şemaları, RBAC yetkilendirme, hız sınırı,
   liste sorgu parametreleri, plan limitleri, finans/harita/tarih/takvim yardımcıları
   + UI bileşenleri (Testing Library: Badge/Button/EmptyState/DataTable/OnboardingModal)
-  — `npm test` (256 test). Kapsam raporu için
+  — `npm test` (265 test). Kapsam raporu için
   `npm run test:coverage` (iş mantığı `src/lib` için ~%95 satır kapsamı).
 - **Tenant-izolasyon entegrasyon testleri:** gerçek PostgreSQL + non-superuser rolle
   `forTenant`/RLS izolasyonu (`*.int.test.ts`); tenant A, tenant B'nin verisine erişemez.
