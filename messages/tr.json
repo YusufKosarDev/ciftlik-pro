@@ -260,6 +260,7 @@
   "Finance": {
     "title": "Finans",
     "new": "Yeni İşlem",
+    "exportCsv": "⬇ CSV indir",
     "add": "İşlem ekle",
     "kind": "Finansal işlem",
     "saved": "İşlem kaydedildi.",
@@ -279,6 +280,7 @@
   "Sales": {
     "title": "Satışlar",
     "new": "Yeni Satış",
+    "turnover": "ciro",
     "add": "Satış ekle",
     "kind": "Satış kaydı",
     "saved": "Satış kaydedildi.",
@@ -319,12 +321,16 @@
     "name": "Ürün Adı",
     "price": "Birim Fiyat",
     "unit": "Birim",
+    "status": "Durum",
     "active": "Aktif (Katalogda Göster)",
+    "activeBadge": "Satışta",
+    "inactiveBadge": "Pasif",
     "description": "Açıklama"
   },
   "Orders": {
     "title": "Siparişler",
     "empty": "Henüz sipariş verilmemiş",
+    "itemsCount": "+{count} kalem",
     "searchPlaceholder": "Müşteri adı veya telefon ara...",
     "customerName": "Sipariş Veren",
     "customerPhone": "Telefon",

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import type { Structure } from "@prisma/client";
 import { Home } from "lucide-react";
 import { DataTable, type Column } from "@/components/data-table";
@@ -8,7 +9,7 @@ import { DeleteButton } from "@/components/delete-button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { structureTypeLabels } from "@/lib/labels";
+import { useLabels } from "@/lib/use-labels";
 import type { ListState } from "@/lib/list-query";
 
 export function StructuresTable({
@@ -20,22 +21,26 @@ export function StructuresTable({
   canEdit: boolean;
   list: ListState;
 }) {
+  const t = useTranslations("Structures");
+  const tc = useTranslations("Common");
+  const { structureTypeLabels } = useLabels();
+
   const columns: Column<Structure>[] = [
     {
       key: "name",
-      header: "Ad",
+      header: t("name"),
       sortKey: "name",
       cell: (s) => <span className="font-medium text-foreground">{s.name}</span>,
     },
     {
       key: "type",
-      header: "Tür",
+      header: t("type"),
       sortKey: "type",
       cell: (s) => <Badge tone="amber">{structureTypeLabels[s.type]}</Badge>,
     },
     {
       key: "notes",
-      header: "Not",
+      header: t("notes"),
       cell: (s) => <span className="text-muted-foreground">{s.notes ?? "-"}</span>,
     },
   ];
@@ -43,7 +48,7 @@ export function StructuresTable({
   if (canEdit) {
     columns.push({
       key: "actions",
-      header: "İşlemler",
+      header: tc("actions"),
       headerClassName: "text-right",
       className: "text-right",
       cell: (s) => (
@@ -52,9 +57,9 @@ export function StructuresTable({
             href={`/panel/yapilar/${s.id}/duzenle`}
             className="text-sm font-medium text-green-600 dark:text-green-400 hover:underline"
           >
-            Düzenle
+            {tc("edit")}
           </Link>
-          <DeleteButton endpoint={`/api/structures/${s.id}`} itemLabel={s.name} kind="Yapı" />
+          <DeleteButton endpoint={`/api/structures/${s.id}`} itemLabel={s.name} kind={t("kind")} />
         </div>
       ),
     });
@@ -66,15 +71,15 @@ export function StructuresTable({
       columns={columns}
       list={list}
       searchable
-      searchPlaceholder="Ad veya tür ara..."
+      searchPlaceholder={t("searchPlaceholder")}
       emptyState={
         <EmptyState
           icon={<Home className="h-6 w-6" />}
-          title="Henüz yapı eklenmemiş"
+          title={t("empty")}
           action={
             canEdit ? (
               <Link href="/panel/yapilar/yeni" className={buttonVariants({ size: "sm" })}>
-                Yapı ekle
+                {t("add")}
               </Link>
             ) : undefined
           }

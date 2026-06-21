@@ -70,7 +70,7 @@ export default async function SatisPage({
             <span>🛒</span> {t("title")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            {tc("totalRecords", { count: total })} · {formatMoney(totalAmount)} ciro
+            {tc("totalRecords", { count: total })} · {formatMoney(totalAmount)} {t("turnover")}
           </p>
         </div>
         {canEdit && (

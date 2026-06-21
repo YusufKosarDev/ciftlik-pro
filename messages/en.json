@@ -260,6 +260,7 @@
   "Finance": {
     "title": "Finance",
     "new": "New Transaction",
+    "exportCsv": "⬇ Download CSV",
     "add": "Add transaction",
     "kind": "Financial transaction",
     "saved": "Transaction saved.",
@@ -279,6 +280,7 @@
   "Sales": {
     "title": "Sales",
     "new": "New Sale",
+    "turnover": "revenue",
     "add": "Add sale",
     "kind": "Sale record",
     "saved": "Sale saved.",
@@ -319,12 +321,16 @@
     "name": "Product Name",
     "price": "Unit Price",
     "unit": "Unit",
+    "status": "Status",
     "active": "Active (Show in Catalog)",
+    "activeBadge": "Active",
+    "inactiveBadge": "Inactive",
     "description": "Description"
   },
   "Orders": {
     "title": "Orders",
     "empty": "No orders received yet",
+    "itemsCount": "+{count} item(s)",
     "searchPlaceholder": "Search customer name or phone...",
     "customerName": "Customer Name",
     "customerPhone": "Phone",

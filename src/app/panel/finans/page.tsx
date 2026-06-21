@@ -115,7 +115,7 @@ export default async function FinansPage({
             download
             className={buttonVariants({ variant: "secondary", size: "sm" })}
           >
-            ⬇ CSV indir
+            {t("exportCsv")}
           </a>
           {canEdit && (
             <Link href="/panel/finans/yeni" className={buttonVariants({ size: "sm" })}>

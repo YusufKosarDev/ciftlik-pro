@@ -1,12 +1,13 @@
 "use client";
 
 import type { Order } from "@prisma/client";
+import { useTranslations } from "next-intl";
 import { ClipboardList } from "lucide-react";
 import { DataTable, type Column } from "@/components/data-table";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { OrderActions } from "@/components/order-actions";
-import { orderStatusLabels } from "@/lib/labels";
+import { useLabels } from "@/lib/use-labels";
 import type { ListState } from "@/lib/list-query";
 
 // Liste, siparisin kalemlerini (urun adi + miktar) da iceren bir tip kullanir.
@@ -34,24 +35,28 @@ export function OrdersTable({
   canEdit: boolean;
   list: ListState;
 }) {
+  const t = useTranslations("Orders");
+  const tc = useTranslations("Common");
+  const { orderStatusLabels, paymentStatusLabels } = useLabels();
+
   const columns: Column<OrderRow>[] = [
-    { key: "createdAt", header: "Tarih", sortKey: "createdAt", cell: (o) => formatDate(o.createdAt) },
+    { key: "createdAt", header: t("date"), sortKey: "createdAt", cell: (o) => formatDate(o.createdAt) },
     {
       key: "product",
-      header: "Ürünler",
+      header: t("items"),
       cell: (o) => {
         const first = o.items[0];
         const label = first
           ? o.items.length === 1
             ? `${first.productName} × ${first.quantity}`
-            : `${first.productName} +${o.items.length - 1} kalem`
+            : `${first.productName} ${t("itemsCount", { count: o.items.length - 1 })}`
           : "-";
         return <span className="font-medium text-foreground">{label}</span>;
       },
     },
     {
       key: "customer",
-      header: "Müşteri",
+      header: t("customerName"),
       cell: (o) => (
         <span>
           {o.customerName}
@@ -61,7 +66,7 @@ export function OrdersTable({
     },
     {
       key: "total",
-      header: "Tutar",
+      header: t("total"),
       sortKey: "total",
       headerClassName: "text-right",
       className: "text-right",
@@ -69,17 +74,17 @@ export function OrdersTable({
     },
     {
       key: "payment",
-      header: "Ödeme",
+      header: t("paymentStatus"),
       cell: (o) =>
         o.paymentStatus === "PAID" ? (
-          <Badge tone="green">Ödendi</Badge>
+          <Badge tone="green">{paymentStatusLabels.PAID}</Badge>
         ) : (
           <span className="text-muted-foreground">-</span>
         ),
     },
     {
       key: "status",
-      header: "Durum",
+      header: t("status"),
       sortKey: "status",
       cell: (o) => <Badge tone={statusTone[o.status]}>{orderStatusLabels[o.status]}</Badge>,
     },
@@ -88,7 +93,7 @@ export function OrdersTable({
   if (canEdit) {
     columns.push({
       key: "actions",
-      header: "İşlemler",
+      header: tc("actions"),
       headerClassName: "text-right",
       className: "text-right",
       cell: (o) => <OrderActions id={o.id} status={o.status} />,
@@ -101,9 +106,9 @@ export function OrdersTable({
       columns={columns}
       list={list}
       searchable
-      searchPlaceholder="Ürün veya müşteri ara..."
+      searchPlaceholder={t("searchPlaceholder")}
       emptyState={
-        <EmptyState icon={<ClipboardList className="h-6 w-6" />} title="Henüz sipariş yok" />
+        <EmptyState icon={<ClipboardList className="h-6 w-6" />} title={t("empty")} />
       }
     />
   );

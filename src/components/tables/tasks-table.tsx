@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import type { Task } from "@prisma/client";
 import { CheckSquare } from "lucide-react";
 import { DataTable, type Column } from "@/components/data-table";
@@ -8,7 +9,7 @@ import { DeleteButton } from "@/components/delete-button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { taskStatusLabels } from "@/lib/labels";
+import { useLabels } from "@/lib/use-labels";
 import type { ListState } from "@/lib/list-query";
 
 // Listeleme sayfasi atanan kisinin adini da iceren bir gorev tipi kullanir.
@@ -39,31 +40,35 @@ export function TasksTable({
   canEdit: boolean;
   list: ListState;
 }) {
+  const t = useTranslations("Tasks");
+  const tc = useTranslations("Common");
+  const { taskStatusLabels } = useLabels();
+
   const columns: Column<TaskRow>[] = [
     {
       key: "title",
-      header: "Başlık",
+      header: t("titleLabel"),
       sortKey: "title",
-      cell: (t) => <span className="font-medium text-foreground">{t.title}</span>,
+      cell: (tRow) => <span className="font-medium text-foreground">{tRow.title}</span>,
     },
     {
       key: "assignedTo",
-      header: "Atanan",
+      header: t("assignedTo"),
       sortKey: "assignedTo",
-      cell: (t) => t.assignedTo?.name ?? "-",
+      cell: (tRow) => tRow.assignedTo?.name ?? "-",
     },
     {
       key: "dueDate",
-      header: "Son Tarih",
+      header: t("dueDate"),
       sortKey: "dueDate",
-      cell: (t) => {
-        const overdue = isOverdue(t.dueDate, t.status);
+      cell: (tRow) => {
+        const overdue = isOverdue(tRow.dueDate, tRow.status);
         return (
           <span className={overdue ? "font-semibold text-red-600" : "text-foreground"}>
-            {formatDate(t.dueDate)}
+            {formatDate(tRow.dueDate)}
             {overdue && (
               <Badge tone="red" className="ml-2">
-                Gecikti
+                {t("overdue")}
               </Badge>
             )}
           </span>
@@ -72,27 +77,27 @@ export function TasksTable({
     },
     {
       key: "status",
-      header: "Durum",
+      header: t("status"),
       sortKey: "status",
-      cell: (t) => <Badge tone={statusTone[t.status]}>{taskStatusLabels[t.status]}</Badge>,
+      cell: (tRow) => <Badge tone={statusTone[tRow.status]}>{taskStatusLabels[tRow.status]}</Badge>,
     },
   ];
 
   if (canEdit) {
     columns.push({
       key: "actions",
-      header: "İşlemler",
+      header: tc("actions"),
       headerClassName: "text-right",
       className: "text-right",
-      cell: (t) => (
+      cell: (tRow) => (
         <div className="flex items-center justify-end gap-4">
           <Link
-            href={`/panel/gorevler/${t.id}/duzenle`}
+            href={`/panel/gorevler/${tRow.id}/duzenle`}
             className="text-sm font-medium text-green-600 dark:text-green-400 hover:underline"
           >
-            Düzenle
+            {tc("edit")}
           </Link>
-          <DeleteButton endpoint={`/api/tasks/${t.id}`} itemLabel={t.title} kind="Görev" />
+          <DeleteButton endpoint={`/api/tasks/${tRow.id}`} itemLabel={tRow.title} kind={t("kind")} />
         </div>
       ),
     });
@@ -104,15 +109,15 @@ export function TasksTable({
       columns={columns}
       list={list}
       searchable
-      searchPlaceholder="Başlık veya atanan ara..."
+      searchPlaceholder={t("searchPlaceholder")}
       emptyState={
         <EmptyState
           icon={<CheckSquare className="h-6 w-6" />}
-          title="Henüz görev eklenmemiş"
+          title={t("empty")}
           action={
             canEdit ? (
               <Link href="/panel/gorevler/yeni" className={buttonVariants({ size: "sm" })}>
-                Görev ekle
+                {t("add")}
               </Link>
             ) : undefined
           }

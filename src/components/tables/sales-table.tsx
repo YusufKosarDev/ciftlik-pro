@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import type { Sale } from "@prisma/client";
 import { ShoppingCart } from "lucide-react";
 import { DataTable, type Column } from "@/components/data-table";
@@ -28,23 +29,26 @@ export function SalesTable({
   canEdit: boolean;
   list: ListState;
 }) {
+  const t = useTranslations("Sales");
+  const tc = useTranslations("Common");
+
   const columns: Column<SaleRow>[] = [
-    { key: "date", header: "Tarih", sortKey: "date", cell: (s) => formatDate(s.date) },
+    { key: "date", header: t("date"), sortKey: "date", cell: (s) => formatDate(s.date) },
     {
       key: "item",
-      header: "Satılan",
+      header: t("item"),
       sortKey: "item",
       cell: (s) => <span className="font-medium text-foreground">{s.item}</span>,
     },
-    { key: "customer", header: "Müşteri", sortKey: "customer", cell: (s) => s.customer?.name ?? "-" },
+    { key: "customer", header: t("customer"), sortKey: "customer", cell: (s) => s.customer?.name ?? "-" },
     {
       key: "quantity",
-      header: "Miktar",
+      header: t("quantity"),
       cell: (s) => (s.quantity != null ? `${s.quantity} ${s.unit ?? ""}`.trim() : "-"),
     },
     {
       key: "amount",
-      header: "Tutar",
+      header: t("amount"),
       sortKey: "amount",
       headerClassName: "text-right",
       className: "text-right",
@@ -55,7 +59,7 @@ export function SalesTable({
   if (canEdit) {
     columns.push({
       key: "actions",
-      header: "İşlemler",
+      header: tc("actions"),
       headerClassName: "text-right",
       className: "text-right",
       cell: (s) => (
@@ -64,9 +68,9 @@ export function SalesTable({
             href={`/panel/satis/${s.id}/duzenle`}
             className="text-sm font-medium text-green-600 hover:underline dark:text-green-400"
           >
-            Düzenle
+            {tc("edit")}
           </Link>
-          <DeleteButton endpoint={`/api/sales/${s.id}`} itemLabel={s.item} kind="Satış" />
+          <DeleteButton endpoint={`/api/sales/${s.id}`} itemLabel={s.item} kind={t("kind")} />
         </div>
       ),
     });
@@ -78,15 +82,15 @@ export function SalesTable({
       columns={columns}
       list={list}
       searchable
-      searchPlaceholder="Ürün veya müşteri ara..."
+      searchPlaceholder={t("searchPlaceholder")}
       emptyState={
         <EmptyState
           icon={<ShoppingCart className="h-6 w-6" />}
-          title="Henüz satış kaydı yok"
+          title={t("empty")}
           action={
             canEdit ? (
               <Link href="/panel/satis/yeni" className={buttonVariants({ size: "sm" })}>
-                Satış ekle
+                {t("add")}
               </Link>
             ) : undefined
           }

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import type { Customer } from "@prisma/client";
 import { Contact } from "lucide-react";
 import { DataTable, type Column } from "@/components/data-table";
@@ -21,10 +22,13 @@ export function CustomersTable({
   canEdit: boolean;
   list: ListState;
 }) {
+  const t = useTranslations("Customers");
+  const tc = useTranslations("Common");
+
   const columns: Column<CustomerRow>[] = [
     {
       key: "name",
-      header: "Ad / Unvan",
+      header: t("name"),
       sortKey: "name",
       cell: (c) => (
         <Link
@@ -35,11 +39,11 @@ export function CustomersTable({
         </Link>
       ),
     },
-    { key: "phone", header: "Telefon", cell: (c) => c.phone ?? "-" },
-    { key: "email", header: "E-posta", cell: (c) => c.email ?? "-" },
+    { key: "phone", header: t("phone"), cell: (c) => c.phone ?? "-" },
+    { key: "email", header: t("email"), cell: (c) => c.email ?? "-" },
     {
       key: "sales",
-      header: "Satış",
+      header: t("totalSales"),
       headerClassName: "text-right",
       className: "text-right",
       cell: (c) => c._count.sales,
@@ -49,7 +53,7 @@ export function CustomersTable({
   if (canEdit) {
     columns.push({
       key: "actions",
-      header: "İşlemler",
+      header: tc("actions"),
       headerClassName: "text-right",
       className: "text-right",
       cell: (c) => (
@@ -58,9 +62,9 @@ export function CustomersTable({
             href={`/panel/musteriler/${c.id}/duzenle`}
             className="text-sm font-medium text-green-600 hover:underline dark:text-green-400"
           >
-            Düzenle
+            {tc("edit")}
           </Link>
-          <DeleteButton endpoint={`/api/customers/${c.id}`} itemLabel={c.name} kind="Müşteri" />
+          <DeleteButton endpoint={`/api/customers/${c.id}`} itemLabel={c.name} kind={t("kind")} />
         </div>
       ),
     });
@@ -72,15 +76,15 @@ export function CustomersTable({
       columns={columns}
       list={list}
       searchable
-      searchPlaceholder="Ad, telefon veya e-posta ara..."
+      searchPlaceholder={t("searchPlaceholder")}
       emptyState={
         <EmptyState
           icon={<Contact className="h-6 w-6" />}
-          title="Henüz müşteri yok"
+          title={t("empty")}
           action={
             canEdit ? (
               <Link href="/panel/musteriler/yeni" className={buttonVariants({ size: "sm" })}>
-                Müşteri ekle
+                {t("add")}
               </Link>
             ) : undefined
           }
