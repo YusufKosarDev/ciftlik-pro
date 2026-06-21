@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { Animal } from "@prisma/client";
 import { PawPrint } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -27,9 +28,23 @@ export function AnimalsTable({
   canEdit: boolean;
   list: ListState;
 }) {
+  const router = useRouter();
   const t = useTranslations("Animals");
   const tc = useTranslations("Common");
   const { speciesLabels, genderLabels, statusLabels } = useLabels();
+
+  const handleBulkDelete = async (ids: string[]) => {
+    const res = await fetch("/api/animals", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids }),
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || "Silme hatası");
+    }
+    router.refresh();
+  };
 
   const columns: Column<Animal>[] = [
     {
@@ -92,6 +107,9 @@ export function AnimalsTable({
       list={list}
       searchable
       searchPlaceholder={t("searchPlaceholder")}
+      enableSelection={canEdit}
+      onBulkDelete={handleBulkDelete}
+      csvExportFilename="hayvanlar"
       emptyState={
         <EmptyState
           icon={<PawPrint className="h-6 w-6" />}
