@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
 import { withTenant } from "@/lib/tenant-prisma";
 import { auth } from "@/lib/auth";
 import { DEMO_EMAIL } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { passwordChangeSchema } from "@/lib/validations/password";
-import { hashPassword } from "@/lib/password-hash";
+import { hashPassword, verifyPassword } from "@/lib/password-hash";
 
 // PUT /api/profile/password -> giris yapmis kullanicinin kendi parolasini degistirir.
 export async function PUT(request: Request) {
@@ -42,7 +41,7 @@ export async function PUT(request: Request) {
     }
 
     const { currentPassword, newPassword } = parsed.data;
-    const valid = await bcrypt.compare(currentPassword, user.password);
+    const valid = await verifyPassword(currentPassword, user.password);
     if (!valid) {
       return NextResponse.json({ error: "Mevcut parola hatali" }, { status: 400 });
     }

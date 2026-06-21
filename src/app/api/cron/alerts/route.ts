@@ -37,47 +37,60 @@ export async function GET(request: Request) {
     // tenant icin sorgular withTenant baglaminda calisir.
     const tenants = await prisma.tenant.findMany({ select: { id: true } });
 
+    const results = await Promise.all(
+      tenants.map(async (tenant) => {
+        const [inventory, tasks, vaccinations, admins] = await withTenant(tenant.id, (db) =>
+          Promise.all([
+            db.$queryRaw<Array<{ name: string; quantity: number; criticalLevel: number; unit: string }>>`
+              SELECT name, quantity, "criticalLevel", unit
+              FROM "InventoryItem"
+              WHERE quantity <= "criticalLevel"
+            `,
+            db.task.findMany({
+              where: { status: { not: "DONE" }, dueDate: { lt: now } },
+              select: { title: true, status: true, dueDate: true },
+            }),
+            db.vaccination.findMany({
+              where: { nextDate: { gte: now, lte: windowEnd } },
+              select: {
+                name: true,
+                nextDate: true,
+                animal: { select: { tagNumber: true, name: true } },
+              },
+            }),
+            db.user.findMany({ where: { role: "ADMIN" }, select: { email: true } }),
+          ])
+        );
+
+        const alerts = collectAlerts({ inventory, tasks, vaccinations }, now);
+        if (alerts.total === 0) return null;
+
+        const recipients = admins.map((a) => a.email);
+        if (recipients.length === 0) return null;
+
+        await sendEmail(
+          recipients,
+          `Çiftlik Pro — ${alerts.total} uyarı`,
+          renderAlertsHtml(alerts)
+        );
+
+        return {
+          alertsCount: alerts.total,
+          recipientsCount: recipients.length,
+        };
+      })
+    );
+
     let tenantsNotified = 0;
     let totalAlerts = 0;
     let totalRecipients = 0;
 
-    for (const tenant of tenants) {
-      const [inventory, tasks, vaccinations, admins] = await withTenant(tenant.id, (db) =>
-        Promise.all([
-          db.inventoryItem.findMany({
-            select: { name: true, quantity: true, criticalLevel: true, unit: true },
-          }),
-          db.task.findMany({
-            where: { status: { not: "DONE" }, dueDate: { lt: now } },
-            select: { title: true, status: true, dueDate: true },
-          }),
-          db.vaccination.findMany({
-            where: { nextDate: { gte: now, lte: windowEnd } },
-            select: {
-              name: true,
-              nextDate: true,
-              animal: { select: { tagNumber: true, name: true } },
-            },
-          }),
-          db.user.findMany({ where: { role: "ADMIN" }, select: { email: true } }),
-        ])
-      );
-
-      const alerts = collectAlerts({ inventory, tasks, vaccinations }, now);
-      if (alerts.total === 0) continue;
-
-      const recipients = admins.map((a) => a.email);
-      if (recipients.length === 0) continue;
-
-      await sendEmail(
-        recipients,
-        `Çiftlik Pro — ${alerts.total} uyarı`,
-        renderAlertsHtml(alerts)
-      );
-
-      tenantsNotified += 1;
-      totalAlerts += alerts.total;
-      totalRecipients += recipients.length;
+    for (const res of results) {
+      if (res) {
+        tenantsNotified += 1;
+        totalAlerts += res.alertsCount;
+        totalRecipients += res.recipientsCount;
+      }
     }
 
     return NextResponse.json({

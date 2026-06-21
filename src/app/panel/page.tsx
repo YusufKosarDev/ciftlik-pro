@@ -155,7 +155,11 @@ export default async function PanelPage() {
         select: { type: true, amount: true, date: true },
       }),
       db.task.count({ where: { status: { not: "DONE" } } }),
-      db.inventoryItem.findMany(),
+      db.$queryRaw<Array<{ id: string; name: string; quantity: number; criticalLevel: number; unit: string }>>`
+        SELECT id, name, quantity, "criticalLevel", unit
+        FROM "InventoryItem"
+        WHERE quantity <= "criticalLevel"
+      `,
       db.task.findMany({
         where: { status: { not: "DONE" }, dueDate: { lt: now } },
         include: { assignedTo: { select: { name: true } } },
@@ -190,9 +194,7 @@ export default async function PanelPage() {
     monthTotalsByType.find((t) => t.type === "EXPENSE")?._sum.amount ?? 0;
   const monthNet = monthIncome - monthExpense;
 
-  const criticalItems = inventoryItems.filter(
-    (i) => i.quantity <= i.criticalLevel
-  );
+  const criticalItems = inventoryItems;
 
   const monthlyFinance = buildMonthlyFinance(recentTransactions);
 

@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
+import { verifyPassword } from "@/lib/password-hash";
 import type { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { authConfig } from "@/lib/auth.config";
@@ -59,8 +59,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           }>
         >`SELECT * FROM auth_user_by_email(${normalizedEmail})`;
         const user = rows[0];
-        // Kullanici yoksa bcrypt'i bosa calistirmayiz; parola yanlissa karsilastirma false doner.
-        const isValid = user ? await bcrypt.compare(password, user.password) : false;
+        // Kullanici yoksa hash'i bosa calistirmayiz; parola yanlissa karsilastirma false doner.
+        const isValid = user ? await verifyPassword(password, user.password) : false;
         if (!user || !isValid) {
           // Basarisiz giris denemesini denetim gunlugune yaz (guvenlik izi).
           // Best-effort: logAudit hata firlatmaz. Denemeler zaten hiz siniriyla bounded.
