@@ -17,10 +17,11 @@ test("admin hayvan ekleyip duzenleyip silebilir", async ({ page }) => {
   await page.getByRole("button", { name: "Kaydet" }).click();
   await expect(page).toHaveURL(/\/panel\/hayvanlar$/);
 
-  // 2) Tabloda arama ile bul. Arama sunucu tarafinda (debounce'lu) calistigi
-  //    icin, etkilesimleri tag iceren SATIRA kapsayarak liste daralmadan once
-  //    coklu eslesmeyi (strict-mode hatasi) onleriz.
+  // 2) Tabloda arama ile bul. Arama sunucu tarafinda (debounce'lu) oldugu icin
+  //    once URL'nin ?q= parametresiyle stabilize olmasini bekle; yoksa Duzele
+  //    tiklamasi ile debounce navigasyonu arasinda race condition olusur.
   await page.getByPlaceholder(SEARCH).fill(tag);
+  await expect(page).toHaveURL(new RegExp(`[?&]q=.*${tag}`));
   const row = page.getByRole("row").filter({ hasText: tag });
   await expect(row.getByRole("cell", { name: tag })).toBeVisible();
 
@@ -31,16 +32,23 @@ test("admin hayvan ekleyip duzenleyip silebilir", async ({ page }) => {
   await page.getByRole("button", { name: "Kaydet" }).click();
   await expect(page).toHaveURL(/\/panel\/hayvanlar$/);
 
-  // 4) Silme: arama + onay dialogu (yine satira kapsayarak)
+  // 4) Silme: once aramanin URL ile stabilize olmasini bekle, sonra sil.
   await page.getByPlaceholder(SEARCH).fill(tag);
-  await page.getByRole("row").filter({ hasText: tag }).getByRole("button", { name: "Sil" }).click();
+  await expect(page).toHaveURL(new RegExp(`[?&]q=.*${tag}`));
+  await page
+    .getByRole("row")
+    .filter({ hasText: tag })
+    .getByRole("button", { name: "Sil" })
+    .click();
   const dialog = page.getByRole("alertdialog");
   await expect(dialog).toBeVisible();
   await dialog.getByRole("button", { name: "Sil" }).click();
 
-  // Silindikten sonra arama sonucu bos olmali
+  // Silindikten sonra arama sonucu bos olmali.
   await page.getByPlaceholder(SEARCH).fill(tag);
+  await expect(page).toHaveURL(new RegExp(`[?&]q=.*${tag}`));
+  // Ceviri tipografik tirnaklar kullanabileceginden regex ile esles.
   await expect(
-    page.getByText(`“${tag}” ile eşleşen kayıt bulunamadı.`)
+    page.getByText(new RegExp(`${tag}.*ile eşleşen kayıt bulunamadı`))
   ).toBeVisible();
 });

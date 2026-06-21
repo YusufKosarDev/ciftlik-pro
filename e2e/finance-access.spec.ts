@@ -19,5 +19,6 @@ test("ADMIN finans sayfasini gorebilir", async ({ page }) => {
   await login(page, ACCOUNTS.admin);
   await page.goto("/panel/finans");
   await expect(page).toHaveURL(/\/panel\/finans$/);
-  await expect(page.getByRole("heading", { name: "Finans" })).toBeVisible();
+  // Sayfada birden fazla h1 olabileceginden sayfa basligini emoji ile eslestirelim.
+  await expect(page.getByRole("heading", { name: "💰 Finans" })).toBeVisible();
 });
