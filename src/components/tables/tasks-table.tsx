@@ -21,10 +21,7 @@ const statusTone = {
   DONE: "green",
 } as const;
 
-function formatDate(date: Date | null) {
-  if (!date) return "-";
-  return new Date(date).toLocaleDateString("tr-TR");
-}
+import { useFormat } from "@/lib/format";
 
 function isOverdue(dueDate: Date | null, status: string) {
   if (!dueDate || status === "DONE") return false;
@@ -42,6 +39,7 @@ export function TasksTable({
 }) {
   const t = useTranslations("Tasks");
   const tc = useTranslations("Common");
+  const { formatDate } = useFormat();
   const { taskStatusLabels } = useLabels();
 
   const columns: Column<TaskRow>[] = [

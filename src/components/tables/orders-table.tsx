@@ -10,15 +10,10 @@ import { OrderActions } from "@/components/order-actions";
 import { useLabels } from "@/lib/use-labels";
 import type { ListState } from "@/lib/list-query";
 
+import { useFormat } from "@/lib/format";
+
 // Liste, siparisin kalemlerini (urun adi + miktar) da iceren bir tip kullanir.
 export type OrderRow = Order & { items: { productName: string; quantity: number }[] };
-
-function formatDate(d: Date) {
-  return new Date(d).toLocaleDateString("tr-TR");
-}
-function formatMoney(a: number) {
-  return a.toLocaleString("tr-TR", { minimumFractionDigits: 2 }) + " TL";
-}
 
 const statusTone = {
   PENDING: "yellow",
@@ -37,6 +32,7 @@ export function OrdersTable({
 }) {
   const t = useTranslations("Orders");
   const tc = useTranslations("Common");
+  const { formatDate, formatMoney } = useFormat();
   const { orderStatusLabels, paymentStatusLabels } = useLabels();
 
   const columns: Column<OrderRow>[] = [

@@ -18,12 +18,11 @@ export type UserRow = {
   createdAt: Date;
 };
 
-function formatDate(date: Date) {
-  return new Date(date).toLocaleDateString("tr-TR");
-}
+import { useFormat } from "@/lib/format";
 
 export function UsersTable({ users, list }: { users: UserRow[]; list: ListState }) {
   const t = useTranslations("Staff");
+  const { formatDate } = useFormat();
   const { roleLabels } = useLabels();
 
   const columns: Column<UserRow>[] = [

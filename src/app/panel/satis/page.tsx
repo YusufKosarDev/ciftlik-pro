@@ -5,11 +5,9 @@ import { parseListParams, type ListState } from "@/lib/list-query";
 import { withTenant } from "@/lib/tenant-prisma";
 import { buttonVariants } from "@/components/ui/button";
 import { SalesTable } from "@/components/tables/sales-table";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
+import { formatMoney } from "@/lib/format";
 
-function formatMoney(amount: number): string {
-  return amount.toLocaleString("tr-TR", { minimumFractionDigits: 2 }) + " TL";
-}
 
 export default async function SatisPage({
   searchParams,
@@ -21,6 +19,7 @@ export default async function SatisPage({
   const session = await requirePageView("/panel/satis");
   const t = await getTranslations("Sales");
   const tc = await getTranslations("Common");
+  const locale = await getLocale();
 
   const { page, q, sort, dir, skip, take } = parseListParams(await searchParams, {
     sortableKeys: ["date", "item", "customer", "amount"],
@@ -70,7 +69,7 @@ export default async function SatisPage({
             <span>🛒</span> {t("title")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            {tc("totalRecords", { count: total })} · {formatMoney(totalAmount)} {t("turnover")}
+            {tc("totalRecords", { count: total })} · {formatMoney(totalAmount, locale)} {t("turnover")}
           </p>
         </div>
         {canEdit && (

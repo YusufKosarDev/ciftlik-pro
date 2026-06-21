@@ -10,15 +10,10 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { buttonVariants } from "@/components/ui/button";
 import type { ListState } from "@/lib/list-query";
 
+import { useFormat } from "@/lib/format";
+
 // Liste, satisa bagli musterinin adini da iceren bir tip kullanir.
 export type SaleRow = Sale & { customer: { name: string } | null };
-
-function formatDate(d: Date) {
-  return new Date(d).toLocaleDateString("tr-TR");
-}
-function formatMoney(a: number) {
-  return a.toLocaleString("tr-TR", { minimumFractionDigits: 2 }) + " TL";
-}
 
 export function SalesTable({
   sales,
@@ -31,6 +26,7 @@ export function SalesTable({
 }) {
   const t = useTranslations("Sales");
   const tc = useTranslations("Common");
+  const { formatDate, formatMoney } = useFormat();
 
   const columns: Column<SaleRow>[] = [
     { key: "date", header: t("date"), sortKey: "date", cell: (s) => formatDate(s.date) },

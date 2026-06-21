@@ -10,11 +10,10 @@ import { useCart } from "@/components/store/cart-provider";
 const inputClass =
   "w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500";
 
-function formatMoney(a: number): string {
-  return a.toLocaleString("tr-TR", { minimumFractionDigits: 2 }) + " TL";
-}
+import { useFormat } from "@/lib/format";
 
 export function CartView({ slug }: { slug: string }) {
+  const { formatMoney } = useFormat();
   const { items, setQty, remove, total, count, clear } = useCart();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);

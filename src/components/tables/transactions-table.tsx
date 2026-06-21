@@ -12,12 +12,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { useLabels } from "@/lib/use-labels";
 import type { ListState } from "@/lib/list-query";
  
-function formatDate(d: Date) {
-  return new Date(d).toLocaleDateString("tr-TR");
-}
-function formatMoney(a: number) {
-  return a.toLocaleString("tr-TR", { minimumFractionDigits: 2 }) + " TL";
-}
+import { useFormat } from "@/lib/format";
  
 export function TransactionsTable({
   transactions,
@@ -30,6 +25,7 @@ export function TransactionsTable({
 }) {
   const t = useTranslations("Finance");
   const tc = useTranslations("Common");
+  const { formatDate, formatMoney } = useFormat();
   const { transactionTypeLabels } = useLabels();
 
   const columns: Column<Transaction>[] = [

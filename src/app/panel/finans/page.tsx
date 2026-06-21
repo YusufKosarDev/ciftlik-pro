@@ -5,22 +5,22 @@ import { parseListParams, type ListState } from "@/lib/list-query";
 import { withTenant } from "@/lib/tenant-prisma";
 import { buttonVariants } from "@/components/ui/button";
 import { TransactionsTable } from "@/components/tables/transactions-table";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
+import { formatMoney } from "@/lib/format";
 
-function formatMoney(amount: number): string {
-  return amount.toLocaleString("tr-TR", { minimumFractionDigits: 2 }) + " TL";
-}
 
 function BreakdownList({
   title,
   rows,
   tone,
   emptyText,
+  locale,
 }: {
   title: string;
   rows: { category: string; total: number }[];
   tone: "green" | "red";
   emptyText: string;
+  locale: string;
 }) {
   return (
     <div className="rounded-xl border border-border bg-card p-5">
@@ -33,7 +33,7 @@ function BreakdownList({
             <li key={r.category} className="flex justify-between">
               <span className="text-foreground">{r.category}</span>
               <span className={`font-medium ${tone === "green" ? "text-green-600" : "text-red-600"}`}>
-                {formatMoney(r.total)}
+                {formatMoney(r.total, locale)}
               </span>
             </li>
           ))}
@@ -52,6 +52,7 @@ export default async function FinansPage({
   // (ADMIN, ACCOUNTANT) bu sayfayi acabilir. Digerleri panele yonlenir.
   const session = await requirePageView("/panel/finans");
   const t = await getTranslations("Finance");
+  const locale = await getLocale();
 
   const { page, q, sort, dir, skip, take } = parseListParams(await searchParams, {
     sortableKeys: ["date", "type", "category", "amount"],
@@ -130,13 +131,13 @@ export default async function FinansPage({
         <div className="rounded-xl border border-border bg-card p-5">
           <p className="text-sm text-muted-foreground">{t("income")}</p>
           <p className="mt-1 text-xl font-bold text-green-600">
-            {formatMoney(totalIncome)}
+            {formatMoney(totalIncome, locale)}
           </p>
         </div>
         <div className="rounded-xl border border-border bg-card p-5">
           <p className="text-sm text-muted-foreground">{t("expense")}</p>
           <p className="mt-1 text-xl font-bold text-red-600">
-            {formatMoney(totalExpense)}
+            {formatMoney(totalExpense, locale)}
           </p>
         </div>
         <div className="rounded-xl border border-border bg-card p-5">
@@ -146,7 +147,7 @@ export default async function FinansPage({
               balance >= 0 ? "text-green-600" : "text-red-600"
             }`}
           >
-            {formatMoney(balance)}
+            {formatMoney(balance, locale)}
           </p>
         </div>
       </div>
@@ -159,12 +160,14 @@ export default async function FinansPage({
             rows={income}
             tone="green"
             emptyText={t("noRecords")}
+            locale={locale}
           />
           <BreakdownList
             title={`${t("expense")} — ${t("breakdown")}`}
             rows={expense}
             tone="red"
             emptyText={t("noRecords")}
+            locale={locale}
           />
         </div>
       )}

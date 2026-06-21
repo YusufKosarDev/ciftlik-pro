@@ -11,9 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import type { ListState } from "@/lib/list-query";
 
-function formatMoney(a: number) {
-  return a.toLocaleString("tr-TR", { minimumFractionDigits: 2 }) + " TL";
-}
+import { useFormat } from "@/lib/format";
 
 export function ProductsTable({
   products,
@@ -26,6 +24,7 @@ export function ProductsTable({
 }) {
   const t = useTranslations("Products");
   const tc = useTranslations("Common");
+  const { formatMoney } = useFormat();
 
   const columns: Column<Product>[] = [
     {
