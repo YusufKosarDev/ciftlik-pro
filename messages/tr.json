@@ -62,6 +62,7 @@
     "save": "Kaydet",
     "actions": "İşlemler",
     "back": "Geri",
+    "backToList": "Listeye dön",
     "totalRecords": "Toplam {count} kayıt",
     "loading": "Yükleniyor...",
     "saveFailed": "Kayıt başarısız, lütfen tekrar deneyin",
@@ -114,7 +115,13 @@
     "overdueTasks": "Geciken Görevler",
     "noOverdueTasks": "Geciken görev yok.",
     "upcomingVaccinations": "Yaklaşan Aşılar",
-    "noUpcomingVaccinations": "Yaklaşan aşı yok."
+    "noUpcomingVaccinations": "Yaklaşan aşı yok.",
+    "noNewThisMonth": "Bu ay yeni kayıt yok",
+    "newThisMonth": "Bu ay +{count} yeni",
+    "zeroThisMonth": "Bu ay işlem yok",
+    "netThisMonth": "Bu ay net {amount}",
+    "noOverdue": "Geciken yok",
+    "overdueCount": "{count} geciken"
   },
   "Labels": {
     "species": {
@@ -257,6 +264,20 @@
     "criticalLevel": "Kritik Seviye",
     "notes": "Notlar"
   },
+  "Feed": {
+    "title": "Yem Yönetimi",
+    "totalItems": "{count} yem kalemi",
+    "criticalSuffix": "· {count} kritik seviyede",
+    "criticalBadge": "Kritik",
+    "emptyStock": "Önce Stok bölümünden FEED kategorisinde bir kalem ekleyin.",
+    "lastConsumptions": "Son Tüketimler",
+    "noConsumptions": "Henüz tüketim kaydı yok.",
+    "date": "Tarih",
+    "item": "Yem",
+    "quantity": "Miktar",
+    "note": "Not",
+    "deleteKind": "Tüketim kaydı"
+  },
   "Finance": {
     "title": "Finans",
     "new": "Yeni İşlem",
@@ -392,6 +413,7 @@
   },
   "Structures": {
     "title": "Yapılar",
+    "totalDescription": "Toplam {count} yapı · haritada gösterilir",
     "new": "Yeni Yapı",
     "add": "Yapı ekle",
     "kind": "Yapı",
@@ -408,6 +430,9 @@
   },
   "Map": {
     "title": "Çiftlik Haritası",
+    "subtext": "{fields} tarla · {structures} yapı · kuşbakışı 2D yerleşim (bir tarlaya tıklayın)",
+    "empty": "Henüz tarla eklenmemiş. Harita için önce tarla ekleyin.",
+    "addField": "Tarla ekle",
     "editLayout": "Yerleşimi düzenle",
     "saving": "Kaydediliyor...",
     "save": "Kaydet",
@@ -421,10 +446,14 @@
   },
   "Calendar": {
     "title": "Takvim",
-    "vaccinations": "Aşılar",
-    "tasks": "Görevler",
-    "harvests": "Hasatlar",
-    "births": "Doğumlar"
+    "subtext": "{count} olay · aşı, görev, hasat, doğum",
+    "prevMonth": "‹ Önceki",
+    "nextMonth": "Sonraki ›",
+    "vaccination": "Aşı",
+    "task": "Görev",
+    "harvest": "Hasat",
+    "birth": "Doğum",
+    "birthLabel": "🐄 {name} doğum"
   },
   "Profile": {
     "title": "Profil",
@@ -436,14 +465,27 @@
     "name": "Ad Soyad",
     "email": "E-posta",
     "role": "Rol",
+    "billingPlan": "Abonelik ve Plan",
+    "billingPlanDesc": "Plan limitlerini görüntüle, PRO'ya yükselt",
     "security": "Güvenlik",
     "changePassword": "Şifre Değiştir",
     "currentPassword": "Mevcut Şifre",
     "newPassword": "Yeni Şifre",
     "confirmPassword": "Yeni Şifre (Tekrar)",
+    "save": "Parolayı Güncelle",
+    "passwordUpdated": "Parolanız güncellendi.",
+    "tourTitle": "Tanıtım Turu",
+    "tourDesc": "Çiftlik Pro’nun hoş geldin turunu istediğin zaman yeniden izleyebilirsin.",
+    "restartTour": "Turu Yeniden Başlat",
+    "tourRestarted": "Tanıtım turu yeniden başlatıldı.",
     "dangerZone": "Tehlikeli Bölge",
     "exportData": "Tüm Verileri Dışa Aktar",
     "exportDesc": "KVKK/GDPR kapsamında çiftliğinize ait tüm verileri JSON formatında indirin.",
+    "exportBtn": "Dışa aktar",
+    "deleteConfirm": "Tüm veriler ve kullanıcılar geri alınamaz şekilde silinir. Onaylamak için çiftlik adını yazın: ",
+    "deleteAria": "Onay için çiftlik adı",
+    "deleteFailed": "Çiftlik silinemedi.",
+    "cannotDeleteDemo": "Demo çiftliği silinemez.",
     "deleteFarm": "Çiftliği Kalıcı Olarak Sil",
     "deleteDesc": "Çiftliğinizi ve ilişkili tüm verileri (hayvanlar, finans, personel vb.) kalıcı olarak siler. Bu işlem geri alınamaz."
   },
@@ -457,5 +499,59 @@
     "downgrade": "FREE Plana Düşür",
     "stripePortal": "Stripe ile Yönet",
     "unlimited": "Sınırsız"
+  },
+  "Onboarding": {
+    "step": "Adım {step} / {total}",
+    "stepAria": "Adım {step}",
+    "close": "Turu kapat",
+    "back": "Geri",
+    "skip": "Geç",
+    "start": "Başla",
+    "next": "İleri",
+    "welcomeTitle": "Çiftlik Pro'ya Hoş Geldin",
+    "welcomeGreeting": "Merhaba {name} 👋",
+    "welcomeDesc1": "Çiftliğinin tüm operasyonlarını — hayvan, tarla, stok, finans ve görevleri — tek panelden yönet. Hadi sana hızlıca etrafı gösterelim.",
+    "welcomeDesc2": "Bu tur yalnızca birkaç saniye sürer; istersen Geç’e basabilirsin.",
+    "welcomeSkipWord": "Geç",
+    "modulesTitle": "Ana Modüller",
+    "modules": {
+      "animalsTitle": "Hayvanlar",
+      "animalsDesc": "Sağlık, aşı, süt, ağırlık ve soy",
+      "fieldsTitle": "Tarlalar",
+      "fieldsDesc": "Ekim, hasat ve verim ekonomisi",
+      "inventoryTitle": "Stok & Yem",
+      "inventoryDesc": "Kritik seviye uyarısı, tüketim",
+      "financeTitle": "Finans",
+      "financeDesc": "Gelir-gider ve aylık özet"
+    },
+    "roleTitle": "{role} olarak neler yapabilirsin?",
+    "roles": {
+      "ADMIN": [
+        "Tüm modüllere tam erişim — kayıt ekle, düzenle, sil",
+        "Personel yönet ve görev ata",
+        "Finans, denetim günlüğü ve raporlara eriş"
+      ],
+      "WORKER": [
+        "Hayvan, süt ve ağırlık kayıtlarını gir",
+        "Tarla ve ekim işlemlerini yönet",
+        "Stok ve yem tüketimini takip et"
+      ],
+      "VET": [
+        "Sağlık kayıtları ve aşı takvimini yönet",
+        "Üreme/gebelik ve ağırlık kayıtlarını gir",
+        "Yaklaşan aşıları takvimden izle"
+      ],
+      "ACCOUNTANT": [
+        "Gelir-gider kayıtlarını ekle ve yönet",
+        "Net bakiye ve aylık finans grafiklerini incele",
+        "Görev ve takvimi takip et"
+      ]
+    },
+    "mapTitle": "Harita & Takvim",
+    "mapDesc": "2D Çiftlik Haritası — tarlaları ve yapıları (ahır, kümes, depo) tek bakışta gör.",
+    "calendarDesc": "Takvim — aşı, görev, hasat ve doğumlar tek aylık görünümde toplanır.",
+    "readyTitle": "Hazırsın! 🎉",
+    "readyDesc1": "Artık başlamaya hazırsın. Panelden istediğin modüle geçebilir, üst menüden hızlıca gezinebilirsin.",
+    "readyDesc2": "Bu turu istediğin zaman Profil sayfasından yeniden başlatabilirsin."
   }
 }

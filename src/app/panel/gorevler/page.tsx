@@ -6,6 +6,7 @@ import { parseListParams, type ListState } from "@/lib/list-query";
 import { withTenant } from "@/lib/tenant-prisma";
 import { buttonVariants } from "@/components/ui/button";
 import { TasksTable } from "@/components/tables/tasks-table";
+import { getTranslations } from "next-intl/server";
 
 export default async function GorevlerPage({
   searchParams,
@@ -34,6 +35,8 @@ export default async function GorevlerPage({
   ) as Prisma.TaskOrderByWithRelationInput;
 
   const session = await auth();
+  const t = await getTranslations("Tasks");
+  const tc = await getTranslations("Common");
   const canEdit = session ? canWrite(session.user.role, "tasks") : false;
   const { tasks, total } = await withTenant(session!.user.tenantId, async (db) => {
     const [tasks, total] = await Promise.all([
@@ -55,13 +58,13 @@ export default async function GorevlerPage({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
-            <span>✅</span> Gorevler
+            <span>✅</span> {t("title")}
           </h1>
-          <p className="text-sm text-muted-foreground">Toplam {total} gorev</p>
+          <p className="text-sm text-muted-foreground">{tc("totalRecords", { count: total })}</p>
         </div>
         {canEdit && (
           <Link href="/panel/gorevler/yeni" className={buttonVariants({ size: "sm" })}>
-            + Yeni Gorev
+            + {t("new")}
           </Link>
         )}
       </div>

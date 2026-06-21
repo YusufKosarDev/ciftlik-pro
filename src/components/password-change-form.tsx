@@ -5,8 +5,11 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useTranslations } from "next-intl";
 
 export function PasswordChangeForm() {
+  const t = useTranslations("Profile");
+  const tc = useTranslations("Common");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -33,11 +36,11 @@ export function PasswordChangeForm() {
 
     if (!res.ok) {
       const data = await res.json().catch(() => null);
-      setError(data?.error ?? "İşlem başarısız, lütfen tekrar deneyin");
+      setError(data?.error ?? tc("saveFailed"));
       return;
     }
 
-    toast.success("Parolanız güncellendi.");
+    toast.success(t("passwordUpdated"));
     form.reset();
   }
 
@@ -46,10 +49,10 @@ export function PasswordChangeForm() {
       onSubmit={handleSubmit}
       className="space-y-4 rounded-xl border border-border bg-card p-6"
     >
-      <h2 className="font-semibold text-foreground">Parola Değiştir</h2>
+      <h2 className="font-semibold text-foreground">{t("changePassword")}</h2>
 
       <div>
-        <Label htmlFor="currentPassword">Mevcut Parola</Label>
+        <Label htmlFor="currentPassword">{t("currentPassword")}</Label>
         <Input
           id="currentPassword"
           name="currentPassword"
@@ -59,7 +62,7 @@ export function PasswordChangeForm() {
         />
       </div>
       <div>
-        <Label htmlFor="newPassword">Yeni Parola</Label>
+        <Label htmlFor="newPassword">{t("newPassword")}</Label>
         <Input
           id="newPassword"
           name="newPassword"
@@ -70,7 +73,7 @@ export function PasswordChangeForm() {
         />
       </div>
       <div>
-        <Label htmlFor="confirmPassword">Yeni Parola (Tekrar)</Label>
+        <Label htmlFor="confirmPassword">{t("confirmPassword")}</Label>
         <Input
           id="confirmPassword"
           name="confirmPassword"
@@ -85,7 +88,7 @@ export function PasswordChangeForm() {
       )}
 
       <Button type="submit" loading={loading}>
-        Parolayı Güncelle
+        {t("save")}
       </Button>
     </form>
   );

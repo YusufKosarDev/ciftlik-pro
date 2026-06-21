@@ -1,17 +1,18 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { withTenant } from "@/lib/tenant-prisma";
+import { getTranslations, getLocale } from "next-intl/server";
 import {
   parseMonthParam,
   monthRange,
   monthGrid,
   groupByDay,
   shiftMonth,
-  monthTitle,
   type CalendarEvent,
 } from "@/lib/calendar";
 
-const WEEKDAYS = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
+const WEEKDAYS_TR = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
+const WEEKDAYS_EN = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 const kindStyles: Record<CalendarEvent["kind"], string> = {
   vaccination: "bg-yellow-100 text-yellow-800 dark:bg-yellow-500/15 dark:text-yellow-400",
@@ -30,6 +31,9 @@ export default async function TakvimPage({
   const { start, end } = monthRange(year, month);
 
   const session = await auth();
+  const t = await getTranslations("Calendar");
+  const locale = await getLocale();
+
   const [vaccinations, tasks, crops, births] = await withTenant(session!.user.tenantId, (db) =>
     Promise.all([
       db.vaccination.findMany({
@@ -76,7 +80,7 @@ export default async function TakvimPage({
     ...births.map((b) => ({
       date: b.expectedBirthDate as Date,
       kind: "birth" as const,
-      label: `🐄 ${b.animal.name ?? b.animal.tagNumber} doğum`,
+      label: t("birthLabel", { name: b.animal.name ?? b.animal.tagNumber }),
       href: `/panel/hayvanlar/${b.animal.id}`,
     })),
   ];
@@ -86,46 +90,64 @@ export default async function TakvimPage({
   const prev = shiftMonth(year, month, -1);
   const next = shiftMonth(year, month, 1);
 
+  const weekdays = locale === "tr" ? WEEKDAYS_TR : WEEKDAYS_EN;
+  const monthTitleStr = new Date(year, month).toLocaleDateString(locale === "tr" ? "tr-TR" : "en-US", {
+    month: "long",
+    year: "numeric",
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
-            <span>📅</span> Takvim
+            <span>📅</span> {t("title")}
           </h1>
-          <p className="text-sm text-muted-foreground">{events.length} olay · aşı, görev, hasat, doğum</p>
+          <p className="text-sm text-muted-foreground">
+            {t("subtext", { count: events.length })}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Link
             href={`/panel/takvim?ay=${prev}`}
             className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted"
           >
-            ‹ Önceki
+            {t("prevMonth")}
           </Link>
           <span className="min-w-36 text-center text-sm font-semibold text-foreground">
-            {monthTitle(year, month)}
+            {monthTitleStr}
           </span>
           <Link
             href={`/panel/takvim?ay=${next}`}
             className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted"
           >
-            Sonraki ›
+            {t("nextMonth")}
           </Link>
         </div>
       </div>
 
       {/* Renk lejandi */}
       <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-yellow-300" /> Aşı</span>
-        <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-blue-300" /> Görev</span>
-        <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-green-300" /> Hasat</span>
-        <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-pink-300" /> Doğum</span>
+        <span className="flex items-center gap-1">
+          <span className="h-3 w-3 rounded bg-yellow-300" /> {t("vaccination")}
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="h-3 w-3 rounded bg-blue-300" /> {t("task")}
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="h-3 w-3 rounded bg-green-300" /> {t("harvest")}
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="h-3 w-3 rounded bg-pink-300" /> {t("birth")}
+        </span>
       </div>
 
       <div className="overflow-hidden rounded-xl border border-border bg-card">
         <div className="grid grid-cols-7 border-b border-border bg-muted text-center text-xs font-medium text-muted-foreground">
-          {WEEKDAYS.map((d) => (
-            <div key={d} className="px-2 py-2">{d}</div>
+          {weekdays.map((d) => (
+            <div key={d} className="px-2 py-2">
+              {d}
+            </div>
           ))}
         </div>
         <div className="grid grid-cols-7">
@@ -143,8 +165,8 @@ export default async function TakvimPage({
                     day.isToday
                       ? "mx-auto flex h-5 w-5 items-center justify-center rounded-full bg-green-600 font-bold text-white"
                       : day.inMonth
-                        ? "text-foreground"
-                        : "text-muted-foreground"
+                      ? "text-foreground"
+                      : "text-muted-foreground"
                   }`}
                 >
                   {day.date.getDate()}

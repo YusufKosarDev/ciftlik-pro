@@ -21,41 +21,10 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
-import { roleLabels } from "@/lib/labels";
+import { useLabels } from "@/lib/use-labels";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
-
-// Her rolun panelde neler yapabilecegini ozetleyen, role ozel maddeler.
-// (Kaynak: src/lib/authz.ts writePermissions matrisi.)
-const roleHighlights: Record<Role, { icon: LucideIcon; text: string }[]> = {
-  ADMIN: [
-    { icon: ClipboardCheck, text: "Tüm modüllere tam erişim — kayıt ekle, düzenle, sil" },
-    { icon: Users, text: "Personel yönet ve görev ata" },
-    { icon: Coins, text: "Finans, denetim günlüğü ve raporlara eriş" },
-  ],
-  WORKER: [
-    { icon: PawPrint, text: "Hayvan, süt ve ağırlık kayıtlarını gir" },
-    { icon: Sprout, text: "Tarla ve ekim işlemlerini yönet" },
-    { icon: Package, text: "Stok ve yem tüketimini takip et" },
-  ],
-  VET: [
-    { icon: Stethoscope, text: "Sağlık kayıtları ve aşı takvimini yönet" },
-    { icon: PawPrint, text: "Üreme/gebelik ve ağırlık kayıtlarını gir" },
-    { icon: CalendarDays, text: "Yaklaşan aşıları takvimden izle" },
-  ],
-  ACCOUNTANT: [
-    { icon: Coins, text: "Gelir-gider kayıtlarını ekle ve yönet" },
-    { icon: ClipboardCheck, text: "Net bakiye ve aylık finans grafiklerini incele" },
-    { icon: CalendarDays, text: "Görev ve takvimi takip et" },
-  ],
-};
-
-const moduleCards: { icon: LucideIcon; title: string; desc: string }[] = [
-  { icon: PawPrint, title: "Hayvanlar", desc: "Sağlık, aşı, süt, ağırlık ve soy" },
-  { icon: Sprout, title: "Tarlalar", desc: "Ekim, hasat ve verim ekonomisi" },
-  { icon: Package, title: "Stok & Yem", desc: "Kritik seviye uyarısı, tüketim" },
-  { icon: Coins, title: "Finans", desc: "Gelir-gider ve aylık özet" },
-];
+import { useTranslations } from "next-intl";
 
 type Step = {
   icon: LucideIcon;
@@ -72,33 +41,61 @@ export function OnboardingModal({
 }) {
   const router = useRouter();
   const { update } = useSession();
+  const t = useTranslations("Onboarding");
+  const { roleLabels } = useLabels();
   const [open, setOpen] = useState(true);
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
 
   const firstName = userName.trim().split(" ")[0] || userName;
 
+  const roleHighlights: Record<Role, { icon: LucideIcon; text: string }[]> = {
+    ADMIN: [
+      { icon: ClipboardCheck, text: t("roles.ADMIN.0") },
+      { icon: Users, text: t("roles.ADMIN.1") },
+      { icon: Coins, text: t("roles.ADMIN.2") },
+    ],
+    WORKER: [
+      { icon: PawPrint, text: t("roles.WORKER.0") },
+      { icon: Sprout, text: t("roles.WORKER.1") },
+      { icon: Package, text: t("roles.WORKER.2") },
+    ],
+    VET: [
+      { icon: Stethoscope, text: t("roles.VET.0") },
+      { icon: PawPrint, text: t("roles.VET.1") },
+      { icon: CalendarDays, text: t("roles.VET.2") },
+    ],
+    ACCOUNTANT: [
+      { icon: Coins, text: t("roles.ACCOUNTANT.0") },
+      { icon: ClipboardCheck, text: t("roles.ACCOUNTANT.1") },
+      { icon: CalendarDays, text: t("roles.ACCOUNTANT.2") },
+    ],
+  };
+
+  const moduleCards: { icon: LucideIcon; title: string; desc: string }[] = [
+    { icon: PawPrint, title: t("modules.animalsTitle"), desc: t("modules.animalsDesc") },
+    { icon: Sprout, title: t("modules.fieldsTitle"), desc: t("modules.fieldsDesc") },
+    { icon: Package, title: t("modules.inventoryTitle"), desc: t("modules.inventoryDesc") },
+    { icon: Coins, title: t("modules.financeTitle"), desc: t("modules.financeDesc") },
+  ];
+
   const steps: Step[] = [
     {
       icon: Wheat,
-      title: "Çiftlik Pro'ya Hoş Geldin",
+      title: t("welcomeTitle"),
       body: (
         <div className="space-y-3 text-muted-foreground">
-          <p className="text-lg font-medium text-foreground">Merhaba {firstName} 👋</p>
-          <p>
-            Çiftliğinin tüm operasyonlarını — hayvan, tarla, stok, finans ve
-            görevleri — tek panelden yönet. Hadi sana hızlıca etrafı gösterelim.
-          </p>
+          <p className="text-lg font-medium text-foreground">{t("welcomeGreeting", { name: firstName })}</p>
+          <p>{t("welcomeDesc1")}</p>
           <p className="text-sm text-muted-foreground">
-            Bu tur yalnızca birkaç saniye sürer; istersen{" "}
-            <span className="font-medium text-foreground">Geç</span>’e basabilirsin.
+            {t("welcomeDesc2")}
           </p>
         </div>
       ),
     },
     {
       icon: Package,
-      title: "Ana Modüller",
+      title: t("modulesTitle"),
       body: (
         <div className="grid grid-cols-2 gap-3">
           {moduleCards.map((m) => (
@@ -116,7 +113,7 @@ export function OnboardingModal({
     },
     {
       icon: ClipboardCheck,
-      title: `${roleLabels[role]} olarak neler yapabilirsin?`,
+      title: t("roleTitle", { role: roleLabels[role] }),
       body: (
         <ul className="space-y-3">
           {roleHighlights[role].map((h, i) => (
@@ -132,43 +129,31 @@ export function OnboardingModal({
     },
     {
       icon: MapIcon,
-      title: "Harita & Takvim",
+      title: t("mapTitle"),
       body: (
         <div className="space-y-4 text-muted-foreground">
           <div className="flex items-start gap-3">
             <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-100">
               <MapIcon className="h-4 w-4 text-green-700" aria-hidden />
             </span>
-            <p>
-              <span className="font-semibold text-foreground">2D Çiftlik Haritası</span>{" "}
-              — tarlaları ve yapıları (ahır, kümes, depo) tek bakışta gör.
-            </p>
+            <p>{t("mapDesc")}</p>
           </div>
           <div className="flex items-start gap-3">
             <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-100">
               <CalendarDays className="h-4 w-4 text-green-700" aria-hidden />
             </span>
-            <p>
-              <span className="font-semibold text-foreground">Takvim</span> — aşı,
-              görev, hasat ve doğumlar tek aylık görünümde toplanır.
-            </p>
+            <p>{t("calendarDesc")}</p>
           </div>
         </div>
       ),
     },
     {
       icon: CheckCircle2,
-      title: "Hazırsın! 🎉",
+      title: t("readyTitle"),
       body: (
         <div className="space-y-3 text-muted-foreground">
-          <p>
-            Artık başlamaya hazırsın. Panelden istediğin modüle geçebilir, üst
-            menüden hızlıca gezinebilirsin.
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Bu turu istediğin zaman <span className="font-medium text-foreground">Profil</span>{" "}
-            sayfasından yeniden başlatabilirsin.
-          </p>
+          <p>{t("readyDesc1")}</p>
+          <p className="text-sm text-muted-foreground">{t("readyDesc2")}</p>
         </div>
       ),
     },
@@ -222,7 +207,7 @@ export function OnboardingModal({
           <button
             type="button"
             onClick={finish}
-            aria-label="Turu kapat"
+            aria-label={t("close")}
             className="absolute right-4 top-4 rounded-lg p-1 text-white/80 transition hover:bg-card/20 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
           >
             <X className="h-5 w-5" />
@@ -233,7 +218,7 @@ export function OnboardingModal({
             </span>
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-white/80">
-                Adım {step + 1} / {steps.length}
+                {t("step", { step: step + 1, total: steps.length })}
               </p>
               <h2 id="onboarding-title" className="text-xl font-bold leading-tight">
                 {current.title}
@@ -256,7 +241,7 @@ export function OnboardingModal({
               <button
                 key={i}
                 type="button"
-                aria-label={`Adım ${i + 1}`}
+                aria-label={t("stepAria", { step: i + 1 })}
                 aria-current={i === step}
                 onClick={() => setStep(i)}
                 className={cn(
@@ -276,7 +261,7 @@ export function OnboardingModal({
                 disabled={saving}
               >
                 <ArrowLeft className="h-4 w-4" />
-                Geri
+                {t("back")}
               </Button>
             )}
             {!isLast && (
@@ -287,17 +272,17 @@ export function OnboardingModal({
                 disabled={saving}
                 className="text-muted-foreground"
               >
-                Geç
+                {t("skip")}
               </Button>
             )}
             {isLast ? (
               <Button size="sm" onClick={finish} loading={saving}>
-                Başla
+                {t("start")}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             ) : (
               <Button size="sm" onClick={() => setStep((s) => s + 1)} disabled={saving}>
-                İleri
+                {t("next")}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             )}

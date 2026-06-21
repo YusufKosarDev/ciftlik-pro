@@ -4,16 +4,23 @@ import { auth } from "@/lib/auth";
 import { withTenant } from "@/lib/tenant-prisma";
 import { buildMonthlyFinance } from "@/lib/finance";
 import { MonthlyFinanceChart } from "@/components/monthly-finance-chart";
-import { getTranslations } from "next-intl/server";
-import { countDelta, moneyDelta, overdueDelta, type StatDelta } from "@/lib/stat-delta";
+import { getTranslations, getLocale } from "next-intl/server";
+import { countDelta, moneyDelta, overdueDelta, type StatDelta, type DeltaTone } from "@/lib/stat-delta";
 import { cn } from "@/lib/cn";
+import { formatMoney, formatDate } from "@/lib/format";
 
-function formatMoney(amount: number): string {
-  return amount.toLocaleString("tr-TR", { minimumFractionDigits: 2 }) + " TL";
-}
-
-function formatDate(date: Date): string {
-  return new Date(date).toLocaleDateString("tr-TR");
+function resolveDelta(
+  delta: StatDelta,
+  t: (key: string, values?: { count?: number; amount?: string }) => string,
+  locale: string
+): { label: string; tone: DeltaTone } {
+  return {
+    label: t(delta.labelKey, {
+      count: delta.count,
+      amount: delta.amount !== undefined ? formatMoney(delta.amount, locale) : undefined,
+    }),
+    tone: delta.tone,
+  };
 }
 
 // Ozet kart bileseni
@@ -51,7 +58,7 @@ function StatCard({
   Icon: React.ComponentType<{ className?: string }>;
   tone?: keyof typeof statTones;
   valueClass?: string;
-  delta?: StatDelta;
+  delta?: { label: string; tone: DeltaTone };
 }) {
   const DeltaIcon = delta ? deltaIcon[delta.tone] : null;
   return (
@@ -113,6 +120,7 @@ function AlertCard({
 export default async function PanelPage() {
   const session = await auth();
   const t = await getTranslations("Dashboard");
+  const locale = await getLocale();
   const now = new Date();
   const in30Days = new Date();
   in30Days.setDate(in30Days.getDate() + 30);
@@ -210,7 +218,7 @@ export default async function PanelPage() {
           value={String(animalCount)}
           Icon={PawPrint}
           tone="green"
-          delta={countDelta(animalsThisMonth)}
+          delta={resolveDelta(countDelta(animalsThisMonth), t, locale)}
         />
         <StatCard
           href="/panel/tarlalar"
@@ -218,16 +226,16 @@ export default async function PanelPage() {
           value={String(fieldCount)}
           Icon={Wheat}
           tone="amber"
-          delta={countDelta(fieldsThisMonth)}
+          delta={resolveDelta(countDelta(fieldsThisMonth), t, locale)}
         />
         <StatCard
           href="/panel/finans"
           label={t("netBalance")}
-          value={formatMoney(balance)}
+          value={formatMoney(balance, locale)}
           Icon={Wallet}
           tone="sky"
           valueClass={balance >= 0 ? "text-green-600" : "text-red-600"}
-          delta={moneyDelta(monthNet, formatMoney)}
+          delta={resolveDelta(moneyDelta(monthNet), t, locale)}
         />
         <StatCard
           href="/panel/gorevler"
@@ -235,7 +243,7 @@ export default async function PanelPage() {
           value={String(pendingTasks)}
           Icon={ListChecks}
           tone="violet"
-          delta={overdueDelta(overdueTasks.length)}
+          delta={resolveDelta(overdueDelta(overdueTasks.length), t, locale)}
         />
       </div>
 
@@ -278,7 +286,7 @@ export default async function PanelPage() {
                 <li key={t.id} className="flex justify-between">
                   <span className="text-foreground">{t.title}</span>
                   <span className="font-medium text-red-600">
-                    {t.dueDate ? formatDate(t.dueDate) : "-"}
+                    {t.dueDate ? formatDate(t.dueDate, locale) : "-"}
                   </span>
                 </li>
               ))}
@@ -296,7 +304,7 @@ export default async function PanelPage() {
                     {v.animal.name ?? v.animal.tagNumber} · {v.name}
                   </span>
                   <span className="font-medium text-yellow-700">
-                    {v.nextDate ? formatDate(v.nextDate) : "-"}
+                    {v.nextDate ? formatDate(v.nextDate, locale) : "-"}
                   </span>
                 </li>
               ))}

@@ -3,6 +3,7 @@ import { withTenant } from "@/lib/tenant-prisma";
 import { auth } from "@/lib/auth";
 import { canWrite } from "@/lib/authz";
 import { FarmMap } from "@/components/farm-map";
+import { getTranslations } from "next-intl/server";
 import {
   layoutFields,
   layoutStructures,
@@ -13,6 +14,7 @@ import {
 
 export default async function HaritaPage() {
   const session = await auth();
+  const t = await getTranslations("Map");
   const [fields, structures] = await withTenant(session!.user.tenantId, (db) =>
     Promise.all([
       db.field.findMany({
@@ -54,24 +56,23 @@ export default async function HaritaPage() {
     <div className="space-y-6">
       <div>
         <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
-          <span>🗺️</span> Ciftlik Haritasi
+          <span>🗺️</span> {t("title")}
         </h1>
         <p className="text-sm text-muted-foreground">
-          {fields.length} tarla · {structures.length} yapi · kusbakisi 2D yerlesim
-          (bir tarlaya tiklayin)
+          {t("subtext", { fields: fields.length, structures: structures.length })}
         </p>
       </div>
 
       {fields.length === 0 && structures.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-card p-12 text-center">
           <p className="text-muted-foreground">
-            Henuz tarla eklenmemis. Harita icin once tarla ekleyin.
+            {t("empty")}
           </p>
           <Link
             href="/panel/tarlalar/yeni"
             className="mt-3 inline-block text-sm font-medium text-green-600 dark:text-green-400 hover:underline"
           >
-            Tarla ekle
+            {t("addField")}
           </Link>
         </div>
       ) : (

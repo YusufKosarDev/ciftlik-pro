@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { withTenant } from "@/lib/tenant-prisma";
 import { TaskForm } from "@/components/task-form";
 import { requirePageWrite } from "@/lib/authz";
+import { getTranslations } from "next-intl/server";
 
 export default async function GorevDuzenlePage({
   params,
@@ -10,6 +11,8 @@ export default async function GorevDuzenlePage({
   params: Promise<{ id: string }>;
 }) {
   const session = await requirePageWrite("tasks");
+  const t = await getTranslations("Tasks");
+  const tc = await getTranslations("Common");
 
   const { id } = await params;
   const [task, users] = await withTenant(session.user.tenantId, (db) =>
@@ -29,9 +32,11 @@ export default async function GorevDuzenlePage({
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-foreground">Gorevi Duzenle</h1>
+        <h1 className="text-2xl font-bold text-foreground">
+          {tc("edit")} - {t("kind")}
+        </h1>
         <Link href="/panel/gorevler" className="text-sm text-muted-foreground hover:underline">
-          &larr; Listeye don
+          &larr; {tc("backToList")}
         </Link>
       </div>
 

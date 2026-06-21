@@ -2,11 +2,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { roleLabels } from "@/lib/labels";
 import { Badge } from "@/components/ui/badge";
 import { PasswordChangeForm } from "@/components/password-change-form";
 import { RestartTourButton } from "@/components/restart-tour-button";
 import { AccountDangerZone } from "@/components/account-danger-zone";
+import { getTranslations } from "next-intl/server";
+import { getLabels } from "@/lib/get-labels";
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -23,6 +24,9 @@ export default async function ProfilPage() {
     redirect("/giris");
   }
 
+  const t = await getTranslations("Profile");
+  const { roleLabels } = await getLabels();
+
   // Hesap (tenant) islemleri yalnizca ADMIN'e gosterilir.
   const isAdmin = session.user.role === "ADMIN";
   const tenant = isAdmin
@@ -35,13 +39,13 @@ export default async function ProfilPage() {
   return (
     <div className="mx-auto max-w-xl space-y-6">
       <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
-        <span>👤</span> Profil
+        <span>👤</span> {t("title")}
       </h1>
 
       <div className="rounded-xl border border-border bg-card p-6">
-        <Row label="Ad" value={session.user.name ?? "-"} />
-        <Row label="E-posta" value={session.user.email ?? "-"} />
-        <Row label="Rol" value={roleLabels[session.user.role]} />
+        <Row label={t("name")} value={session.user.name ?? "-"} />
+        <Row label={t("email")} value={session.user.email ?? "-"} />
+        <Row label={t("role")} value={roleLabels[session.user.role]} />
       </div>
 
       {isAdmin && tenant && (
@@ -50,8 +54,8 @@ export default async function ProfilPage() {
           className="flex items-center justify-between rounded-xl border border-border bg-card p-5 transition hover:border-green-400 hover:shadow-sm"
         >
           <div>
-            <p className="font-medium text-foreground">Abonelik & plan</p>
-            <p className="text-sm text-muted-foreground">Plan limitlerini görüntüle, PRO&apos;ya yükselt</p>
+            <p className="font-medium text-foreground">{t("billingPlan")}</p>
+            <p className="text-sm text-muted-foreground">{t("billingPlanDesc")}</p>
           </div>
           <Badge tone={tenant.plan === "PRO" ? "green" : "blue"}>{tenant.plan}</Badge>
         </Link>

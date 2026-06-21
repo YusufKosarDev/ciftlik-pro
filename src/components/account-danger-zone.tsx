@@ -5,6 +5,7 @@ import { signOut } from "next-auth/react";
 import { Download, AlertTriangle } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useTranslations } from "next-intl";
 
 // ADMIN hesap islemleri: tum tenant verisini disa aktar (KVKK) ve cifligi kalici
 // sil (hesap kapatma). Silme, ciftlik adi birebir yazilarak onaylanir.
@@ -15,6 +16,7 @@ export function AccountDangerZone({
   farmName: string;
   canDelete: boolean;
 }) {
+  const t = useTranslations("Profile");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +32,7 @@ export function AccountDangerZone({
     if (!res.ok) {
       setLoading(false);
       const j = (await res.json().catch(() => ({}))) as { error?: string };
-      setError(j.error ?? "Çiftlik silinemedi.");
+      setError(j.error ?? t("deleteFailed"));
       return;
     }
     // Tüm veri silindi → oturumu kapat ve giriş ekranına dön.
@@ -40,19 +42,19 @@ export function AccountDangerZone({
   return (
     <div className="space-y-5 rounded-xl border border-red-300 dark:border-red-500/30 bg-card p-6">
       <h2 className="flex items-center gap-2 font-semibold text-red-700 dark:text-red-400">
-        <AlertTriangle className="h-4 w-4" /> Tehlikeli bölge
+        <AlertTriangle className="h-4 w-4" /> {t("dangerZone")}
       </h2>
 
       {/* Veri dışa aktarma (KVKK taşınabilirlik) */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-5">
         <div>
-          <p className="text-sm font-medium text-foreground">Verilerini dışa aktar</p>
+          <p className="text-sm font-medium text-foreground">{t("exportData")}</p>
           <p className="text-sm text-muted-foreground">
-            Çiftliğinin tüm kayıtlarını JSON olarak indir.
+            {t("exportDesc")}
           </p>
         </div>
         <a href="/api/tenant/export" download className={buttonVariants({ variant: "outline", size: "sm" })}>
-          <Download className="h-4 w-4" /> Dışa aktar
+          <Download className="h-4 w-4" /> {t("exportBtn")}
         </a>
       </div>
 
@@ -60,17 +62,16 @@ export function AccountDangerZone({
       {canDelete ? (
         <div className="space-y-3">
           <div>
-            <p className="text-sm font-medium text-foreground">Çiftliği kalıcı sil</p>
+            <p className="text-sm font-medium text-foreground">{t("deleteFarm")}</p>
             <p className="text-sm text-muted-foreground">
-              Tüm veriler ve kullanıcılar geri alınamaz şekilde silinir. Onaylamak için
-              çiftlik adını yazın: <span className="font-semibold text-foreground">{farmName}</span>
+              {t("deleteConfirm")} <span className="font-semibold text-foreground">{farmName}</span>
             </p>
           </div>
           <Input
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
             placeholder={farmName}
-            aria-label="Onay için çiftlik adı"
+            aria-label={t("deleteAria")}
           />
           {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
           <Button
@@ -80,12 +81,12 @@ export function AccountDangerZone({
             loading={loading}
             className="bg-red-600 text-white hover:bg-red-700"
           >
-            Çiftliği kalıcı sil
+            {t("deleteFarm")}
           </Button>
         </div>
       ) : (
         <p className="text-sm text-muted-foreground">
-          Demo çiftliği silinemez.
+          {t("cannotDeleteDemo")}
         </p>
       )}
     </div>

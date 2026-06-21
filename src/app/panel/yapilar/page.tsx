@@ -6,6 +6,7 @@ import { parseListParams, type ListState } from "@/lib/list-query";
 import { withTenant } from "@/lib/tenant-prisma";
 import { buttonVariants } from "@/components/ui/button";
 import { StructuresTable } from "@/components/tables/structures-table";
+import { getTranslations } from "next-intl/server";
 
 export default async function YapilarPage({
   searchParams,
@@ -28,6 +29,7 @@ export default async function YapilarPage({
     : {};
 
   const session = await auth();
+  const t = await getTranslations("Structures");
   const canEdit = session ? canWrite(session.user.role, "structures") : false;
   const { structures, total } = await withTenant(session!.user.tenantId, async (db) => {
     const [structures, total] = await Promise.all([
@@ -48,15 +50,15 @@ export default async function YapilarPage({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
-            <span>🏠</span> Yapilar
+            <span>🏠</span> {t("title")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Toplam {total} yapi · haritada gosterilir
+            {t("totalDescription", { count: total })}
           </p>
         </div>
         {canEdit && (
           <Link href="/panel/yapilar/yeni" className={buttonVariants({ size: "sm" })}>
-            + Yeni Yapi
+            + {t("new")}
           </Link>
         )}
       </div>

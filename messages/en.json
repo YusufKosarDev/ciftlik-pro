@@ -62,6 +62,7 @@
     "save": "Save",
     "actions": "Actions",
     "back": "Back",
+    "backToList": "Back to list",
     "totalRecords": "{count} record(s) total",
     "loading": "Loading...",
     "saveFailed": "Save failed, please try again",
@@ -114,7 +115,13 @@
     "overdueTasks": "Overdue Tasks",
     "noOverdueTasks": "No overdue tasks.",
     "upcomingVaccinations": "Upcoming Vaccinations",
-    "noUpcomingVaccinations": "No upcoming vaccinations."
+    "noUpcomingVaccinations": "No upcoming vaccinations.",
+    "noNewThisMonth": "No new records this month",
+    "newThisMonth": "+{count} new this month",
+    "zeroThisMonth": "No transactions this month",
+    "netThisMonth": "Net {amount} this month",
+    "noOverdue": "No overdue",
+    "overdueCount": "{count} overdue"
   },
   "Labels": {
     "species": {
@@ -257,6 +264,20 @@
     "criticalLevel": "Critical Level",
     "notes": "Notes"
   },
+  "Feed": {
+    "title": "Feed Management",
+    "totalItems": "{count} feed item(s)",
+    "criticalSuffix": "· {count} at critical level",
+    "criticalBadge": "Critical",
+    "emptyStock": "First add an item under FEED category in Stock section.",
+    "lastConsumptions": "Recent Consumptions",
+    "noConsumptions": "No consumption records yet.",
+    "date": "Date",
+    "item": "Feed",
+    "quantity": "Quantity",
+    "note": "Notes",
+    "deleteKind": "Consumption record"
+  },
   "Finance": {
     "title": "Finance",
     "new": "New Transaction",
@@ -392,6 +413,7 @@
   },
   "Structures": {
     "title": "Structures",
+    "totalDescription": "{count} structure(s) total · shown on map",
     "new": "New Structure",
     "add": "Add structure",
     "kind": "Structure",
@@ -408,6 +430,9 @@
   },
   "Map": {
     "title": "Farm Map",
+    "subtext": "{fields} field(s) · {structures} structure(s) · birds-eye 2D layout (click on a field)",
+    "empty": "No fields added yet. Add a field first to view the map.",
+    "addField": "Add field",
     "editLayout": "Edit layout",
     "saving": "Saving...",
     "save": "Save",
@@ -421,10 +446,14 @@
   },
   "Calendar": {
     "title": "Calendar",
-    "vaccinations": "Vaccinations",
-    "tasks": "Tasks",
-    "harvests": "Harvests",
-    "births": "Births"
+    "subtext": "{count} event(s) · vaccination, task, harvest, birth",
+    "prevMonth": "‹ Prev",
+    "nextMonth": "Next ›",
+    "vaccination": "Vaccination",
+    "task": "Task",
+    "harvest": "Harvest",
+    "birth": "Birth",
+    "birthLabel": "🐄 {name} birth"
   },
   "Profile": {
     "title": "Profile",
@@ -436,14 +465,27 @@
     "name": "Full Name",
     "email": "Email",
     "role": "Role",
+    "billingPlan": "Subscription & plan",
+    "billingPlanDesc": "View plan limits, upgrade to PRO",
     "security": "Security",
     "changePassword": "Change Password",
     "currentPassword": "Current Password",
     "newPassword": "New Password",
     "confirmPassword": "Confirm New Password",
+    "save": "Update Password",
+    "passwordUpdated": "Your password has been updated.",
+    "tourTitle": "Onboarding Tour",
+    "tourDesc": "You can watch the welcoming onboarding tour of Çiftlik Pro at any time.",
+    "restartTour": "Restart Tour",
+    "tourRestarted": "The introduction tour has been restarted.",
     "dangerZone": "Danger Zone",
     "exportData": "Export All Data",
     "exportDesc": "Download all data belonging to your farm in JSON format under KVKK/GDPR.",
+    "exportBtn": "Export",
+    "deleteConfirm": "All data and users will be permanently deleted. To confirm, type the farm name: ",
+    "deleteAria": "Farm name for confirmation",
+    "deleteFailed": "Failed to delete farm.",
+    "cannotDeleteDemo": "Demo farm cannot be deleted.",
     "deleteFarm": "Permanently Delete Farm",
     "deleteDesc": "Permanently deletes your farm and all associated data (animals, finance, staff, etc.). This action cannot be undone."
   },
@@ -455,7 +497,61 @@
     "staffLimit": "Staff Seats Limit",
     "upgrade": "Upgrade to PRO",
     "downgrade": "Downgrade to FREE",
-    "stripePortal": "Manage with Stripe",
+    "stripePortal": "Manage via Stripe",
     "unlimited": "Unlimited"
+  },
+  "Onboarding": {
+    "step": "Step {step} / {total}",
+    "stepAria": "Step {step}",
+    "close": "Close tour",
+    "back": "Back",
+    "skip": "Skip",
+    "start": "Start",
+    "next": "Next",
+    "welcomeTitle": "Welcome to Çiftlik Pro",
+    "welcomeGreeting": "Hello {name} 👋",
+    "welcomeDesc1": "Manage all your farm operations — animals, fields, inventory, finance, and tasks — from a single dashboard. Let's show you around quickly.",
+    "welcomeDesc2": "This tour takes only a few seconds; you can press Skip to skip it.",
+    "welcomeSkipWord": "Skip",
+    "modulesTitle": "Core Modules",
+    "modules": {
+      "animalsTitle": "Animals",
+      "animalsDesc": "Health, vaccination, milk, weight, and pedigree",
+      "fieldsTitle": "Fields",
+      "fieldsDesc": "Planting, harvesting, and yield economics",
+      "inventoryTitle": "Stock & Feed",
+      "inventoryDesc": "Critical level alert, consumption tracking",
+      "financeTitle": "Finance",
+      "financeDesc": "Income-expense and monthly summary"
+    },
+    "roleTitle": "What can you do as an {role}?",
+    "roles": {
+      "ADMIN": [
+        "Full access to all modules — add, edit, delete records",
+        "Manage staff and assign tasks",
+        "Access finance, audit logs, and reports"
+      ],
+      "WORKER": [
+        "Enter animal, milk, and weight records",
+        "Manage field and crop operations",
+        "Track inventory and feed consumption"
+      ],
+      "VET": [
+        "Manage health records and vaccination schedule",
+        "Enter breeding/pregnancy and weight records",
+        "Monitor upcoming vaccinations on the calendar"
+      ],
+      "ACCOUNTANT": [
+        "Add and manage income-expense transactions",
+        "Analyze net balance and monthly finance charts",
+        "Track tasks and calendar events"
+      ]
+    },
+    "mapTitle": "Map & Calendar",
+    "mapDesc": "2D Farm Map — view fields and structures (barn, coop, storage) at a glance.",
+    "calendarDesc": "Calendar — vaccinations, tasks, harvests, and births are aggregated in a monthly view.",
+    "readyTitle": "You are ready! 🎉",
+    "readyDesc1": "You are now ready to start. You can navigate to any module from the panel or top menu.",
+    "readyDesc2": "You can restart this tour at any time from your Profile page."
   }
 }
