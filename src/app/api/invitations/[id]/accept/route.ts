@@ -7,12 +7,12 @@ import { rateLimit, clientIp } from "@/lib/rate-limit";
 import { hashPassword } from "@/lib/password-hash";
 import { logAudit } from "@/lib/audit";
 
-// POST /api/invitations/[token]/accept -> HERKESE ACIK davet kabulu.
+// POST /api/invitations/[id]/accept -> HERKESE ACIK davet kabulu.
 // Davetli adini + parolasini belirler; ilgili tenant'a kullanici olarak eklenir.
 // Invitation RLS disidir; token ile (oturum/tenant baglami olmadan) okunur.
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ token: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const rl = rateLimit(`accept:${clientIp(request)}`, 10, 5 * 60 * 1000);
@@ -23,7 +23,7 @@ export async function POST(
       );
     }
 
-    const { token } = await params;
+    const { id: token } = await params;
     const body = await request.json();
     const parsed = acceptInviteSchema.safeParse(body);
     if (!parsed.success) {

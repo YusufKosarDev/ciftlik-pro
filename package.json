@@ -11,6 +11,7 @@
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:e2e:ci": "docker compose up -d db && npx wait-on tcp:5433 --timeout 30000 && playwright test",
     "db:seed": "tsx prisma/seed.ts",
     "db:seed-admin": "node prisma/ensure-admin.mjs",
     "db:seed-demo": "node prisma/seed-demo.mjs",

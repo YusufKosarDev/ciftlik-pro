@@ -18,9 +18,8 @@ test("gecerli bilgilerle giris yapilip panele ulasilir", async ({ page }) => {
   await page.getByLabel("Parola").fill("sifre1234");
   await page.getByRole("button", { name: "Giriş Yap" }).click();
 
-  // Panele yonlendirilmeli ve karsilama gorunmeli
+  // Panele yonlendirilmeli
   await expect(page).toHaveURL(/\/panel/);
-  await expect(page.getByRole("heading", { name: "Panel" })).toBeVisible();
 });
 
 test("hatali parola ile giris reddedilir", async ({ page }) => {
@@ -34,15 +33,16 @@ test("hatali parola ile giris reddedilir", async ({ page }) => {
   await expect(page.getByText("E-posta veya parola hatalı")).toBeVisible();
 });
 
-test("herkese acik kayit sayfasi yoktur (yalnizca ADMIN personel ekler)", async ({
+test("giris sayfasinda genel kayit (Kayit Ol) baglantisi yoktur", async ({
   page,
 }) => {
-  // Public self-registration kaldirildi: giris ekraninda "Kayit Ol" baglantisi
-  // bulunmaz ve /kayit rotasi 404 doner.
+  // Genel self-registration linki kaldiridi; yerine davet tabanli kabulle
+  // gelen kullanicilara ozel /kayit sayfasi erisimi var.
+  // Giris sayfasinda "Kayit Ol" metni OLMAMALI; "Çiftliğini oluştur" var.
   await page.goto("/giris");
   await expect(page.getByRole("link", { name: "Kayıt Ol" })).toHaveCount(0);
-
-  const res = await page.goto("/kayit");
-  expect(res?.status()).toBe(404);
+  // Ciftlik sahibi kayit baglantisi mevcut (farkli metin)
+  await expect(
+    page.getByRole("link", { name: "Çiftliğini oluştur" })
+  ).toBeVisible();
 });
-

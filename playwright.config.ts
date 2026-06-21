@@ -2,6 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./e2e",
+  globalSetup: "./e2e/global-setup.ts",
   fullyParallel: true,
   // CI'da dev sunucusunun ilk rota derlemesi (cold compile) yavas olabilir;
   // paralel worker'lar bu yuku artirip kararsizliga yol acar. CI'da tek
