@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Menu, Search } from "lucide-react";
 import type { NavItem } from "@/components/sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { NotificationBell } from "@/components/notification-bell";
 // NOT: Panel string'lerinin tam cevirisi tamamlanana kadar panel ici dil
 // degistirici gizli (karisik-dil gorunmemesi icin). Giris ekrani iki dilli kalir.
 // Tamamlandiginda asagidaki <LanguageSwitcher /> geri eklenir.
@@ -54,6 +55,7 @@ export function Topbar({
             ⌘K
           </kbd>
         </button>
+        <NotificationBell />
         <ThemeToggle />
       </div>
     </header>
