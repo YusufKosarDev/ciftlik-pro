@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
+import { isDemoUser } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
 import { PLAN_LIMITS, countResource } from "@/lib/plan";
@@ -62,6 +63,7 @@ export default async function AbonelikPage() {
   ]);
 
   const stripeEnabled = Boolean(getStripe() && process.env.STRIPE_PRO_PRICE_ID);
+  const isDemo = isDemoUser(session.user.email);
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
@@ -80,7 +82,7 @@ export default async function AbonelikPage() {
               </Badge>
             </p>
           </div>
-          <BillingActions plan={plan} stripeEnabled={stripeEnabled} />
+          <BillingActions plan={plan} stripeEnabled={stripeEnabled} isDemo={isDemo} />
         </div>
 
         <div className="space-y-4 border-t border-border pt-5">

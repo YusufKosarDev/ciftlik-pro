@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import type { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
+import { isDemoUser } from "@/lib/authz";
 import { parseListParams, type ListState } from "@/lib/list-query";
 import { withTenant } from "@/lib/tenant-prisma";
 import { roleLabels } from "@/lib/labels";
@@ -24,6 +25,7 @@ export default async function PersonelPage({
   if (session?.user.role !== "ADMIN") {
     redirect("/panel");
   }
+  const isDemo = isDemoUser(session.user.email);
 
   const { page, q, sort, dir, skip, take } = parseListParams(await searchParams, {
     sortableKeys: ["name", "email", "role", "createdAt"],
@@ -70,7 +72,7 @@ export default async function PersonelPage({
         <p className="text-sm text-muted-foreground">Toplam {total} kullanici</p>
       </div>
 
-      <InviteForm />
+      <InviteForm isDemo={isDemo} />
 
       {invitations.length > 0 && (
         <div className="rounded-xl border border-border bg-card p-5">
