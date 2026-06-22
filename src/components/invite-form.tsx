@@ -11,7 +11,7 @@ import { roleLabels } from "@/lib/labels";
 
 // ADMIN personel daveti olusturma formu. Basariliysa kabul baglantisini gosterir
 // (e-posta yapilandirilmamis olsa bile admin linki paylasabilsin).
-export function InviteForm() {
+export function InviteForm({ isDemo = false }: { isDemo?: boolean }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<string>("WORKER");
@@ -22,6 +22,8 @@ export function InviteForm() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    // Demo modunda davet gonderme salt-okunur (sunucu da engeller).
+    if (isDemo) return;
     setError(null);
     setAcceptUrl(null);
     setLoading(true);
@@ -79,9 +81,14 @@ export function InviteForm() {
             ))}
           </select>
         </div>
-        <Button type="submit" loading={loading} size="sm">
-          Davet gönder
-        </Button>
+        <div>
+          <Button type="submit" loading={loading} size="sm" disabled={isDemo}>
+            Davet gönder
+          </Button>
+          {isDemo && (
+            <p className="mt-1 text-xs text-muted-foreground">Demo modunda devre dışı</p>
+          )}
+        </div>
       </form>
 
       {error && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>}

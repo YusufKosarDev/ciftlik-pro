@@ -32,18 +32,22 @@ async function main() {
     create: { id: TENANT_ID, name: "Varsayilan Ciftlik", slug: "default", plan: "PRO" },
   });
 
-  // 1) Demo kullanici (WORKER) — varsa dokunma
+  // 1) Demo kullanici (ADMIN) — vitrin: ziyaretciler "Demo olarak gez" ile
+  // tum SaaS ozelliklerini (abonelik, personel/davet, KVKK) gezebilsin diye
+  // ADMIN'dir. Yazma/odeme/davet/silme yine de salt-okunurdur: koruma e-posta
+  // tabanlidir (src/lib/authz.ts isDemoUser), rolden bagimsiz calisir. Var olan
+  // demo hesabi da ADMIN'e yukseltilir (update.role).
   // Maliyet 12: src/lib/password-hash.ts BCRYPT_COST ile ayni.
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 12);
   const demo = await prisma.user.upsert({
     where: { email: DEMO_EMAIL },
-    update: {},
+    update: { role: "ADMIN" },
     create: {
       tenantId: TENANT_ID,
       name: "Demo Kullanici",
       email: DEMO_EMAIL,
       password: passwordHash,
-      role: "WORKER",
+      role: "ADMIN",
     },
   });
 

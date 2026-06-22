@@ -79,7 +79,7 @@ export function navHrefsFor(role: Role): Set<string> {
 // boylece canli demoda ziyaretçiler veriyi bozamaz.
 export const DEMO_EMAIL = "demo@ciftlik.com";
 
-function isDemoUser(email: string | null | undefined): boolean {
+export function isDemoUser(email: string | null | undefined): boolean {
   return (email ?? "").toLowerCase() === DEMO_EMAIL;
 }
 

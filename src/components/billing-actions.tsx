@@ -11,12 +11,28 @@ import { Button } from "@/components/ui/button";
 export function BillingActions({
   plan,
   stripeEnabled,
+  isDemo = false,
 }: {
   plan: "FREE" | "PRO";
   stripeEnabled: boolean;
+  isDemo?: boolean;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+
+  // Demo modunda plan degisikligi salt-okunur (sunucu da engeller). Ozelligi
+  // gosterir ama gercek aksiyonu devre disi birakir.
+  if (isDemo) {
+    return (
+      <div className="text-right">
+        <Button type="button" disabled>
+          <Sparkles className="h-4 w-4" />
+          {plan === "FREE" ? "PRO'ya yükselt" : "Planı değiştir"}
+        </Button>
+        <p className="mt-1 text-xs text-muted-foreground">Demo modunda devre dışı</p>
+      </div>
+    );
+  }
 
   async function upgrade() {
     setLoading(true);

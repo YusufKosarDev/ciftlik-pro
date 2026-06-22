@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { isDemoUser } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
 
@@ -13,6 +14,13 @@ export async function POST() {
   }
   if (session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Yalnızca yönetici planı değiştirebilir" }, { status: 403 });
+  }
+  // Demo hesabi salt-okunurdur: vitrin ADMIN olsa da gercek plan degisikligi yaptiramaz.
+  if (isDemoUser(session.user.email)) {
+    return NextResponse.json(
+      { error: "Demo modunda plan değiştirilemez." },
+      { status: 403 }
+    );
   }
 
   const stripeEnabled = Boolean(getStripe() && process.env.STRIPE_PRO_PRICE_ID);

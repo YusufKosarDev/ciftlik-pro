@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { isDemoUser } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
 
@@ -13,6 +14,14 @@ export async function POST(request: Request) {
   }
   if (session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Yalnızca yönetici planı yükseltebilir" }, { status: 403 });
+  }
+  // Demo hesabi salt-okunurdur: vitrin ADMIN olsa da gercek plan degisikligi
+  // (demo modunda dogrudan DB yazimi) yaptiramaz.
+  if (isDemoUser(session.user.email)) {
+    return NextResponse.json(
+      { error: "Demo modunda plan değiştirilemez." },
+      { status: 403 }
+    );
   }
 
   const tenantId = session.user.tenantId;
