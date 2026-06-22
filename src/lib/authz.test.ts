@@ -25,7 +25,9 @@ import {
   navHrefsFor,
   authorizeWrite,
   requirePageWrite,
+  requirePageView,
   writePermissions,
+  DEMO_EMAIL,
   type WriteModule,
 } from "@/lib/authz";
 
@@ -130,6 +132,21 @@ describe("authorizeWrite — API yetki kontrolu", () => {
     expect("error" in r).toBe(false);
     expect("session" in r).toBe(true);
   });
+
+  it("demo hesabi yetkili rolde olsa bile 403 (salt-okunur)", async () => {
+    // ADMIN rolu yazabilir; ancak demo e-postasi yazma yapamamali.
+    authMock.mockResolvedValue({ user: { role: "ADMIN", email: DEMO_EMAIL } });
+    const r = await authorizeWrite("animals");
+    expect("error" in r).toBe(true);
+    if ("error" in r) expect(r.error?.status).toBe(403);
+  });
+
+  it("demo e-postasi buyuk/kucuk harf duyarsiz reddedilir", async () => {
+    authMock.mockResolvedValue({ user: { role: "ADMIN", email: DEMO_EMAIL.toUpperCase() } });
+    const r = await authorizeWrite("animals");
+    expect("error" in r).toBe(true);
+    if ("error" in r) expect(r.error?.status).toBe(403);
+  });
 });
 
 describe("requirePageWrite — sayfa korumasi", () => {
@@ -145,9 +162,35 @@ describe("requirePageWrite — sayfa korumasi", () => {
     await expect(requirePageWrite("animals")).rejects.toThrow("REDIRECT:/panel");
   });
 
+  it("demo hesabi panele yonlendirir (yazma yok)", async () => {
+    authMock.mockResolvedValue({ user: { role: "ADMIN", email: DEMO_EMAIL } });
+    await expect(requirePageWrite("animals")).rejects.toThrow("REDIRECT:/panel");
+  });
+
   it("yetkili rolde oturumu doner", async () => {
     authMock.mockResolvedValue({ user: { role: "ADMIN" } });
     const s = await requirePageWrite("animals");
     expect(s.user.role).toBe("ADMIN");
+  });
+});
+
+describe("requirePageView — hassas sayfa okuma korumasi", () => {
+  beforeEach(() => authMock.mockReset());
+
+  it("oturum yoksa girise yonlendirir", async () => {
+    authMock.mockResolvedValue(null);
+    await expect(requirePageView("/panel/finans")).rejects.toThrow("REDIRECT:/giris");
+  });
+
+  it("rol menude gormeyen yolu acmaya calisirsa panele yonlendirir", async () => {
+    // WORKER finansi gormez; dogrudan URL ile acmasi engellenir.
+    authMock.mockResolvedValue({ user: { role: "WORKER" } });
+    await expect(requirePageView("/panel/finans")).rejects.toThrow("REDIRECT:/panel");
+  });
+
+  it("rol menude goren yolu acabilir (oturum doner)", async () => {
+    authMock.mockResolvedValue({ user: { role: "ACCOUNTANT" } });
+    const s = await requirePageView("/panel/finans");
+    expect(s.user.role).toBe("ACCOUNTANT");
   });
 });
