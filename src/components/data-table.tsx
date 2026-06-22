@@ -36,6 +36,9 @@ export function DataTable<T extends { id: string }>({
   searchable = false,
   searchPlaceholder,
   emptyState,
+  enableSelection = false,
+  onBulkDelete,
+  csvExportFilename,
 }: {
   data: T[];
   columns: Column<T>[];
@@ -43,6 +46,9 @@ export function DataTable<T extends { id: string }>({
   searchable?: boolean;
   searchPlaceholder?: string;
   emptyState?: React.ReactNode;
+  enableSelection?: boolean;
+  onBulkDelete?: (ids: string[]) => Promise<void>;
+  csvExportFilename?: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -87,17 +93,163 @@ export function DataTable<T extends { id: string }>({
     updateParams({ page: p <= 1 ? null : p });
   }
 
+  // Çoklu seçim durumu
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [deleting, setDeleting] = useState(false);
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === data.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(data.map((row) => row.id));
+    }
+  };
+
+  const toggleSelectRow = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const handleBulkDelete = async () => {
+    if (!onBulkDelete) return;
+    if (!confirm(`Seçilen ${selectedIds.length} kaydı kalıcı olarak silmek istediğinize emin misiniz?`)) return;
+    setDeleting(true);
+    try {
+      await onBulkDelete(selectedIds);
+      setSelectedIds([]);
+    } catch (err) {
+      console.error("Toplu silme hatası:", err);
+      alert("Toplu silme işlemi sırasında bir hata oluştu.");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  // Kolon görünürlüğü durumu
+  const [hiddenColumnKeys, setHiddenColumnKeys] = useState<Set<string>>(new Set());
+  const [showColMenu, setShowColMenu] = useState(false);
+
+  const toggleColumn = (key: string) => {
+    setHiddenColumnKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  const renderedColumns = columns.filter((col) => !hiddenColumnKeys.has(col.key));
+  const showSelectionColumn = enableSelection && data.length > 0;
+
+  // CSV İndirme fonksiyonu
+  const downloadCSV = () => {
+    if (!data || data.length === 0) return;
+    const exportCols = renderedColumns.filter((col) => col.key !== "actions");
+    const headers = exportCols.map((col) => col.header).join(",");
+    const rows = data.map((row) =>
+      exportCols
+        .map((col) => {
+          let val: unknown = row[col.key as keyof T];
+          if (val === undefined || val === null) {
+            val = "";
+          }
+          if (val instanceof Date) {
+            val = val.toLocaleDateString();
+          }
+          // Tırnak işaretlerini kaçış karakteriyle koru
+          const escaped = String(val).replace(/"/g, '""');
+          return `"${escaped}"`;
+        })
+        .join(",")
+    );
+    const csvContent = [headers, ...rows].join("\n");
+    const blob = new Blob([`\ufeff${csvContent}`], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `${csvExportFilename || "export"}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-3">
-      {searchable && (
-        <div className="relative max-w-xs">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={term}
-            onChange={(e) => setTerm(e.target.value)}
-            placeholder={searchPlaceholder ?? tCommon("search")}
-            className="pl-9"
-          />
+      {/* Üst İşlem Çubuğu (Arama + CSV + Sütunlar) */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        {searchable && (
+          <div className="relative max-w-xs flex-1 min-w-[200px]">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={term}
+              onChange={(e) => setTerm(e.target.value)}
+              placeholder={searchPlaceholder ?? tCommon("search")}
+              className="pl-9"
+            />
+          </div>
+        )}
+
+        <div className="flex items-center gap-2">
+          {csvExportFilename && data.length > 0 && (
+            <button
+              onClick={downloadCSV}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted cursor-pointer transition shadow-sm"
+            >
+              📥 CSV İndir
+            </button>
+          )}
+
+          <div className="relative">
+            <button
+              onClick={() => setShowColMenu(!showColMenu)}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted cursor-pointer transition shadow-sm"
+            >
+              👁️ Sütunlar
+            </button>
+            {showColMenu && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowColMenu(false)} />
+                <div className="absolute right-0 top-full z-50 mt-1 w-48 rounded-lg border border-border bg-card p-2 shadow-lg animate-in fade-in slide-in-from-top-1 duration-150">
+                  <div className="space-y-1.5">
+                    {columns
+                      .filter((col) => col.key !== "actions")
+                      .map((col) => (
+                        <label
+                          key={col.key}
+                          className="flex items-center gap-2 text-xs font-medium cursor-pointer text-foreground hover:bg-muted p-1 rounded"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={!hiddenColumnKeys.has(col.key)}
+                            onChange={() => toggleColumn(col.key)}
+                            className="rounded border-border text-green-600 focus:ring-green-500 h-3.5 w-3.5"
+                          />
+                          {col.header}
+                        </label>
+                      ))}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Toplu İşlem Çubuğu */}
+      {selectedIds.length > 0 && onBulkDelete && (
+        <div className="flex items-center justify-between rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 p-3 text-sm animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="flex items-center gap-2 text-red-700 dark:text-red-400 font-medium">
+            <span>🗑️</span>
+            <span>{selectedIds.length} satır seçildi.</span>
+          </div>
+          <button
+            onClick={handleBulkDelete}
+            disabled={deleting}
+            className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-60 transition cursor-pointer"
+          >
+            {deleting ? "Siliniyor..." : "Seçilenleri Sil"}
+          </button>
         </div>
       )}
 
@@ -119,7 +271,17 @@ export function DataTable<T extends { id: string }>({
             <table className="w-full text-left text-sm">
               <thead className="border-b border-border text-muted-foreground">
                 <tr>
-                  {columns.map((col) => (
+                  {showSelectionColumn && (
+                    <th className="bg-muted px-4 py-3 text-xs w-10">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.length === data.length}
+                        onChange={toggleSelectAll}
+                        className="rounded border-border text-green-600 focus:ring-green-500 h-4 w-4 cursor-pointer"
+                      />
+                    </th>
+                  )}
+                  {renderedColumns.map((col) => (
                     <th
                       key={col.key}
                       className={cn(
@@ -130,7 +292,7 @@ export function DataTable<T extends { id: string }>({
                       {col.sortKey ? (
                         <button
                           onClick={() => toggleSort(col.sortKey!)}
-                          className="inline-flex items-center gap-1 transition hover:text-foreground"
+                          className="inline-flex items-center gap-1 transition hover:text-foreground cursor-pointer"
                         >
                           {col.header}
                           {list.sort === col.sortKey ? (
@@ -152,8 +314,24 @@ export function DataTable<T extends { id: string }>({
               </thead>
               <tbody className="divide-y divide-border">
                 {data.map((row) => (
-                  <tr key={row.id} className="transition-colors hover:bg-muted">
-                    {columns.map((col) => (
+                  <tr
+                    key={row.id}
+                    className={cn(
+                      "transition-colors hover:bg-muted",
+                      selectedIds.includes(row.id) && "bg-muted/40"
+                    )}
+                  >
+                    {showSelectionColumn && (
+                      <td className="px-4 py-3 align-middle w-10">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(row.id)}
+                          onChange={() => toggleSelectRow(row.id)}
+                          className="rounded border-border text-green-600 focus:ring-green-500 h-4 w-4 cursor-pointer"
+                        />
+                      </td>
+                    )}
+                    {renderedColumns.map((col) => (
                       <td key={col.key} className={cn("px-4 py-3 align-middle", col.className)}>
                         {col.cell(row)}
                       </td>

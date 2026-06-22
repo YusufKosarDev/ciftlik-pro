@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { InventoryItem } from "@prisma/client";
 import { Package } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -21,9 +22,23 @@ export function InventoryTable({
   canEdit: boolean;
   list: ListState;
 }) {
+  const router = useRouter();
   const t = useTranslations("Inventory");
   const tc = useTranslations("Common");
   const { inventoryCategoryLabels } = useLabels();
+
+  const handleBulkDelete = async (ids: string[]) => {
+    const res = await fetch("/api/inventory", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids }),
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || "Silme hatası");
+    }
+    router.refresh();
+  };
 
   const columns: Column<InventoryItem>[] = [
     {
@@ -99,6 +114,9 @@ export function InventoryTable({
       list={list}
       searchable
       searchPlaceholder={t("searchPlaceholder")}
+      enableSelection={canEdit}
+      onBulkDelete={handleBulkDelete}
+      csvExportFilename="envanter"
       emptyState={
         <EmptyState
           icon={<Package className="h-6 w-6" />}

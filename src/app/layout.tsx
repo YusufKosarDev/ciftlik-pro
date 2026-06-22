@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { PwaRegister } from "@/components/pwa-register";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,6 +28,7 @@ export const metadata: Metadata = {
   },
   description: SITE_DESCRIPTION,
   applicationName: "Çiftlik Pro",
+  manifest: "/manifest.json",
   openGraph: {
     title: "Çiftlik Pro — Çiftlik Yönetim Sistemi",
     description: SITE_DESCRIPTION,
@@ -56,7 +58,10 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <Providers>{children}</Providers>
+          <Providers>
+            {children}
+            <PwaRegister />
+          </Providers>
         </NextIntlClientProvider>
       </body>
     </html>

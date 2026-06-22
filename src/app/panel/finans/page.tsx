@@ -7,6 +7,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { TransactionsTable } from "@/components/tables/transactions-table";
 import { getTranslations, getLocale } from "next-intl/server";
 import { formatMoney } from "@/lib/format";
+import { FinanceDonutChart } from "@/components/finance-donut-chart";
 
 
 function BreakdownList({
@@ -154,21 +155,24 @@ export default async function FinansPage({
 
       {/* Kategori kirilimi */}
       {grouped.length > 0 && (
-        <div className="grid gap-4 sm:grid-cols-2">
-          <BreakdownList
-            title={`${t("income")} — ${t("breakdown")}`}
-            rows={income}
-            tone="green"
-            emptyText={t("noRecords")}
-            locale={locale}
-          />
-          <BreakdownList
-            title={`${t("expense")} — ${t("breakdown")}`}
-            rows={expense}
-            tone="red"
-            emptyText={t("noRecords")}
-            locale={locale}
-          />
+        <div className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <BreakdownList
+              title={`${t("income")} — ${t("breakdown")}`}
+              rows={income}
+              tone="green"
+              emptyText={t("noRecords")}
+              locale={locale}
+            />
+            <BreakdownList
+              title={`${t("expense")} — ${t("breakdown")}`}
+              rows={expense}
+              tone="red"
+              emptyText={t("noRecords")}
+              locale={locale}
+            />
+          </div>
+          <FinanceDonutChart incomeData={income} expenseData={expense} />
         </div>
       )}
 

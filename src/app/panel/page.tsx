@@ -1,12 +1,10 @@
-import Link from "next/link";
-import { PawPrint, Wheat, Wallet, ListChecks, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { withTenant } from "@/lib/tenant-prisma";
 import { buildMonthlyFinance } from "@/lib/finance";
 import { MonthlyFinanceChart } from "@/components/monthly-finance-chart";
+import { DashboardCards } from "@/components/dashboard-cards";
 import { getTranslations, getLocale } from "next-intl/server";
 import { countDelta, moneyDelta, overdueDelta, type StatDelta, type DeltaTone } from "@/lib/stat-delta";
-import { cn } from "@/lib/cn";
 import { formatMoney, formatDate } from "@/lib/format";
 
 function resolveDelta(
@@ -21,71 +19,6 @@ function resolveDelta(
     }),
     tone: delta.tone,
   };
-}
-
-// Ozet kart bileseni
-const statTones = {
-  green: "bg-green-50 text-green-600 dark:bg-green-500/15 dark:text-green-400",
-  amber: "bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400",
-  sky: "bg-sky-50 text-sky-600 dark:bg-sky-500/15 dark:text-sky-400",
-  violet: "bg-violet-50 text-violet-600 dark:bg-violet-500/15 dark:text-violet-400",
-} as const;
-
-const deltaToneClass = {
-  up: "text-green-600 dark:text-green-400",
-  down: "text-red-600 dark:text-red-400",
-  neutral: "text-muted-foreground",
-} as const;
-
-const deltaIcon = {
-  up: TrendingUp,
-  down: TrendingDown,
-  neutral: Minus,
-} as const;
-
-function StatCard({
-  href,
-  label,
-  value,
-  Icon,
-  tone = "green",
-  valueClass = "text-foreground",
-  delta,
-}: {
-  href: string;
-  label: string;
-  value: string;
-  Icon: React.ComponentType<{ className?: string }>;
-  tone?: keyof typeof statTones;
-  valueClass?: string;
-  delta?: { label: string; tone: DeltaTone };
-}) {
-  const DeltaIcon = delta ? deltaIcon[delta.tone] : null;
-  return (
-    <Link
-      href={href}
-      className="group flex items-center gap-4 rounded-xl border border-border bg-card p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-border hover:shadow-md"
-    >
-      <span
-        className={cn(
-          "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition group-hover:scale-105",
-          statTones[tone]
-        )}
-      >
-        <Icon className="h-6 w-6" />
-      </span>
-      <div className="min-w-0">
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <p className={`mt-0.5 text-2xl font-bold tabular-nums ${valueClass}`}>{value}</p>
-        {delta && DeltaIcon && (
-          <p className={cn("mt-1 flex items-center gap-1 text-xs font-medium", deltaToneClass[delta.tone])}>
-            <DeltaIcon className="h-3.5 w-3.5" />
-            {delta.label}
-          </p>
-        )}
-      </div>
-    </Link>
-  );
 }
 
 // Uyari kutusu bileseni
@@ -212,42 +145,24 @@ export default async function PanelPage() {
         </p>
       </div>
 
-      {/* Ozet kartlari */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          href="/panel/hayvanlar"
-          label={t("activeAnimals")}
-          value={String(animalCount)}
-          Icon={PawPrint}
-          tone="green"
-          delta={resolveDelta(countDelta(animalsThisMonth), t, locale)}
-        />
-        <StatCard
-          href="/panel/tarlalar"
-          label={t("fields")}
-          value={String(fieldCount)}
-          Icon={Wheat}
-          tone="amber"
-          delta={resolveDelta(countDelta(fieldsThisMonth), t, locale)}
-        />
-        <StatCard
-          href="/panel/finans"
-          label={t("netBalance")}
-          value={formatMoney(balance, locale)}
-          Icon={Wallet}
-          tone="sky"
-          valueClass={balance >= 0 ? "text-green-600" : "text-red-600"}
-          delta={resolveDelta(moneyDelta(monthNet), t, locale)}
-        />
-        <StatCard
-          href="/panel/gorevler"
-          label={t("openTasks")}
-          value={String(pendingTasks)}
-          Icon={ListChecks}
-          tone="violet"
-          delta={resolveDelta(overdueDelta(overdueTasks.length), t, locale)}
-        />
-      </div>
+      {/* Ozet kartlari (Client Component - Özelleştirilebilir) */}
+      <DashboardCards
+        animalCount={animalCount}
+        animalsDelta={resolveDelta(countDelta(animalsThisMonth), t, locale)}
+        fieldCount={fieldCount}
+        fieldsDelta={resolveDelta(countDelta(fieldsThisMonth), t, locale)}
+        balance={balance}
+        balanceFormatted={formatMoney(balance, locale)}
+        balanceDelta={resolveDelta(moneyDelta(monthNet), t, locale)}
+        pendingTasks={pendingTasks}
+        tasksDelta={resolveDelta(overdueDelta(overdueTasks.length), t, locale)}
+        labels={{
+          activeAnimals: t("activeAnimals"),
+          fields: t("fields"),
+          netBalance: t("netBalance"),
+          openTasks: t("openTasks"),
+        }}
+      />
 
       {/* Aylik gelir-gider grafigi */}
       <MonthlyFinanceChart data={monthlyFinance} />

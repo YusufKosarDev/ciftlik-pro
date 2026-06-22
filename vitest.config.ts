@@ -22,6 +22,17 @@ export default defineConfig({
         "src/lib/auth.config.ts",
         // Harici servis sarmalayicisi (Resend); birim testi yerine entegrasyonla dogrulanir
         "src/lib/email.ts",
+        // Stripe istemci sarmalayicisi (email.ts ile ayni kategori): harici servis
+        // baglantisi; gercek odeme akisi e2e/entegrasyonla dogrulanir.
+        "src/lib/stripe.ts",
+        // Prisma/auth altyapi sarmalayicilari (prisma.ts/auth.ts ile ayni kategori):
+        // tenant-kapsamli istemci ve SET LOCAL transaction'i, tenant-izolasyon
+        // entegrasyon testleriyle (tenant-prisma.int / tenant-rls.int) dogrulanir.
+        "src/lib/tenant-prisma.ts",
+        "src/lib/tenant.ts",
+        // Denetim kaydi yazma sarmalayicisi (DB yan etkisi); birim testine uygun degil,
+        // yazma akislariyla (entegrasyon/e2e) dolayli kapsanir.
+        "src/lib/audit.ts",
         // Saf sabit/yardimci dosyalar (dallanma mantigi yok)
         "src/lib/labels.ts",
         "src/lib/cn.ts",

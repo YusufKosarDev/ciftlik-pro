@@ -102,3 +102,48 @@ export async function POST(request: Request) {
     );
   }
 }
+
+// DELETE /api/animals -> toplu hayvan siler
+export async function DELETE(request: Request) {
+  try {
+    const authz = await authorizeWrite("animals");
+    if ("error" in authz) return authz.error;
+
+    const body = await request.json();
+    const { ids } = body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return NextResponse.json({ error: "Gecersiz kimlikler" }, { status: 400 });
+    }
+
+    const result = await withTenant(authz.session.user.tenantId, async (db) => {
+      // Bu tenant altindaki gecerli hayvanlari bul
+      const existing = await db.animal.findMany({
+        where: { id: { in: ids } },
+        select: { id: true, tagNumber: true },
+      });
+
+      if (existing.length === 0) return [];
+
+      const foundIds = existing.map((a) => a.id);
+      await db.animal.deleteMany({
+        where: { id: { in: foundIds } },
+      });
+
+      return existing;
+    });
+
+    if (result.length > 0) {
+      for (const item of result) {
+        await logAudit(authz.session.user, "DELETE", "Animal", item.id, item.tagNumber);
+      }
+    }
+
+    return NextResponse.json({ success: true, count: result.length });
+  } catch (error) {
+    console.error("Toplu hayvan silme hatasi:", error);
+    return NextResponse.json(
+      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { status: 500 }
+    );
+  }
+}

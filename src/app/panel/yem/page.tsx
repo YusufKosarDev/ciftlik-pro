@@ -12,8 +12,10 @@ export default async function YemPage() {
   const tc = await getTranslations("Common");
   const locale = await getLocale();
 
-  const [feedItems, logs] = await withTenant(session!.user.tenantId, (db) =>
-    Promise.all([
+  const [feedItems, logs, consumptionRateGrouped] = await withTenant(session!.user.tenantId, (db) => {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    return Promise.all([
       db.inventoryItem.findMany({
         where: { category: "FEED" },
         orderBy: { name: "asc" },
@@ -23,7 +25,16 @@ export default async function YemPage() {
         take: 50,
         include: { inventoryItem: { select: { name: true, unit: true } } },
       }),
-    ])
+      db.feedLog.groupBy({
+        by: ["inventoryItemId"],
+        _sum: { quantity: true },
+        where: { date: { gte: thirtyDaysAgo } },
+      }),
+    ]);
+  });
+
+  const rates = new Map(
+    consumptionRateGrouped.map((g) => [g.inventoryItemId, (g._sum.quantity ?? 0) / 30])
   );
 
   const canEdit = session ? canWrite(session.user.role, "inventory") : false;
@@ -44,25 +55,57 @@ export default async function YemPage() {
         </p>
       </div>
 
-      {/* Mevcut yem stogu */}
+      {/* Mevcut yem stogu ve Tüketim Analizi */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {feedItems.map((i) => {
           const isCritical = i.quantity <= i.criticalLevel;
+          const dailyRate = rates.get(i.id) ?? 0;
+          const remainingDays = dailyRate > 0 ? Math.round(i.quantity / dailyRate) : null;
+
           return (
-            <div key={i.id} className="rounded-xl border border-border bg-card p-4">
-              <p className="font-medium text-foreground">{i.name}</p>
-              <p
-                className={`mt-1 text-lg font-bold ${
-                  isCritical ? "text-red-600" : "text-foreground"
-                }`}
-              >
-                {i.quantity} {i.unit}
-                {isCritical && (
-                  <span className="ml-2 rounded bg-red-100 dark:bg-red-500/15 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-400">
-                    {t("criticalBadge")}
+            <div key={i.id} className="flex flex-col justify-between rounded-xl border border-border bg-card p-5 shadow-sm hover:shadow-md transition">
+              <div>
+                <p className="font-semibold text-foreground text-base">{i.name}</p>
+                <div className="mt-2 flex items-baseline gap-1.5">
+                  <span className={`text-2xl font-bold ${isCritical ? "text-red-600" : "text-foreground"}`}>
+                    {i.quantity}
                   </span>
-                )}
-              </p>
+                  <span className="text-sm text-muted-foreground font-medium">{i.unit}</span>
+                  {isCritical && (
+                    <span className="ml-2 rounded-full bg-red-50 dark:bg-red-500/10 px-2.5 py-0.5 text-xs font-semibold text-red-600 dark:text-red-400">
+                      {t("criticalBadge")}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Tüketim Analizi Bilgileri */}
+              <div className="mt-4 pt-3 border-t border-border space-y-2">
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Günlük Tüketim:</span>
+                  <span className="font-semibold text-foreground">
+                    {dailyRate > 0 ? `${dailyRate.toFixed(1)} ${i.unit}/gün` : "-"}
+                  </span>
+                </div>
+                <div className="flex justify-between text-xs text-muted-foreground items-center">
+                  <span>Tahmini Tükenme:</span>
+                  {remainingDays === null ? (
+                    <span className="text-muted-foreground">Veri yok</span>
+                  ) : remainingDays <= 7 ? (
+                    <span className="rounded bg-red-50 dark:bg-red-500/10 px-2 py-0.5 font-bold text-red-600 dark:text-red-400 animate-pulse text-[11px]">
+                      🚨 {remainingDays} gün kaldı!
+                    </span>
+                  ) : remainingDays <= 15 ? (
+                    <span className="rounded bg-amber-50 dark:bg-amber-500/10 px-2 py-0.5 font-bold text-amber-600 dark:text-amber-400 text-[11px]">
+                      ⚠️ {remainingDays} gün
+                    </span>
+                  ) : (
+                    <span className="rounded bg-green-50 dark:bg-green-500/10 px-2 py-0.5 font-bold text-green-600 dark:text-green-400 text-[11px]">
+                      🟢 {remainingDays} gün
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
           );
         })}

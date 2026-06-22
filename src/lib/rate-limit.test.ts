@@ -42,6 +42,27 @@ describe("rateLimit", () => {
   });
 });
 
+describe("sweep — bellek korumasi (MAX_KEYS)", () => {
+  it("MAX_KEYS asilinca suresi gecmis girisleri temizler ve boyutu sinirlar", () => {
+    const base = 50_000_000;
+    // Suresi kisa olan birkac giris: ileride 'dolmus' sayilacak.
+    for (let i = 0; i < 5; i++) rateLimit(`exp-${i}`, 1, 1_000, base);
+
+    // exp-* artik dolmus (resetAt = base + 1000 <= later).
+    const later = base + 2_000;
+    // MAX_KEYS (10.000) asilacak kadar aktif giris ekle.
+    for (let i = 0; i < 10_001; i++) rateLimit(`act-${i}`, 1, 60_000, later);
+
+    // Yeni bir anahtar sweep'i tetikler (store.size > MAX_KEYS).
+    const r = rateLimit("trigger", 1, 60_000, later);
+    expect(r.success).toBe(true);
+
+    // Dolmus bir anahtar temizlendigi icin yeniden tam pencereyle baslar.
+    const reused = rateLimit("exp-0", 1, 60_000, later);
+    expect(reused.success).toBe(true);
+  });
+});
+
 describe("clientIp", () => {
   it("x-forwarded-for'daki ilk IP'yi alir", () => {
     const req = new Request("http://x", {
