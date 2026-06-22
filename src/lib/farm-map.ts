@@ -13,6 +13,8 @@ export type FieldMapInput = {
   id: string;
   name: string;
   area: number;
+  location: string | null;
+  notes: string | null;
   posX: number | null;
   posY: number | null;
   status: CropMapStatus;
@@ -22,6 +24,8 @@ export type FieldRect = {
   id: string;
   name: string;
   area: number;
+  location: string | null;
+  notes: string | null;
   x: number;
   y: number;
   side: number;
@@ -87,7 +91,7 @@ export function layoutFields(
     }
     x = Math.max(0, Math.min(canvas.width - side, x));
     y = Math.max(0, Math.min(canvas.height - side, y));
-    return { id: f.id, name: f.name, area: f.area, x, y, side, status: f.status };
+    return { id: f.id, name: f.name, area: f.area, location: f.location, notes: f.notes, x, y, side, status: f.status };
   });
 }
 
@@ -99,6 +103,7 @@ export type StructureMapInput = {
   id: string;
   name: string;
   type: StructureType;
+  notes: string | null;
   posX: number | null;
   posY: number | null;
   width: number | null;
@@ -109,6 +114,7 @@ export type StructureRect = {
   id: string;
   name: string;
   type: StructureType;
+  notes: string | null;
   x: number;
   y: number;
   width: number;
@@ -153,6 +159,6 @@ export function layoutStructures(
     }
     x = Math.max(0, Math.min(canvas.width - width, x));
     y = Math.max(0, Math.min(canvas.height - height, y));
-    return { id: s.id, name: s.name, type: s.type, x, y, width, height };
+    return { id: s.id, name: s.name, type: s.type, notes: s.notes, x, y, width, height };
   });
 }

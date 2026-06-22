@@ -14,7 +14,7 @@ import {
 } from "@/lib/calendar";
 
 type UserOption = { id: string; name: string };
-type AnimalOption = { id: string; name: string; tagNumber: string };
+type AnimalOption = { id: string; name: string | null; tagNumber: string };
 
 const kindStyles: Record<CalendarEventKind, string> = {
   vaccination: "bg-yellow-100 text-yellow-800 dark:bg-yellow-500/15 dark:text-yellow-400",

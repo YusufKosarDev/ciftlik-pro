@@ -70,12 +70,11 @@ export function FarmMap({
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
 
   // Hover Tooltip bilgileri
-  const [hoverInfo, setHoverInfo] = useState<{
-    kind: "field" | "structure";
-    data: FieldRect | StructureRect;
-    x: number;
-    y: number;
-  } | null>(null);
+  const [hoverInfo, setHoverInfo] = useState<
+    | { kind: "field"; data: FieldRect; x: number; y: number }
+    | { kind: "structure"; data: StructureRect; x: number; y: number }
+    | null
+  >(null);
 
   // Duzenleme modunda draft* dolu; degilken null ve dogrudan prop'lardan render edilir.
   const [draftFields, setDraftFields] = useState<FieldRect[] | null>(null);
@@ -154,16 +153,20 @@ export function FarmMap({
   };
 
   // Hover bilgi kartı işleyicileri
-  const handleItemPointerEnter = (e: React.PointerEvent, item: FieldRect | StructureRect, kind: "field" | "structure") => {
+  const handleItemPointerEnter = (
+    e: React.PointerEvent,
+    hover: { kind: "field"; data: FieldRect } | { kind: "structure"; data: StructureRect }
+  ) => {
     if (editing) return;
     const rect = svgRef.current?.getBoundingClientRect();
     if (rect) {
-      setHoverInfo({
-        kind,
-        data: item,
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-      });
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      setHoverInfo(
+        hover.kind === "field"
+          ? { kind: "field", data: hover.data, x, y }
+          : { kind: "structure", data: hover.data, x, y }
+      );
     }
   };
 
@@ -426,7 +429,7 @@ export function FarmMap({
                   key={f.id}
                   style={{ cursor: editing ? "move" : "pointer" }}
                   onPointerDown={(e) => onItemPointerDown(e, f.id, "field", f.x, f.y)}
-                  onPointerEnter={(e) => handleItemPointerEnter(e, f, "field")}
+                  onPointerEnter={(e) => handleItemPointerEnter(e, { kind: "field", data: f })}
                   onPointerMove={handleItemPointerMove}
                   onPointerLeave={handleItemPointerLeave}
                   onClick={() => {
@@ -475,7 +478,7 @@ export function FarmMap({
                 key={s.id}
                 style={{ cursor: editing ? "move" : "default" }}
                 onPointerDown={(e) => onItemPointerDown(e, s.id, "structure", s.x, s.y)}
-                onPointerEnter={(e) => handleItemPointerEnter(e, s, "structure")}
+                onPointerEnter={(e) => handleItemPointerEnter(e, { kind: "structure", data: s })}
                 onPointerMove={handleItemPointerMove}
                 onPointerLeave={handleItemPointerLeave}
               >

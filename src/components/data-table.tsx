@@ -150,7 +150,7 @@ export function DataTable<T extends { id: string }>({
     const rows = data.map((row) =>
       exportCols
         .map((col) => {
-          let val = row[col.key as keyof T];
+          let val: unknown = row[col.key as keyof T];
           if (val === undefined || val === null) {
             val = "";
           }
