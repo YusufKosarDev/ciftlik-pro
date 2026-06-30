@@ -12,7 +12,7 @@ Sistemi (ERP) — hayvan, tarla, stok, finans, satış, mağaza ve personel tek 
 [![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Coverage](https://img.shields.io/badge/coverage-~95%25%20(lib)-success?logo=vitest&logoColor=white)](#test--kalite)
-[![Tests](https://img.shields.io/badge/tests-265%20unit%20%2B%207%20e2e-success)](#test--kalite)
+[![Tests](https://img.shields.io/badge/tests-277%20unit%20%2B%207%20e2e-success)](#test--kalite)
 [![Multi-tenant](https://img.shields.io/badge/multi--tenant-Postgres%20RLS-4169E1)](#-çok-kiracılık-multi-tenant-saas)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -64,7 +64,7 @@ in Turkish.)_
 - **Modern UI & i18n** — sidebar layout, dark mode (semantic color tokens), a ⌘K
   command palette, dashboard trend deltas, and a Turkish/English i18n foundation
   (next-intl).
-- **Quality** — end-to-end type safety (Zod + Prisma), **265 unit/component tests**
+- **Quality** — end-to-end type safety (Zod + Prisma), **277 unit/component tests**
   (Vitest + Testing Library), tenant-isolation integration tests (real Postgres,
   non-superuser role) and **7 e2e tests** (Playwright), run on every PR in CI
   against a real PostgreSQL service.
@@ -154,7 +154,7 @@ göstergeleriyle) ve aylık gelir-gider grafiği:
   (API) hem hassas okuma (sayfa) düzeyinde uygulanır.
 - **Uçtan uca tip güvenliği** — Zod şemaları hem istemci hem sunucuda doğrular;
   Prisma ile veritabanı tipleri.
-- **Test & CI/CD** — 265 birim/bileşen testi (Vitest + Testing Library) +
+- **Test & CI/CD** — 277 birim/bileşen testi (Vitest + Testing Library) +
   tenant-izolasyon entegrasyon testleri + 7 uçtan uca test (Playwright),
   GitHub Actions'ta gerçek PostgreSQL servisiyle her PR'da çalışır.
 - **Transactional bütünlük** — yem tüketimi stoğu atomik düşürür (TOCTOU'ya karşı
@@ -354,7 +354,7 @@ Seed çalıştırıldıysa:
 - **Birim testleri (Vitest):** doğrulama şemaları, RBAC yetkilendirme, hız sınırı,
   liste sorgu parametreleri, plan limitleri, finans/harita/tarih/takvim yardımcıları
   + UI bileşenleri (Testing Library: Badge/Button/EmptyState/DataTable/OnboardingModal)
-  — `npm test` (265 test). Kapsam raporu için
+  — `npm test` (277 test). Kapsam raporu için
   `npm run test:coverage` (iş mantığı `src/lib` için ~%95 satır kapsamı).
 - **Tenant-izolasyon entegrasyon testleri:** gerçek PostgreSQL + non-superuser rolle
   `forTenant`/RLS izolasyonu (`*.int.test.ts`); tenant A, tenant B'nin verisine erişemez.
