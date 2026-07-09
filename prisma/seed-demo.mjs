@@ -1,8 +1,8 @@
 // Demo veri + demo (test) hesabi — ZARARSIZ ve idempotent.
 //
 // Mevcut prisma/seed.ts her seyi siler; bu script silmez. Var olan kayitlara
-// dokunmadan, bos olan tablolara demo veri ekler ve bir demo WORKER hesabi
-// olusturur (giris ekranindaki "Demo olarak gez" butonu bunu kullanir).
+// dokunmadan, bos olan tablolara demo veri ekler ve salt-okunur bir demo ADMIN
+// hesabi olusturur (giris ekranindaki "Demo olarak gez" butonu bunu kullanir).
 // Container'da tsx olmadigi icin duz "node" ile calisacak sekilde .mjs.
 
 import { PrismaClient } from "@prisma/client";

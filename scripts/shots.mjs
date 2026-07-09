@@ -1,6 +1,7 @@
 // Canli demodan ekran goruntusu yakalar (headless Chromium, Playwright).
-// Demo hesabi WORKER oldugundan yalnizca WORKER sayfalari + public /magaza
-// cekilebilir. Calistir: node scripts/shots.mjs
+// Demo hesabi salt-okunur ADMIN oldugundan tum modul sayfalari (finans,
+// abonelik, personel dahil) + public /magaza cekilebilir.
+// Calistir: node scripts/shots.mjs
 import { chromium } from "@playwright/test";
 
 const BASE = process.env.SHOT_BASE ?? "https://ciftlik-pro.vercel.app";
@@ -8,8 +9,16 @@ const DIR = "docs/screenshots";
 const DIALOG = '[role="dialog"][aria-labelledby="onboarding-title"]';
 
 async function waitReady(page) {
+  await page.waitForLoadState("networkidle", { timeout: 20000 }).catch(() => {});
   await page.waitForSelector("h1", { timeout: 20000 }).catch(() => {});
   await page.waitForTimeout(900);
+}
+
+// Grafikli sayfalar: Recharts next/dynamic ile tembel yuklendiginden, ekran
+// goruntusu alinmadan once en az bir grafigin cizilmis olmasini bekle.
+async function waitCharts(page) {
+  await page.waitForSelector(".recharts-surface", { timeout: 15000 }).catch(() => {});
+  await page.waitForTimeout(1200);
 }
 
 // Onboarding modal'i (varsa) kapatir — demo kullanici onboardedAt=null oldugundan
@@ -73,11 +82,18 @@ async function run() {
   // 5) Hayvanlar + hayvan detayi
   await go(page, "/panel/hayvanlar");
   await shot(page, "animals.png");
-  const firstAnimal = page.locator('a[href^="/panel/hayvanlar/"]').first();
+  // "Yeni Hayvan" (/panel/hayvanlar/yeni) degil, gercek bir hayvan satiri:
+  // demo salt-okunur oldugundan form sayfalari /panel'e yonlendirir.
+  // Grafikli detay icin sut verimi olan hayvani (TR-001 Sarikiz) tercih et.
+  const rows = page.locator('a[href^="/panel/hayvanlar/"]:not([href$="/yeni"])');
+  const withCharts = rows.filter({ hasText: /Sarikiz|TR-001/i });
+  const firstAnimal = (await withCharts.count()) ? withCharts.first() : rows.first();
   if (await firstAnimal.count()) {
     await firstAnimal.click();
+    await page.waitForURL(/\/panel\/hayvanlar\/.+/, { timeout: 20000 }).catch(() => {});
     await waitReady(page);
     await dismiss(page);
+    await waitCharts(page);
     await shot(page, "animal-detail.png");
   }
 
@@ -89,8 +105,26 @@ async function run() {
   await go(page, "/panel/yem");
   await shot(page, "feed.png");
 
-  // 9) Magaza (public, yeni modul)
-  await go(page, "/magaza");
+  // 9-11) Finans / Abonelik (plan + kullanim panosu) / Personel
+  await go(page, "/panel/finans");
+  await waitCharts(page);
+  await shot(page, "finance.png");
+  await go(page, "/panel/abonelik");
+  await shot(page, "billing.png");
+  await go(page, "/panel/personel");
+  // Vitrin disi (ciftlik.com olmayan) gercek e-postalari goruntude maskele —
+  // yalnizca ekran goruntusu icin DOM'da; canli veriye dokunmaz.
+  await page.evaluate(() => {
+    const re = /\b([a-z0-9])[a-z0-9._%+-]*@(?!ciftlik\.com)[a-z0-9.-]+\.[a-z]{2,}\b/gi;
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+      n.textContent = n.textContent.replace(re, (_, first) => `${first}•••••••@•••.com`);
+    }
+  });
+  await shot(page, "staff.png");
+
+  // 12) Magaza (public) — dizin yerine urunlu tenant katalogu (vitrin verisi).
+  await go(page, "/magaza/default");
   await shot(page, "store.png");
 
   await browser.close();

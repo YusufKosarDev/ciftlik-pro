@@ -85,9 +85,13 @@ göstergeleriyle) ve aylık gelir-gider grafiği:
 
 ![Dashboard](docs/screenshots/dashboard.png)
 
-| 🌙 Dark mode | 🛒 Herkese açık mağaza (`/magaza`) |
-| ------------ | ---------------------------------- |
+| 🌙 Dark mode | 🛒 Çiftlik mağazası (`/magaza/[slug]`) |
+| ------------ | -------------------------------------- |
 | ![Dark mode](docs/screenshots/dashboard-dark.png) | ![Mağaza](docs/screenshots/store.png) |
+
+| 💳 Abonelik — plan & kullanım limitleri | 👥 Personel — davet & rol yönetimi |
+| --------------------------------------- | ----------------------------------- |
+| ![Abonelik](docs/screenshots/billing.png) | ![Personel](docs/screenshots/staff.png) |
 
 | Hayvanlar (sunucu-tarafı aranabilir tablo) | Hayvan detayı (süt/ağırlık grafikleri) |
 | ------------------------------------------ | -------------------------------------- |

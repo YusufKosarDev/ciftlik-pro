@@ -33,12 +33,12 @@ test("hatali parola ile giris reddedilir", async ({ page }) => {
   await expect(page.getByText("E-posta veya parola hatalı")).toBeVisible();
 });
 
-test("giris sayfasinda genel kayit (Kayit Ol) baglantisi yoktur", async ({
+test("giris sayfasinda ciftlik kaydi baglantisi vardir, eski 'Kayit Ol' yoktur", async ({
   page,
 }) => {
-  // Genel self-registration linki kaldiridi; yerine davet tabanli kabulle
-  // gelen kullanicilara ozel /kayit sayfasi erisimi var.
-  // Giris sayfasinda "Kayit Ol" metni OLMAMALI; "Çiftliğini oluştur" var.
+  // Herkese acik kayit, ciftlik (tenant) olusturma akisina tasindi:
+  // giris sayfasinda eski "Kayıt Ol" metni OLMAMALI; bunun yerine
+  // /kayit'a giden "Çiftliğini oluştur" baglantisi bulunmali.
   await page.goto("/giris");
   await expect(page.getByRole("link", { name: "Kayıt Ol" })).toHaveCount(0);
   // Ciftlik sahibi kayit baglantisi mevcut (farkli metin)

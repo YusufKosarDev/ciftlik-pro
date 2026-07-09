@@ -44,7 +44,8 @@ export default function GirisPage() {
     router.refresh();
   }
 
-  // Ziyaretçiler için: kayıt gerektirmeyen demo (WORKER) hesabıyla giriş.
+  // Ziyaretçiler için: kayıt gerektirmeyen, salt-okunur demo (ADMIN) hesabıyla
+  // giriş — tüm modüller ve SaaS özellikleri (abonelik, personel) gezilebilir.
   async function handleDemo() {
     setError(null);
     setDemoLoading(true);
