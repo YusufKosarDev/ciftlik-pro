@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   CartesianGrid,
   Line,
@@ -10,30 +11,30 @@ import {
   YAxis,
 } from "recharts";
 import type { MilkDailyPoint } from "@/lib/milk-stats";
+import { ChartFrame, chartAxis, chartGrid, chartTooltip } from "@/components/chart-frame";
 
 // Recharts iceren asil grafik; wrapper tarafindan tembel yuklenir.
 export function MilkYieldChartImpl({ data }: { data: MilkDailyPoint[] }) {
+  const t = useTranslations("Animals");
+
   return (
-    <div className="h-64 w-full rounded-xl border border-border bg-card p-5">
-      <h3 className="mb-4 font-semibold text-foreground">
-        Günlük Süt Verimi (son {data.length} gün)
-      </h3>
-      <ResponsiveContainer width="100%" height="82%">
+    <ChartFrame heightClass="h-64" title={t("milkChartTitle", { count: data.length })}>
+      <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-          <XAxis dataKey="label" fontSize={12} />
-          <YAxis fontSize={12} unit=" L" width={48} />
-          <Tooltip formatter={(value) => `${Number(value).toFixed(1)} L`} />
+          <CartesianGrid {...chartGrid} />
+          <XAxis dataKey="label" {...chartAxis} />
+          <YAxis unit=" L" width={48} {...chartAxis} />
+          <Tooltip formatter={(value) => `${Number(value).toFixed(1)} L`} {...chartTooltip} />
           <Line
             type="monotone"
             dataKey="amount"
-            name="Litre"
-            stroke="#16a34a"
+            name={t("milkUnit")}
+            stroke="var(--chart-milk)"
             strokeWidth={2}
             dot={{ r: 3 }}
           />
         </LineChart>
       </ResponsiveContainer>
-    </div>
+    </ChartFrame>
   );
 }

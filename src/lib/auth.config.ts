@@ -1,5 +1,6 @@
 import type { NextAuthConfig } from "next-auth";
 import type { Role } from "@prisma/client";
+import { canViewPanelPath } from "@/lib/nav-permissions";
 
 // Edge ortaminda (middleware) da calisabilen hafif yapilandirma.
 // Veritabani/bcrypt gibi agir islemler burada YOKTUR; onlar auth.ts'tedir.
@@ -31,7 +32,23 @@ export const authConfig = {
 
       // Giris yapmamis kullanici korumali alana giremez
       if (isProtected) {
-        return isLoggedIn;
+        if (!isLoggedIn) return false;
+
+        // Rol bazli bolum kontrolu BURADA yapilir ki reddedilen erisim gercek
+        // bir HTTP 307 ile donsun. Sunucu bileseninde redirect() cagirmak,
+        // layout stream'lendikten sonra calistigi icin 200 + istemci tarafi
+        // yonlendirme uretiyordu; veri sizmiyordu ama yetkisiz erisim durum
+        // kodundan ayirt edilemiyordu (izleme/denetim icin zayif sinyal).
+        //
+        // Sunucu tarafi requirePageView/requirePageWrite kontrolleri KALIR:
+        // burasi ilk kapi, orasi savunma derinligi.
+        const role = auth?.user?.role;
+        if (role && !canViewPanelPath(role, pathname)) {
+          // 307: Auth.js'in kendi giris yonlendirmesiyle ayni kod (varsayilan
+          // Response.redirect 302 dondururdu); panel yonlendirmeleri tek tip kalir.
+          return Response.redirect(new URL("/panel", request.nextUrl), 307);
+        }
+        return true;
       }
 
       // Giris yapmis kullanici giris/kayit sayfasina giderse panele yonlendir

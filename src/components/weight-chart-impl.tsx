@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   CartesianGrid,
   Line,
@@ -10,28 +11,30 @@ import {
   YAxis,
 } from "recharts";
 import type { WeightPoint } from "@/lib/weight-stats";
+import { ChartFrame, chartAxis, chartGrid, chartTooltip } from "@/components/chart-frame";
 
 // Recharts iceren asil grafik; wrapper tarafindan tembel yuklenir.
 export function WeightChartImpl({ data }: { data: WeightPoint[] }) {
+  const t = useTranslations("Animals");
+
   return (
-    <div className="h-64 w-full rounded-xl border border-border bg-card p-5">
-      <h3 className="mb-4 font-semibold text-foreground">Ağırlık Değişimi</h3>
-      <ResponsiveContainer width="100%" height="82%">
+    <ChartFrame heightClass="h-64" title={t("weightChartTitle")}>
+      <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-          <XAxis dataKey="label" fontSize={12} />
-          <YAxis fontSize={12} unit=" kg" width={52} domain={["auto", "auto"]} />
-          <Tooltip formatter={(value) => `${Number(value).toFixed(1)} kg`} />
+          <CartesianGrid {...chartGrid} />
+          <XAxis dataKey="label" {...chartAxis} />
+          <YAxis unit=" kg" width={52} domain={["auto", "auto"]} {...chartAxis} />
+          <Tooltip formatter={(value) => `${Number(value).toFixed(1)} kg`} {...chartTooltip} />
           <Line
             type="monotone"
             dataKey="weight"
-            name="Ağırlık"
-            stroke="#2563eb"
+            name={t("weightSeries")}
+            stroke="var(--chart-weight)"
             strokeWidth={2}
             dot={{ r: 3 }}
           />
         </LineChart>
       </ResponsiveContainer>
-    </div>
+    </ChartFrame>
   );
 }

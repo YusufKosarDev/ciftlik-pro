@@ -8,7 +8,7 @@
 // Container'da tsx bulunmadigi icin duz "node" ile calisacak sekilde .mjs.
 
 import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
+import { hashPassword } from "./password-hash.mjs";
 
 const prisma = new PrismaClient();
 
@@ -41,7 +41,7 @@ async function main() {
   }
 
   // Maliyet 12: src/lib/password-hash.ts BCRYPT_COST ile ayni.
-  const passwordHash = await bcrypt.hash(password, 12);
+  const passwordHash = await hashPassword(password);
   await prisma.user.create({
     data: { name, email, password: passwordHash, role: "ADMIN" },
   });

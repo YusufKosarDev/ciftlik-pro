@@ -18,7 +18,7 @@ export async function POST(request: Request) {
 
     // Hiz siniri: kazara/kotuye toplu olusturmayi onlemek icin IP basina
     // 5 dakikada en fazla 10 kayit.
-    const rl = rateLimit(`register:${clientIp(request)}`, 10, 5 * 60 * 1000);
+    const rl = await rateLimit(`register:${clientIp(request)}`, 10, 5 * 60 * 1000);
     if (!rl.success) {
       return NextResponse.json(
         { error: "Cok fazla istek. Lutfen biraz sonra tekrar deneyin." },

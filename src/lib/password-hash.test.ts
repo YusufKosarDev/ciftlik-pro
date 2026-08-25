@@ -42,3 +42,18 @@ describe("password-hash", () => {
     expect(isInvalid).toBe(false);
   });
 });
+
+// Seed/bootstrap script'leri Docker'da tsx olmadan calistigi icin ayri bir
+// .mjs uygulamasi kullaniyor (prisma/password-hash.mjs). Iki uygulamanin AYNI
+// formati uretmesi sart: aksi halde seed'lenen hesaplar giris yapamaz.
+describe("seed script'i ile uyum (prisma/password-hash.mjs)", () => {
+  it("mjs uygulamasinin urettigi hash, uygulama tarafinda dogrulanir", async () => {
+    const { hashPassword: hashFromSeed } = await import("../../prisma/password-hash.mjs");
+    const hash = await hashFromSeed("sifre1234");
+
+    expect(hash.startsWith("scrypt$")).toBe(true);
+    expect(hash.split("$")).toHaveLength(3);
+    await expect(verifyPassword("sifre1234", hash)).resolves.toBe(true);
+    await expect(verifyPassword("yanlisparola", hash)).resolves.toBe(false);
+  });
+});

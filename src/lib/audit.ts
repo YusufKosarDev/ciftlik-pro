@@ -46,3 +46,42 @@ export async function logAudit(
     console.error("Denetim kaydi olusturulamadi:", error);
   }
 }
+
+// Toplu islemler icin: N kayit icin N ayri INSERT yerine TEK createMany.
+// (Toplu silmede her kayit icin logAudit cagirmak 200 hayvanda 200 ayri
+// yazma demekti.) logAudit ile ayni "best-effort" sozlesmesi: hata firlatmaz.
+export async function logAuditMany(
+  actor: Actor | undefined,
+  action: Action,
+  entity: string,
+  items: Array<{ entityId?: string | null; summary?: string | null }>
+): Promise<void> {
+  if (items.length === 0) return;
+
+  const base = {
+    actorId: actor?.id ?? null,
+    actorName: actor?.name ?? actor?.email ?? "Bilinmiyor",
+    action,
+    entity,
+  };
+  const rows = items.map((item) => ({
+    ...base,
+    entityId: item.entityId ?? null,
+    summary: item.summary ?? null,
+  }));
+
+  try {
+    if (actor?.tenantId) {
+      const tenantId = actor.tenantId;
+      await withTenant(tenantId, (db) =>
+        db.auditLog.createMany({ data: rows.map((r) => ({ ...r, tenantId })) })
+      );
+    } else {
+      await prisma.auditLog.createMany({
+        data: rows.map((r) => ({ ...r, tenantId: null })),
+      });
+    }
+  } catch (error) {
+    console.error("Toplu denetim kaydi olusturulamadi:", error);
+  }
+}

@@ -12,6 +12,25 @@
   --border: #e2e8f0; /* kenarlik (slate-200) */
   --foreground: #0f172a; /* birincil metin (slate-900) */
   --muted-foreground: #64748b; /* ikincil metin (slate-500) */
+
+  /* Grafik token'lari. Recharts SVG sunum ozniteliklerine var() gecirilebilir;
+     boylece grafikler de dark mode'da diger yuzeylerle birlikte donuyor.
+     (Onceden #f0f0f0 gibi sabit renkler koyu temada yanlis duruyordu.) */
+  --chart-grid: #e2e8f0; /* izgara cizgisi */
+  --chart-axis: #64748b; /* eksen cizgisi ve etiketleri */
+  --chart-income: #16a34a;
+  --chart-expense: #dc2626;
+  --chart-milk: #16a34a;
+  --chart-weight: #2563eb;
+  /* Kategorik palet (donut) */
+  --chart-1: #10b981;
+  --chart-2: #3b82f6;
+  --chart-3: #f59e0b;
+  --chart-4: #ef4444;
+  --chart-5: #8b5cf6;
+  --chart-6: #ec4899;
+  --chart-7: #6366f1;
+  --chart-8: #14b8a6;
 }
 
 .dark {
@@ -21,6 +40,23 @@
   --border: #1e293b;
   --foreground: #e5e7eb;
   --muted-foreground: #94a3b8;
+
+  /* Koyu zeminde okunurluk icin daha acik/doygunlugu dusuk karsiliklar. */
+  --chart-grid: #1e293b;
+  --chart-axis: #94a3b8;
+  --chart-income: #4ade80;
+  --chart-expense: #f87171;
+  --chart-milk: #4ade80;
+  --chart-weight: #60a5fa;
+  --chart-1: #34d399;
+  --chart-2: #60a5fa;
+  --chart-3: #fbbf24;
+  --chart-4: #f87171;
+  --chart-5: #a78bfa;
+  --chart-6: #f472b6;
+  --chart-7: #818cf8;
+  --chart-8: #2dd4bf;
+
   color-scheme: dark;
 }
 

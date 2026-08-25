@@ -99,6 +99,12 @@ jobs:
       - name: Ornek veriyle doldur (seed)
         run: npm run db:seed
 
+      # Vitrin verisi: e2e testlerinin bir kismi demo hesabini (salt-okunurluk)
+      # ve magaza katalogunu (sepet -> siparis akisi) kullanir. seed.ts bunlari
+      # olusturmaz, bu yuzden demo seed'i de calistiriyoruz.
+      - name: Vitrin (demo) verisiyle doldur
+        run: npm run db:seed-demo
+
       - name: Playwright tarayicilarini kur
         run: npx playwright install --with-deps chromium
 

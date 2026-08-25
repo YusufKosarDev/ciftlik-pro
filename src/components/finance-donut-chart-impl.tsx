@@ -1,11 +1,53 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { useFormat } from "@/lib/format";
-
-const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#6366f1", "#14b8a6"];
+import { ChartFrame, chartTooltip, CHART_CATEGORICAL } from "@/components/chart-frame";
 
 type Item = { category: string; total: number };
+
+function Donut({
+  title,
+  data,
+  formatMoney,
+}: {
+  title: string;
+  data: Array<{ name: string; value: number }>;
+  formatMoney: (value: number) => string;
+}) {
+  return (
+    <ChartFrame heightClass="h-80" title={title}>
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="45%"
+            innerRadius={55}
+            outerRadius={75}
+            paddingAngle={4}
+            dataKey="value"
+          >
+            {data.map((entry, index) => (
+              <Cell
+                key={entry.name}
+                fill={CHART_CATEGORICAL[index % CHART_CATEGORICAL.length]}
+              />
+            ))}
+          </Pie>
+          <Tooltip formatter={(value) => formatMoney(Number(value))} {...chartTooltip} />
+          <Legend
+            verticalAlign="bottom"
+            height={36}
+            iconType="circle"
+            wrapperStyle={{ fontSize: 11 }}
+          />
+        </PieChart>
+      </ResponsiveContainer>
+    </ChartFrame>
+  );
+}
 
 export function FinanceDonutChartImpl({
   incomeData,
@@ -14,6 +56,7 @@ export function FinanceDonutChartImpl({
   incomeData: Item[];
   expenseData: Item[];
 }) {
+  const t = useTranslations("Finance");
   const { formatMoney } = useFormat();
 
   const incomePieData = incomeData.map((d) => ({ name: d.category, value: d.total }));
@@ -22,53 +65,10 @@ export function FinanceDonutChartImpl({
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {incomePieData.length > 0 && (
-        <div className="h-80 rounded-xl border border-border bg-card p-5 shadow-sm">
-          <h3 className="mb-4 font-semibold text-foreground text-sm">Gelir Kategori Dağılımı</h3>
-          <ResponsiveContainer width="100%" height="85%">
-            <PieChart>
-              <Pie
-                data={incomePieData}
-                cx="50%"
-                cy="45%"
-                innerRadius={55}
-                outerRadius={75}
-                paddingAngle={4}
-                dataKey="value"
-              >
-                {incomePieData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip formatter={(value) => formatMoney(Number(value))} />
-              <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: 11 }} />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
+        <Donut title={t("incomeBreakdownTitle")} data={incomePieData} formatMoney={formatMoney} />
       )}
-
       {expensePieData.length > 0 && (
-        <div className="h-80 rounded-xl border border-border bg-card p-5 shadow-sm">
-          <h3 className="mb-4 font-semibold text-foreground text-sm">Gider Kategori Dağılımı</h3>
-          <ResponsiveContainer width="100%" height="85%">
-            <PieChart>
-              <Pie
-                data={expensePieData}
-                cx="50%"
-                cy="45%"
-                innerRadius={55}
-                outerRadius={75}
-                paddingAngle={4}
-                dataKey="value"
-              >
-                {expensePieData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip formatter={(value) => formatMoney(Number(value))} />
-              <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: 11 }} />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
+        <Donut title={t("expenseBreakdownTitle")} data={expensePieData} formatMoney={formatMoney} />
       )}
     </div>
   );

@@ -15,7 +15,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const rl = rateLimit(`accept:${clientIp(request)}`, 10, 5 * 60 * 1000);
+    const rl = await rateLimit(`accept:${clientIp(request)}`, 10, 5 * 60 * 1000);
     if (!rl.success) {
       return NextResponse.json(
         { error: "Cok fazla istek. Lutfen biraz sonra tekrar deneyin." },

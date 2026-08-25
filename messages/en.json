@@ -212,7 +212,12 @@
     "mother": "Mother (lineage)",
     "motherNone": "— No mother selected —",
     "imageUrl": "Image URL",
-    "notes": "Notes"
+    "notes": "Notes",
+    "milkChartTitle": "Daily Milk Yield (last {count} days)",
+    "weightChartTitle": "Weight Change",
+    "milkUnit": "Litres",
+    "weightSeries": "Weight",
+    "milkChartLabel": "Daily Milk Yield"
   },
   "Fields": {
     "title": "Fields",
@@ -299,7 +304,9 @@
     "income": "Income",
     "expense": "Expense",
     "breakdown": "Category Breakdown",
-    "noRecords": "No records."
+    "noRecords": "No records.",
+    "incomeBreakdownTitle": "Income by Category",
+    "expenseBreakdownTitle": "Expenses by Category"
   },
   "Sales": {
     "title": "Sales",

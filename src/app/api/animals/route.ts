@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { authorizeWrite } from "@/lib/authz";
-import { logAudit } from "@/lib/audit";
+import { logAudit, logAuditMany } from "@/lib/audit";
 import { withTenant } from "@/lib/tenant-prisma";
 import { canAddRecord } from "@/lib/plan";
 import { animalSchema } from "@/lib/validations/animal";
@@ -132,11 +132,14 @@ export async function DELETE(request: Request) {
       return existing;
     });
 
-    if (result.length > 0) {
-      for (const item of result) {
-        await logAudit(authz.session.user, "DELETE", "Animal", item.id, item.tagNumber);
-      }
-    }
+    // Tek createMany: onceden her silinen kayit icin ayri bir INSERT yapiliyordu
+    // (200 hayvanlik toplu silme = 200 ayri yazma).
+    await logAuditMany(
+      authz.session.user,
+      "DELETE",
+      "Animal",
+      result.map((item) => ({ entityId: item.id, summary: item.tagNumber }))
+    );
 
     return NextResponse.json({ success: true, count: result.length });
   } catch (error) {

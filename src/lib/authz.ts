@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { redirect } from "next/navigation";
 import type { Role } from "@prisma/client";
 import { auth } from "@/lib/auth";
+import { navHrefsFor } from "@/lib/nav-permissions";
 
 // Rol bazli yetkilendirme (RBAC) icin tek merkez.
 // Okuma (listeleme/goruntuleme) giris yapmis her kullaniciya aciktir;
@@ -34,46 +35,18 @@ export function canWrite(role: Role, module: WriteModule): boolean {
   return (writePermissions[module] as readonly Role[]).includes(role);
 }
 
-// Hangi rol ust menude hangi panel yollarini gorur.
-// (Okuma acik olsa da menu role gore sadelestirilir.)
-const navByRole: Record<Role, string[]> = {
-  ADMIN: [
-    "/panel",
-    "/panel/harita",
-    "/panel/takvim",
-    "/panel/hayvanlar",
-    "/panel/tarlalar",
-    "/panel/stok",
-    "/panel/yem",
-    "/panel/yapilar",
-    "/panel/finans",
-    "/panel/satis",
-    "/panel/musteriler",
-    "/panel/urunler",
-    "/panel/siparisler",
-    "/panel/gorevler",
-    "/panel/personel",
-    "/panel/denetim",
-  ],
-  WORKER: [
-    "/panel",
-    "/panel/harita",
-    "/panel/takvim",
-    "/panel/hayvanlar",
-    "/panel/tarlalar",
-    "/panel/stok",
-    "/panel/yem",
-    "/panel/yapilar",
-    "/panel/gorevler",
-  ],
-  VET: ["/panel", "/panel/harita", "/panel/takvim", "/panel/hayvanlar", "/panel/gorevler"],
-  ACCOUNTANT: ["/panel", "/panel/harita", "/panel/takvim", "/panel/finans", "/panel/satis", "/panel/musteriler", "/panel/urunler", "/panel/siparisler", "/panel/gorevler"],
-};
-
-// Bir rolun menude gorebilecegi yollarin kumesi.
-export function navHrefsFor(role: Role): Set<string> {
-  return new Set(navByRole[role]);
-}
+// Menu/bolum izinleri edge-guvenli ayri bir modulde tutulur (nav-permissions.ts):
+// proxy EDGE ortaminda calisir; bu dosyanin next-auth / next/navigation
+// importlarini oraya tasiyamayiz. Mevcut cagiranlar bozulmasin diye buradan
+// yeniden export ediliyor.
+export {
+  navByRole,
+  navHrefsFor,
+  canViewPanelPath,
+  panelSectionOf,
+} from "@/lib/nav-permissions";
+// Not: navHrefsFor ayrica yukarida import edilir; `export ... from` saf bir
+// yeniden-export'tur ve bu modul icinde kullanilabilir bir bagalanti olusturmaz.
 
 // Demo (salt-okunur) hesap e-postasi. Bu hesap hicbir yazma islemi yapamaz;
 // boylece canli demoda ziyaretçiler veriyi bozamaz.
