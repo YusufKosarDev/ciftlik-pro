@@ -12,9 +12,9 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:ci": "docker compose up -d db && npx wait-on tcp:5433 --timeout 30000 && playwright test",
-    "db:seed": "tsx prisma/seed.ts",
-    "db:seed-admin": "node prisma/ensure-admin.mjs",
-    "db:seed-demo": "node prisma/seed-demo.mjs",
+    "db:seed": "node --env-file-if-exists=.env --import tsx prisma/seed.ts",
+    "db:seed-admin": "node --env-file-if-exists=.env prisma/ensure-admin.mjs",
+    "db:seed-demo": "node --env-file-if-exists=.env prisma/seed-demo.mjs",
     "db:deploy": "prisma migrate deploy",
     "postinstall": "prisma generate",
     "prepare": "husky"

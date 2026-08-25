@@ -4,6 +4,13 @@ import type { Role } from "@prisma/client";
 // Edge ortaminda (middleware) da calisabilen hafif yapilandirma.
 // Veritabani/bcrypt gibi agir islemler burada YOKTUR; onlar auth.ts'tedir.
 export const authConfig = {
+  // Host basligina guven. Auth.js v5, Vercel disinda (Docker/self-host, ters
+  // proxy arkasi) Host'u dogrulayamadigi icin varsayilan olarak REDDEDER ve
+  // /api/auth/* uclarini 500 "UntrustedHost" ile dusurur. Uygulama kendi
+  // proxy'sinin arkasinda calistigindan bu guveni acikca veriyoruz; ortamdan
+  // AUTH_TRUST_HOST ile de gecilebilir (Vercel'de zaten otomatiktir).
+  trustHost: true,
+
   // Oturum bilgisini JWT icinde tutuyoruz (Credentials provider icin gerekli).
   session: { strategy: "jwt" },
 
