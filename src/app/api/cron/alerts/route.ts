@@ -14,11 +14,14 @@ export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
 
   // CRON_SECRET tanimli degilse endpoint'i hicbir zaman acik birakmayiz.
+  // 503 (Service Unavailable) doneriz: bu bir sunucu COKMESI degil, eksik
+  // yapilandirmadir — Stripe webhook'undaki desenle ayni — ve boylece izleme
+  // alarmlarini 5xx hata orani olarak gereksiz tetiklemez.
   if (!secret) {
     console.error("CRON_SECRET ortam degiskeni tanimli degil. Endpoint devre disi.");
     return NextResponse.json(
       { error: "Sunucu yapilandirmasi eksik: CRON_SECRET ayarlanmamis" },
-      { status: 500 }
+      { status: 503 }
     );
   }
 

@@ -17,6 +17,9 @@ COPY . .
 # yer tutucu degiskenler yeterli. Gercek degerler calisma aninda verilir.
 ENV DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder"
 ENV AUTH_SECRET="build-time-placeholder-secret"
+# Bagimsiz (standalone) cikti yalnizca imaj derlemesinde uretilir; runner asamasi
+# .next/standalone/server.js'i calistirir. (Bkz. next.config.ts)
+ENV BUILD_STANDALONE=1
 # Prisma Client uret ve uygulamayi derle
 RUN npx prisma generate
 RUN npm run build

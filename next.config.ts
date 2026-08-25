@@ -49,8 +49,13 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  // Docker icin kucuk, bagimsiz calisabilir cikti uretir.
-  output: "standalone",
+  // Docker icin kucuk, bagimsiz calisabilir cikti uretir — SADECE imaj derlenirken.
+  // Vercel bu moda ihtiyac duymaz (platform kendi paketlemesini yapar) ve
+  // "standalone" acikken `next start` calismaz ("does not work with output:
+  // standalone" uyarisi). Bu yuzden yalnizca Dockerfile'in BUILD_STANDALONE=1
+  // verdigi derlemede etkinlestiriyoruz; yerelde `npm run build && npm start`
+  // ve Vercel derlemesi normal modda kalir.
+  output: process.env.BUILD_STANDALONE === "1" ? "standalone" : undefined,
 
   async headers() {
     return [

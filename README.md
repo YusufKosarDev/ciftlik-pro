@@ -291,6 +291,15 @@ bağımsız katmanda** zorlanır:
    npm install
    ```
 
+   > **npm 11.17+ kullanıyorsanız:** Bu sürümler paketlerin kurulum
+   > betiklerini varsayılan olarak engeller; `postinstall` adımındaki
+   > `prisma generate` sessizce atlanabilir. Kurulum çıktısında
+   > `allow-scripts` uyarısı görürseniz bir kez şunu çalıştırın:
+   >
+   > ```bash
+   > npx prisma generate
+   > ```
+
 2. Ortam değişkenlerini ayarlayın — `.env.example` dosyasını `.env` olarak
    kopyalayıp değerleri doldurun:
 
@@ -352,6 +361,14 @@ Seed çalıştırıldıysa:
 | `npm run test:e2e` | Uçtan uca testler (Playwright)    |
 | `npm run db:seed`  | Veritabanını örnek veriyle doldur |
 | `npm run db:seed-demo` | Demo verisi + salt-okunur demo hesabı (idempotent) |
+
+> Seed komutları `.env` dosyasını Node'un `--env-file-if-exists` bayrağıyla
+> kendileri yükler; ayrıca ortam değişkeni vermeniz gerekmez.
+
+> **Docker imajı:** `output: "standalone"` yalnızca `BUILD_STANDALONE=1` ile
+> derlendiğinde (Dockerfile bunu ayarlar) etkinleşir ve imaj
+> `node .next/standalone/server.js` ile çalışır. Yerelde ve Vercel'de normal
+> mod kullanılır; bu yüzden `npm run build && npm run start` sorunsuz çalışır.
 
 ## Test & Kalite
 

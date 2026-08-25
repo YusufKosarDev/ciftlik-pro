@@ -52,6 +52,10 @@ services:
       DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public"
       DIRECT_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public"
       AUTH_SECRET: ${AUTH_SECRET}
+      # Auth.js host dogrulamasi: container icinde istek Host'u "localhost:3000"
+      # gelir ve Vercel'in otomatik guveni burada yoktur. Kodda trustHost zaten
+      # acik; bunu ortamdan da acikca veriyoruz (ters proxy arkasi kurulumlar icin).
+      AUTH_TRUST_HOST: "true"
       # Bos veritabaninda olusturulacak ilk yonetici (idempotent).
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
