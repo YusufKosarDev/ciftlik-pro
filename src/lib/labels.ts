@@ -20,35 +20,36 @@ export const orderStatusLabels: Record<OrderStatus, string> = {
 };
 
 // Enum degerlerini arayuzde gosterecegimiz Turkce etiketlere ceviren haritalar.
+// (i18n disi/yedek yol; cevrilmis surumler icin src/lib/get-labels.ts ve use-labels.ts.)
 
 export const speciesLabels: Record<AnimalSpecies, string> = {
-  CATTLE: "Sigir",
+  CATTLE: "Sığır",
   SHEEP: "Koyun",
-  GOAT: "Keci",
+  GOAT: "Keçi",
   CHICKEN: "Tavuk",
-  OTHER: "Diger",
+  OTHER: "Diğer",
 };
 
 export const genderLabels: Record<AnimalGender, string> = {
-  FEMALE: "Disi",
+  FEMALE: "Dişi",
   MALE: "Erkek",
 };
 
 export const statusLabels: Record<AnimalStatus, string> = {
   ACTIVE: "Aktif",
-  SOLD: "Satildi",
-  DECEASED: "Oldu",
+  SOLD: "Satıldı",
+  DECEASED: "Öldü",
 };
 
 export const cropStatusLabels: Record<CropStatus, string> = {
   PLANTED: "Ekildi",
-  GROWING: "Buyuyor",
+  GROWING: "Büyüyor",
   HARVESTED: "Hasat edildi",
 };
 
 export const inventoryCategoryLabels: Record<InventoryCategory, string> = {
   FEED: "Yem",
-  MEDICINE: "Ilac",
+  MEDICINE: "İlaç",
   EQUIPMENT: "Ekipman",
   OTHER: "Diger",
 };
@@ -61,33 +62,33 @@ export const transactionTypeLabels: Record<TransactionType, string> = {
 export const taskStatusLabels: Record<TaskStatus, string> = {
   PENDING: "Bekliyor",
   IN_PROGRESS: "Devam ediyor",
-  DONE: "Tamamlandi",
+  DONE: "Tamamlandı",
 };
 
 export const breedingStatusLabels: Record<BreedingStatus, string> = {
-  PLANNED: "Planlandi",
+  PLANNED: "Planlandı",
   PREGNANT: "Gebe",
-  BORN: "Dogdu",
-  FAILED: "Basarisiz",
+  BORN: "Doğdu",
+  FAILED: "Başarısız",
 };
 
 export const structureTypeLabels: Record<StructureType, string> = {
-  BARN: "Ahir",
-  COOP: "Kumes",
+  BARN: "Ahır",
+  COOP: "Kümes",
   STORAGE: "Depo",
   OTHER: "Diger",
 };
 
 export const auditActionLabels: Record<AuditAction, string> = {
-  CREATE: "Olusturma",
-  UPDATE: "Guncelleme",
+  CREATE: "Oluşturma",
+  UPDATE: "Güncelleme",
   DELETE: "Silme",
-  LOGIN_FAILED: "Basarisiz giris",
+  LOGIN_FAILED: "Başarısız giriş",
 };
 
 export const roleLabels: Record<Role, string> = {
-  ADMIN: "Yonetici",
-  WORKER: "Calisan",
+  ADMIN: "Yönetici",
+  WORKER: "Çalışan",
   VET: "Veteriner",
   ACCOUNTANT: "Muhasebeci",
 };

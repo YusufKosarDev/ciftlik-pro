@@ -518,3 +518,18 @@ model Invitation {
   @@index([tenantId])
   @@index([email])
 }
+
+// Seed/bakim durumu icin kucuk anahtar-deger deposu.
+//
+// NEDEN: Demo verisi (vitrin tenant'i) surumlenir. Uygulama her dagitimda
+// "yuklu demo surumu" ile kodun tasidigi surumu karsilastirir; farkliysa demo
+// tenant'i sifirlanip yeniden doldurulur, ayniysa hicbir sey yapilmaz. Boylece
+// demo verisi elle mudahale gerektirmeden, kendi kendini onararak guncel kalir.
+//
+// NOT: Bu tablo RLS DISIDIR — tenant'a ait degil, sistem geneli bir kayittir
+// (Tenant ve Invitation ile ayni kategori).
+model SeedState {
+  key       String   @id // orn. "demoDataVersion"
+  value     String
+  updatedAt DateTime @updatedAt
+}

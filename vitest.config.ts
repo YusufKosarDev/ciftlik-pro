@@ -33,6 +33,10 @@ export default defineConfig({
         // Denetim kaydi yazma sarmalayicisi (DB yan etkisi); birim testine uygun degil,
         // yazma akislariyla (entegrasyon/e2e) dolayli kapsanir.
         "src/lib/audit.ts",
+        // Vitrin (demo) verisi: sabit icerik + toplu DB yazma. Birim testine uygun
+        // degil; dogrulugu seed'in kendisini calistirmakla (yerel + uretim derlemesi)
+        // gorulur. Kapsam olcumu is mantigiyla sinirli tutulur.
+        "src/lib/demo-data.ts",
         // Saf sabit/yardimci dosyalar (dallanma mantigi yok)
         "src/lib/labels.ts",
         "src/lib/cn.ts",

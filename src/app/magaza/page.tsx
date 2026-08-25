@@ -9,12 +9,29 @@ export const metadata: Metadata = {
 };
 
 // Magaza dizini: her ciftligin (tenant) kendi vitrini /magaza/[slug] altindadir.
-// Tenant tablosu RLS disidir; tum vitrinler herkese acik listelenir.
+// Tenant tablosu RLS disidir; dizin herkese acik okunur.
+//
+// OPT-IN: Yalnizca satista (active) EN AZ BIR urunu olan ciftlikler listelenir.
+// Kayit olan her tenant'i otomatik listelemek iki sorun uretiyordu: (1) yeni
+// kaydolan herkes hicbir sey satmadan herkese acik dizine dusuyordu, (2) demo
+// ortaminda bos vitrinler birikiyordu. Urun eklemek dogal bir "yayinla"
+// sinyalidir; katalogu doldurmak listeye girmek icin yeterlidir.
+// NOT: Tenant modelinde iliski alani tutulmuyor (tenantId ile gevsek baglanti),
+// bu yuzden once satistaki urunlerin tenant'lari toplanir, sonra o tenant'lar
+// okunur. Iki sorgu; ikisi de indeksli (Product.tenantId, Tenant.id).
 export default async function MagazaDizinPage() {
-  const farms = await prisma.tenant.findMany({
-    select: { name: true, slug: true },
-    orderBy: { name: "asc" },
+  const active = await prisma.product.findMany({
+    where: { active: true },
+    select: { tenantId: true },
+    distinct: ["tenantId"],
   });
+  const farms = active.length
+    ? await prisma.tenant.findMany({
+        where: { id: { in: active.map((p) => p.tenantId) } },
+        select: { name: true, slug: true },
+        orderBy: { name: "asc" },
+      })
+    : [];
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">

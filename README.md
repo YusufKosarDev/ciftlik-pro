@@ -78,6 +78,17 @@ next-intl · Recharts · Vitest + Playwright · Vercel.
 
 ---
 
+## 🎬 60 saniyede Çiftlik Pro
+
+Giriş → panel → hayvan listesi (sunucu-taraflı arama) → hayvan detayı
+(süt/ağırlık grafikleri) → 2D harita → takvim → finans → dark mode → çiftlik
+mağazası:
+
+![Çiftlik Pro demo turu](docs/demo.gif)
+
+> Kendiniz denemek için: **[ciftlik-pro.vercel.app](https://ciftlik-pro.vercel.app)**
+> → "Demo olarak gez".
+
 ## 📸 Ekran Görüntüleri
 
 **Panel (Dashboard)** — sol sidebar, özet kartları (gerçek "bu ay" trend
@@ -360,7 +371,14 @@ Seed çalıştırıldıysa:
 | `npm test`         | Birim testleri (Vitest)           |
 | `npm run test:e2e` | Uçtan uca testler (Playwright)    |
 | `npm run db:seed`  | Veritabanını örnek veriyle doldur |
-| `npm run db:seed-demo` | Demo verisi + salt-okunur demo hesabı (idempotent) |
+| `npm run db:seed-demo` | Vitrin (demo) verisi + salt-okunur demo hesabı |
+| `npm run db:seed-demo -- --reset` | Demo tenant'ını koşulsuz sıfırlayıp yeniden kurar |
+
+> **Demo verisi kendi kendini günceller.** İçerik `src/lib/demo-data.ts`
+> içinde sürümlenir (`DEMO_DATA_VERSION`); veritabanındaki sürüm eskiyse üretim
+> derlemesi demo tenant'ını otomatik yeniden kurar. Ayrıca gecelik bir cron
+> (`/api/cron/demo-reset`) demoyu sıfırlar; böylece canlı demo her ziyarette
+> aynı dolu ve derli toplu halde görünür.
 
 > Seed komutları `.env` dosyasını Node'un `--env-file-if-exists` bayrağıyla
 > kendileri yükler; ayrıca ortam değişkeni vermeniz gerekmez.
