@@ -1,10 +1,14 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "if [ \"$VERCEL_ENV\" = \"production\" ]; then prisma migrate deploy && next build; else next build; fi",
+  "buildCommand": "if [ \"$VERCEL_ENV\" = \"production\" ]; then prisma migrate deploy && node --import tsx prisma/seed-demo.ts && next build; else next build; fi",
   "crons": [
     {
       "path": "/api/cron/alerts",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/demo-reset",
+      "schedule": "30 2 * * *"
     }
   ]
 }

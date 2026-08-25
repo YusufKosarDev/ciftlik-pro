@@ -84,9 +84,9 @@ async function run() {
   await shot(page, "animals.png");
   // "Yeni Hayvan" (/panel/hayvanlar/yeni) degil, gercek bir hayvan satiri:
   // demo salt-okunur oldugundan form sayfalari /panel'e yonlendirir.
-  // Grafikli detay icin sut verimi olan hayvani (TR-001 Sarikiz) tercih et.
+  // Grafikli detay icin sut verimi olan hayvani (TR-1001 Sarikiz) tercih et.
   const rows = page.locator('a[href^="/panel/hayvanlar/"]:not([href$="/yeni"])');
-  const withCharts = rows.filter({ hasText: /Sarikiz|TR-001/i });
+  const withCharts = rows.filter({ hasText: /Sarıkız|TR-1001/i });
   const firstAnimal = (await withCharts.count()) ? withCharts.first() : rows.first();
   if (await firstAnimal.count()) {
     await firstAnimal.click();

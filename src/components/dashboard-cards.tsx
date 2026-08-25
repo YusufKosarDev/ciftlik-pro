@@ -64,7 +64,21 @@ function StatCard({
       </span>
       <div className="min-w-0 flex-1">
         <p className="text-sm text-muted-foreground truncate">{label}</p>
-        <p className={`mt-0.5 text-2xl font-bold tabular-nums truncate ${valueClass}`}>{value}</p>
+        {/*
+          Deger uzunluguna gore olcek: "26" ile "327.715,00 TL" ayni kutuya
+          sigmaz. Gercekci verilerle para tutarlari text-2xl'de tasip
+          kirpiliyordu (kirpilmis bir tutar yanlis okunur). Uzun degerlerde
+          punto kuculur; truncate yalnizca son care olarak kalir.
+        */}
+        <p
+          className={cn(
+            "mt-0.5 font-bold tabular-nums truncate",
+            value.length > 12 ? "text-lg" : value.length > 8 ? "text-xl" : "text-2xl",
+            valueClass
+          )}
+        >
+          {value}
+        </p>
         {delta && DeltaIcon && (
           <p className={cn("mt-1 flex items-center gap-1 text-xs font-medium truncate", deltaToneClass[delta.tone])}>
             <DeltaIcon className="h-3.5 w-3.5 shrink-0" />

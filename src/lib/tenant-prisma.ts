@@ -57,13 +57,17 @@ export type TenantPrisma = ReturnType<typeof forTenant>;
 // dahil). Cagiranlar: `await withTenant(session.user.tenantId, (db) => db.animal.findMany())`.
 export async function withTenant<T>(
   tenantId: string,
-  fn: (db: Parameters<Parameters<TenantPrisma["$transaction"]>[0]>[0]) => Promise<T>
+  fn: (db: Parameters<Parameters<TenantPrisma["$transaction"]>[0]>[0]) => Promise<T>,
+  // Uzun suren toplu isler (orn. demo verisi kurulumu) icin transaction
+  // zaman asimi yukseltilebilir. Varsayilan Prisma degerleri istek yollarinda
+  // kalir; yalnizca acikca verildiginde degisir.
+  options?: { timeout?: number; maxWait?: number }
 ): Promise<T> {
   return forTenant(tenantId).$transaction(async (tx) => {
     // set_config(name, value, is_local=true) === SET LOCAL (transaction kapsamli).
     await tx.$executeRaw`SELECT set_config('app.tenant_id', ${tenantId}, true)`;
     return fn(tx);
-  });
+  }, options);
 }
 
 // withTenant'in fn'ine gecen kapsanmis tx tipi (cagiranlar icin kisayol).

@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { PanelShell } from "@/components/panel-shell";
 import { OnboardingModal } from "@/components/onboarding-modal";
-import { roleLabels } from "@/lib/labels";
+import { getLabels } from "@/lib/get-labels";
 import { navHrefsFor } from "@/lib/authz";
 
 // Menu yolu -> ceviri anahtari (sira = goruntuleme sirasi).
@@ -40,6 +40,9 @@ export default async function PanelLayout({
 
   // Tüm olası menü öğeleri; her rol yalnızca yetkili olduğu yolları görür.
   const t = await getTranslations("Nav");
+  // Rol etiketi cevrilmis kaynaktan gelir (sabit Turkce labels.ts yerine);
+  // boylece sidebar EN'e gecince de dogru gorunur.
+  const { roleLabels } = await getLabels();
   const allNavItems = Object.entries(navKeys).map(([href, key]) => ({
     href,
     label: t(key),
