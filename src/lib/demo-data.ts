@@ -21,6 +21,7 @@ import { hashPassword } from "@/lib/password-hash";
 
 export const TENANT_ID = "default-tenant";
 export const TENANT_SLUG = "default";
+export const TENANT_NAME = "Yeşilvadi Çiftliği";
 export const DEMO_EMAIL = "demo@ciftlik.com";
 export const DEMO_PASSWORD = "demo1234";
 
@@ -561,9 +562,12 @@ export async function seedDemo(
   // Tenant ve SeedState RLS disidir: dogrudan `prisma` ile okunur/yazilir.
   await prisma.tenant.upsert({
     where: { id: TENANT_ID },
+    // Ad da tazelenir: vitrin tenant'inin adi demo icerigidir ve /magaza
+    // dizininde gorunur (eski kurulumlarda "Varsayilan Ciftlik" kaliyordu).
+    // Slug DEGISTIRILMEZ — herkese acik magaza URL'leri ona baglidir.
     // Vitrin tenant'i PRO'dur (sinirsiz); yeni kayitlar FREE baslar.
-    update: { plan: "PRO" },
-    create: { id: TENANT_ID, name: "Yeşilvadi Çiftliği", slug: TENANT_SLUG, plan: "PRO" },
+    update: { name: TENANT_NAME, plan: "PRO" },
+    create: { id: TENANT_ID, name: TENANT_NAME, slug: TENANT_SLUG, plan: "PRO" },
   });
 
   const state = await prisma.seedState.findUnique({ where: { key: SEED_STATE_KEY } });

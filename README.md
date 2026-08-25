@@ -2,460 +2,371 @@
 
 # 🌾 Çiftlik Pro
 
-**Her çiftlik sahibinin kendi izole çiftliğini (tenant) yönettiği, rol bazlı
-yetkilendirmeye sahip, çok-kiracılı (multi-tenant) tam yığın Çiftlik Yönetim
-Sistemi (ERP) — hayvan, tarla, stok, finans, satış, mağaza ve personel tek panelde.**
+**A multi-tenant SaaS Farm Management System (ERP).** Every farm owner signs up,
+gets a fully isolated tenant, and runs the whole operation — livestock, fields,
+inventory, finance, sales, a public storefront, tasks and staff — from one
+role-based dashboard.
 
 [![CI](https://github.com/YusufKosarDev/ciftlik-pro/actions/workflows/ci.yml/badge.svg)](https://github.com/YusufKosarDev/ciftlik-pro/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/YusufKosarDev/ciftlik-pro/branch/main/graph/badge.svg)](https://codecov.io/gh/YusufKosarDev/ciftlik-pro)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Coverage](https://img.shields.io/badge/coverage-~95%25%20(lib)-success?logo=vitest&logoColor=white)](#test--kalite)
-[![Tests](https://img.shields.io/badge/tests-277%20unit%20%2B%207%20e2e-success)](#test--kalite)
-[![Multi-tenant](https://img.shields.io/badge/multi--tenant-Postgres%20RLS-4169E1)](#-çok-kiracılık-multi-tenant-saas)
+[![Tests](https://img.shields.io/badge/tests-277%20unit%20%2B%207%20e2e-success)](#testing--quality)
+[![Multi-tenant](https://img.shields.io/badge/multi--tenant-Postgres%20RLS-4169E1)](#multi-tenancy)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-🔗 **Canlı Demo: [ciftlik-pro.vercel.app](https://ciftlik-pro.vercel.app)**
-&nbsp;·&nbsp; Giriş için **"Demo olarak gez"** butonu (veya `demo@ciftlik.com` / `demo1234`)
+🔗 **Live demo: [ciftlik-pro.vercel.app](https://ciftlik-pro.vercel.app)** &nbsp;·&nbsp;
+click **"Demo olarak gez"** (Browse as demo) — or `demo@ciftlik.com` / `demo1234`
+
+🇹🇷 **[Türkçe README](README.tr.md)**
 
 </div>
 
 ---
 
-## 🌍 English Summary
+## 🎬 Çiftlik Pro in 60 seconds
 
-**Çiftlik Pro** is a full-stack, **multi-tenant SaaS Farm Management System (ERP)**
-where each farm owner signs up, gets an isolated tenant, and runs their entire
-operation — animals, fields, inventory, finance, sales, a storefront, tasks and
-staff — from a single role-based dashboard. _(The detailed documentation below is
-in Turkish.)_
+Sign in → dashboard → animal list (server-side search) → animal detail (milk and
+weight charts) → 2D farm map → calendar → finance → dark mode → farm storefront:
 
-**Highlights**
-
-- **Multi-tenancy with true isolation** — every tenant's data is isolated by
-  **PostgreSQL Row-Level Security** (`ENABLE`/`FORCE`, `WITH CHECK`) *plus* an
-  app-layer Prisma client extension that injects `tenantId` into every query. The
-  tenant context is set per request via `SET LOCAL app.tenant_id` inside an
-  interactive transaction (pgbouncer/serverless-safe). Cross-tenant leakage is
-  covered by integration tests against a real non-superuser Postgres role.
-- **Auth, RBAC & onboarding** — Auth.js (NextAuth v5) with four roles (Admin,
-  Worker, Vet, Accountant), enforced centrally (`src/lib/authz.ts`) on both write
-  APIs and sensitive pages. **Public farm sign-up** creates a tenant + owner-admin
-  in one transaction; staff join via **tokenized invitations**. A read-only demo
-  lets visitors explore without an account.
-- **SaaS billing & plan limits** — FREE vs PRO plans with enforced limits (active
-  animals / staff seats); env-gated **Stripe Subscription Checkout** with webhook
-  → `Tenant.plan`, plus a usage dashboard. **KVKK/GDPR self-service:** full tenant
-  data export (JSON) and account deletion.
-- **Domain modules** — animal tracking (health, vaccinations, milk yield, weight,
-  breeding & lineage), fields & crops with per-crop economics, inventory/feed with
-  transactional stock deduction, finance, **sales & customers** (each sale auto-posts
-  an income transaction), a **per-tenant public storefront** (`/magaza/[slug]`) with
-  a cart and payment-free or **Stripe** checkout, calendar, tasks, a 2D farm map, and onboarding.
-- **Security hardening** — HTTP security headers (CSP/HSTS/…), brute-force rate
-  limiting on login/register, asynchronous scrypt hashing (with legacy bcrypt
-  compatibility), http(s)-only image URLs, audited failed logins, and a full
-  write audit log.
-- **Performance** — server-side pagination/search/sort (DB `where`/`orderBy`/
-  `skip`/`take` + `count`) with date-range indexes, database-level critical stock
-  filtering, parallelized cron tenant processing, unstable_cache for storefronts,
-  and lazy-loaded charts (`next/dynamic`).
-- **Modern UI & i18n** — sidebar layout, dark mode (semantic color tokens), a ⌘K
-  command palette, dashboard trend deltas, and a Turkish/English i18n foundation
-  (next-intl).
-- **Quality** — end-to-end type safety (Zod + Prisma), **277 unit/component tests**
-  (Vitest + Testing Library), tenant-isolation integration tests (real Postgres,
-  non-superuser role) and **7 e2e tests** (Playwright), run on every PR in CI
-  against a real PostgreSQL service.
-
-**Stack:** Next.js 16 (App Router, RSC) · TypeScript · PostgreSQL + Prisma 6
-(**Row-Level Security** multi-tenancy) · Auth.js · Tailwind CSS · Zod · Stripe ·
-next-intl · Recharts · Vitest + Playwright · Vercel.
-
-🔗 **Live demo:** [ciftlik-pro.vercel.app](https://ciftlik-pro.vercel.app) — use the
-**"Demo olarak gez"** (Browse as demo) button, or `demo@ciftlik.com` / `demo1234`.
+![Çiftlik Pro demo tour](docs/demo.gif)
 
 ---
 
-## 🎬 60 saniyede Çiftlik Pro
+## Why this project is interesting
 
-Giriş → panel → hayvan listesi (sunucu-taraflı arama) → hayvan detayı
-(süt/ağırlık grafikleri) → 2D harita → takvim → finans → dark mode → çiftlik
-mağazası:
+The hard part of a multi-tenant SaaS is not the CRUD — it is making a data leak
+between tenants **structurally impossible**. One forgotten `where: { tenantId }`
+is a breach, and code review does not scale as a defence across ~47 write
+endpoints.
 
-![Çiftlik Pro demo turu](docs/demo.gif)
+So isolation is enforced twice, in two independent layers:
 
-> Kendiniz denemek için: **[ciftlik-pro.vercel.app](https://ciftlik-pro.vercel.app)**
-> → "Demo olarak gez".
+1. **PostgreSQL Row-Level Security** — every tenant table has `ENABLE` + `FORCE`
+   row level security and a `tenant_isolation` policy
+   (`tenantId = current_setting('app.tenant_id')`, plus `WITH CHECK` on writes).
+   If a query forgets its filter, the database returns nothing rather than someone
+   else's data. In production the app connects as a dedicated
+   `NOSUPERUSER NOBYPASSRLS` role, because a superuser ignores RLS entirely.
 
-## 📸 Ekran Görüntüleri
+2. **A Prisma Client Extension** that injects `tenantId` into every list, count,
+   aggregate and bulk-write `where`. This layer is for ergonomics; the database is
+   the guarantee.
 
-**Panel (Dashboard)** — sol sidebar, özet kartları (gerçek "bu ay" trend
-göstergeleriyle) ve aylık gelir-gider grafiği:
+The tenant context is set with `SET LOCAL app.tenant_id` **inside an interactive
+transaction** — a session-level `SET` would leak across requests behind a
+connection pooler (pgbouncer), which is exactly the bug the design exists to
+prevent.
+
+This is verified, not asserted: integration tests run against a real PostgreSQL
+instance **as the non-superuser role** and prove that tenant A cannot reach tenant
+B's rows via `findMany` *or* `findUnique`, and that with no context set **zero**
+rows are visible — the system fails closed.
+
+> 📐 The full reasoning, the alternatives that were rejected, and the known
+> limitations are in **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
+
+---
+
+## Screenshots
+
+**Dashboard** — sidebar layout, summary cards with real month-over-month deltas,
+and a monthly income/expense chart:
 
 ![Dashboard](docs/screenshots/dashboard.png)
 
-| 🌙 Dark mode | 🛒 Çiftlik mağazası (`/magaza/[slug]`) |
-| ------------ | -------------------------------------- |
-| ![Dark mode](docs/screenshots/dashboard-dark.png) | ![Mağaza](docs/screenshots/store.png) |
+| 🌙 Dark mode | 🛒 Farm storefront (`/magaza/[slug]`) |
+| ------------ | ------------------------------------- |
+| ![Dark mode](docs/screenshots/dashboard-dark.png) | ![Storefront](docs/screenshots/store.png) |
 
-| 💳 Abonelik — plan & kullanım limitleri | 👥 Personel — davet & rol yönetimi |
-| --------------------------------------- | ----------------------------------- |
-| ![Abonelik](docs/screenshots/billing.png) | ![Personel](docs/screenshots/staff.png) |
+| 💳 Billing — plan & usage limits | 👥 Staff — invitations & roles |
+| -------------------------------- | ------------------------------ |
+| ![Billing](docs/screenshots/billing.png) | ![Staff](docs/screenshots/staff.png) |
 
-| Hayvanlar (sunucu-tarafı aranabilir tablo) | Hayvan detayı (süt/ağırlık grafikleri) |
-| ------------------------------------------ | -------------------------------------- |
-| ![Hayvanlar](docs/screenshots/animals.png) | ![Hayvan detayı](docs/screenshots/animal-detail.png) |
+| Animals (server-side searchable table) | Animal detail (milk / weight charts) |
+| -------------------------------------- | ------------------------------------ |
+| ![Animals](docs/screenshots/animals.png) | ![Animal detail](docs/screenshots/animal-detail.png) |
 
-| 2D Çiftlik Haritası | Takvim (aşı/görev/hasat/doğum) |
-| ------------------- | ------------------------------ |
-| ![Harita](docs/screenshots/map.png) | ![Takvim](docs/screenshots/calendar.png) |
+| 2D farm map | Calendar (vaccinations / tasks / harvest / births) |
+| ----------- | -------------------------------------------------- |
+| ![Map](docs/screenshots/map.png) | ![Calendar](docs/screenshots/calendar.png) |
 
-**Hoş geldin turu (onboarding)** — ilk girişte role özel, çok adımlı tanıtım:
+---
 
-![Hoş geldin turu](docs/screenshots/onboarding.png)
+## Features
 
-## ✨ Özellikler
+- **Multi-tenant SaaS** — each owner signs up and runs an isolated farm; data
+  never crosses tenants. See [Multi-tenancy](#multi-tenancy).
+- **Auth & RBAC** — Auth.js (NextAuth v5) with four roles (Admin, Worker, Vet,
+  Accountant), enforced from one place at the edge, the page and the API.
+  Public farm sign-up creates tenant + owner admin in a single transaction; staff
+  join through tokenized, single-use, time-limited invitations.
+- **Billing & plan limits** — FREE vs PRO with enforced limits (active animals,
+  staff seats), env-gated Stripe subscription checkout with a webhook that flips
+  `Tenant.plan`, and a usage dashboard. **GDPR/KVKK self-service:** full tenant
+  export (JSON) and account deletion.
+- **Livestock** — records, health history, vaccination schedule with due-date
+  alerts, milk yield trends, weight/growth tracking, breeding and lineage
+  (offspring ↔ mother).
+- **Fields & crops** — planting/harvest records, per-crop cost/revenue and yield
+  per decare, plus a 2D farm map you can drag to lay out.
+- **Inventory & feed** — feed/medicine/equipment with critical-level alerts;
+  feed consumption deducts stock **atomically** (a conditional `updateMany`
+  guards against TOCTOU, so stock can never go negative).
+- **Finance** — income/expense, net balance, monthly chart, category breakdown
+  computed in the database, CSV export.
+- **Sales & customers** — every sale automatically posts a linked income
+  transaction in the same transaction, so the books always match.
+- **Storefront & orders** — a public per-tenant catalogue (`/magaza` directory →
+  `/magaza/[slug]`), a slug-scoped cart, and multi-line orders with price/name
+  snapshots. Stripe checkout when configured, pay-on-delivery otherwise.
+- **Calendar, tasks and staff** — vaccinations, tasks, harvests and births in one
+  monthly view; task assignment with overdue warnings.
+- **Modern UI** — sidebar layout, dark mode via semantic tokens, a ⌘K command
+  palette, and a `cva`-based design system.
+- **Fully bilingual** — Turkish/English across the whole app (next-intl):
+  **all 459 translation keys** exist in both locales, including localized date
+  and currency formatting.
+- **Email alerts** — a daily cron emails each tenant's admins a digest of critical
+  stock, overdue tasks and upcoming vaccinations (Resend).
 
-- **Çok-kiracılık (multi-tenant SaaS)** — her çiftlik sahibi kayıt olup kendi
-  **izole çiftliğini (tenant)** yönetir; veriler Postgres **RLS** + uygulama-katmanı
-  `tenantId` filtreleriyle tenant'lar arasında **asla** sızmaz. Ayrıntı:
-  [Çok-kiracılık](#-çok-kiracılık-multi-tenant-saas).
-- **Kimlik doğrulama & RBAC** — giriş ve rol bazlı erişim (Admin, Çalışan,
-  Veteriner, Muhasebeci). **Herkese açık çiftlik kaydı** (`/kayit`) tek
-  transaction'da Tenant + sahip-ADMIN oluşturur; personel ise **token'lı davetle**
-  tenant içinde eklenir. Parolalar asenkron scrypt ile hash'lenir (eski bcrypt şifreleriyle geriye dönük tam uyumludur).
-- **Planlar & faturalandırma** — FREE/PRO planları ve zorlanan limitler (aktif
-  hayvan / personel koltuğu); env-gated **Stripe abonelik** akışı (webhook →
-  `Tenant.plan`) ve kullanım panosu. **KVKK:** veri ihracı (JSON) + çiftlik silme.
-- **Hayvan takibi** — kayıt yönetimi, sağlık kayıtları, aşı takvimi (tarih
-  uyarılı), süt verimi (trend grafiği), ağırlık/büyüme takibi (grafik).
-- **Üreme & soy** — gebelik/doğum kayıtları ve yavru–anne (pedigri) bağlantısı.
-- **Tarla yönetimi** — tarlalar, ekim/hasat kayıtları, ekim başına maliyet/gelir
-  ve dönüm başına verim; 2D çiftlik haritası.
-- **Stok & yem** — yem/ilaç/ekipman takibi, kritik seviye uyarısı; yem tüketimi
-  stoğu otomatik düşürür (transactional).
-- **Finans** — gelir-gider kayıtları, net bakiye özeti, aylık grafik.
-- **Satış & Müşteri** — satış kayıtları müşteriye bağlanır; her satış otomatik bir
-  **gelir işlemi** üretip finansa yansır (transactional). Müşteri detayında satış
-  geçmişi ve toplam ciro.
-- **Mağaza & Sipariş** — **per-tenant** herkese açık katalog (`/magaza` dizini →
-  `/magaza/[slug]` çiftlik kataloğu), slug'a özel `localStorage` sepeti ve
-  çok-kalemli sipariş; **Stripe** yapılandırıldıysa ödeme, yoksa "ödeme teslimatta".
-  Admin tarafında ürün CRUD + sipariş durum yönetimi.
-- **Takvim** — aşı, görev, hasat ve doğumlar tek aylık takvimde.
-- **Personel & görevler** — çalışanlara görev atama, gecikme uyarısı.
-- **Dashboard** — özet kartları (gerçek "bu ay" trend göstergeleriyle), kritik
-  stok / geciken görev / yaklaşan aşı uyarıları.
-- **Modern arayüz** — sol sidebar düzeni, dark mode (semantik renk token'ları), `⌘K`
-  komut paleti (hızlı gezinme + eylem) ve `cva` tabanlı tasarım sistemi.
-- **Çok dillilik (i18n)** — next-intl altyapısı (cookie-locale, varsayılan TR);
-  giriş ekranı ve panel kabuğu TR/EN.
-- **Hoş geldin turu (onboarding)** — ilk panel girişinde role özel, çok adımlı
-  tanıtım modal'ı; Profil'den istenildiğinde yeniden başlatılabilir.
-- **Aranabilir tablolar** — tüm liste modüllerinde **sunucu-tarafı (DB)** arama,
-  kolon sıralama ve sayfalama; durum URL'de tutulur (paylaşılabilir/derin bağlantı).
-- **E-posta bildirimleri** — günlük cron (Vercel Cron) ile kritik stok, geciken
-  görev ve yaklaşan aşı özetini yöneticilere e-posta gönderir (Resend).
+---
 
-## 🏆 Öne Çıkan Mühendislik Detayları
+## Engineering highlights
 
-- **Çok-kiracılı izolasyon (RLS + app)** — Postgres Row-Level Security (`FORCE` +
-  `WITH CHECK`) ve tenant-kapsamlı Prisma extension; pgbouncer-uyumlu
-  `SET LOCAL app.tenant_id`. Üretimde non-superuser rol. (Bkz.
-  [Çok-kiracılık](#-çok-kiracılık-multi-tenant-saas).)
-- **Rol bazlı yetkilendirme (RBAC)** tek merkezden (`src/lib/authz.ts`); hem yazma
-  (API) hem hassas okuma (sayfa) düzeyinde uygulanır.
-- **Uçtan uca tip güvenliği** — Zod şemaları hem istemci hem sunucuda doğrular;
-  Prisma ile veritabanı tipleri.
-- **Test & CI/CD** — 277 birim/bileşen testi (Vitest + Testing Library) +
-  tenant-izolasyon entegrasyon testleri + 7 uçtan uca test (Playwright),
-  GitHub Actions'ta gerçek PostgreSQL servisiyle her PR'da çalışır.
-- **Transactional bütünlük** — yem tüketimi stoğu atomik düşürür (TOCTOU'ya karşı
-  koşullu `updateMany`); satış + bağlı gelir işlemi ve sepet → çok-kalemli sipariş
-  tek `$transaction` içinde, fiyat/ad **snapshot**'larıyla oluşturulur.
-- **Serverless-doğru veritabanı** — pooled (`DATABASE_URL`) + direct
-  (`DIRECT_URL`) ayrımıyla Vercel + Neon/Supabase'e hazır.
-- **Sunucu-tarafı listeleme** — arama/sıralama/sayfalama veritabanında yapılır
-  (`where` / `orderBy` / `skip` / `take` + `count`); büyük tablolarda bellek/ağ
-  yükü sabit kalır. Sık filtrelenen tarih kolonlarında DB index'leri.
-- **Performans-odaklı yükleme** — Recharts `next/dynamic` (ssr:false) ile tembel
-  yüklenir; görseller lazy. Finans özet/kırılımı `groupBy` ile DB'de hesaplanır.
-- **Opsiyonel/env-gated entegrasyonlar** — Stripe ödeme ve Resend e-posta yalnızca
-  ilgili anahtarlar tanımlıysa devreye girer; yoksa uygulama sorunsuz çalışır.
-- **Yeniden kullanılabilir tasarım sistemi** — `cva` tabanlı Button/Badge
-  primitive'leri, URL-güdümlü jenerik `DataTable` ve semantik token tabanlı dark mode.
+- **Two-layer tenant isolation** (Postgres RLS + Prisma extension), pgbouncer-safe
+  `SET LOCAL`, non-superuser role in production — verified by integration tests.
+- **One authorization source** (`src/lib/authz.ts`) applied at three levels: edge
+  proxy (real `307` before rendering), server pages, and every write endpoint.
+- **End-to-end type safety** — Zod validates on both client and server; Prisma
+  types the database.
+- **Transactional integrity** — atomic stock deduction, sale + income transaction,
+  cart → multi-line order, all in single transactions with snapshotted prices.
+- **Serverless-correct database access** — pooled (`DATABASE_URL`) and direct
+  (`DIRECT_URL`) connections split for runtime vs migrations.
+- **Server-side list handling** — search, sort and pagination run in the database
+  (`where` / `orderBy` / `skip` / `take` + `count`) with indexes on frequently
+  filtered date columns, so memory and payload stay constant as tables grow.
+- **Performance-minded loading** — Recharts is lazy-loaded via `next/dynamic`
+  (`ssr: false`), finance summaries are aggregated with `groupBy`, storefronts are
+  cached with `unstable_cache`.
+- **Self-healing demo data** — the showcase dataset is versioned in code and
+  re-seeded automatically when the version changes, plus a nightly reset cron.
+- **Graceful degradation** — Stripe, Resend and cron are env-gated; without keys
+  the app still runs end to end.
 
-## 🧱 Mimari
+---
+
+## Architecture
 
 ```mermaid
 flowchart LR
-  B[Tarayıcı] -->|HTTP| P[Proxy / Auth.js<br/>oturum + tenantId]
-  P --> RSC[Next.js App Router<br/>Sunucu Bileşenleri]
+  B[Browser] -->|HTTP| P[Proxy · Auth.js<br/>session + tenantId + role]
+  P --> RSC[Next.js App Router<br/>Server Components]
   RSC --> TX[withTenant / forTenant<br/>SET LOCAL app.tenant_id]
-  RSC --> API[API Route'ları]
+  RSC --> API[Route Handlers]
   API -->|RBAC + Zod| TX
-  TX -->|RLS zorlamalı| DB[(PostgreSQL · RLS)]
+  TX -->|RLS enforced| DB[(PostgreSQL · RLS)]
 ```
 
-- **App Router (RSC)** — listeler sunucuda **tenant-kapsamlı** Prisma ile okunur.
-- **API Route'ları** — tüm yazma işlemleri; `authorizeWrite` (RBAC) + Zod doğrulaması.
-- **Auth.js (NextAuth v5)** — JWT oturum (rol + **`tenantId`**); edge-uyumlu proxy ile rota koruması.
-- **Tenant-kapsamlı Prisma** — `forTenant` her sorguya `tenantId` enjekte eder;
-  `withTenant` interaktif transaction içinde `SET LOCAL app.tenant_id` ayarlar
-  (pgbouncer-uyumlu). Postgres **RLS** DB-seviyesinde son garanti.
+- **App Router (RSC)** — lists are read on the server through a tenant-scoped client.
+- **Route Handlers** — all writes; `authorizeWrite` (RBAC) then Zod validation.
+- **Auth.js (NextAuth v5)** — JWT session carrying role and `tenantId`; edge proxy
+  guards routes.
+- **PostgreSQL RLS** — the database-level guarantee.
 
-## 🔐 Güvenlik & RBAC
+📖 **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** — decisions and trade-offs ·
+**[docs/API.md](docs/API.md)** — all endpoints with required roles and validation
 
-Yetkilendirme tek merkezden yönetilir (`src/lib/authz.ts`) ve **iki katmanda**
-uygulanır: yazma uçları `authorizeWrite` ile, hassas/forma dayalı sayfalar ise
-`requirePageWrite` / `requirePageView` ile korunur. **Okuma** giriş yapmış her
-kullanıcıya açıktır; **yazma** ise role göre kısıtlanır:
+---
 
-| Rol           | Yazma yetkisi                                                        |
-| ------------- | ------------------------------------------------------------------- |
-| **Admin**     | Tüm modüller + personel yönetimi + denetim günlüğü                  |
-| **Çalışan**   | Hayvan, süt, ağırlık, tarla/ekim, stok/yem, yapılar, üreme         |
-| **Veteriner** | Sağlık & aşı, üreme, ağırlık                                        |
-| **Muhasebeci**| Finans, Satış, Müşteri, Ürün/Mağaza, Sipariş yönetimi               |
+## Security & RBAC
 
-Sertleştirme önlemleri:
+Authorization lives in `src/lib/authz.ts` and is enforced at three levels: the
+edge proxy, sensitive pages (`requirePageView` / `requirePageWrite`), and every
+write endpoint (`authorizeWrite`). Reading is open to any signed-in user; writing
+is role-restricted.
 
-- **Tenant izolasyonu (iki katman)** — Postgres **RLS** (`ENABLE`+`FORCE`,
-  `WITH CHECK`) her tenant-tablosunu DB-seviyesinde korur; ayrıca uygulama katmanı
-  her sorguya `tenantId` enjekte eder. Üretimde uygulama **non-superuser** rolle
-  bağlanır (RLS bypass edilemez). İzolasyon entegrasyon testleriyle doğrulanır.
-- **Kayıt & davet** — herkese açık **çiftlik kaydı** sahip-ADMIN üretir; personel
-  yalnızca **token'lı davetle** eklenir. Davet token'ları tahmin edilemez sırlardır,
-  süre sınırlıdır ve tek kullanımlıktır. Ziyaretçiler salt-okunur **"Demo olarak gez"** ile gezer.
-- **Demo hesabı salt-okunurdur** — hiçbir yazma işlemi yapamaz (canlı demoda veri korunur).
-- **Parolalar scrypt** ile hash'lenir (eski bcrypt şifreleriyle geriye dönük uyumludur);
-  sabit zamanlı karşılaştırma (`timingSafeEqual`) ve asenkron hashing ile olay döngüsü kilitlenme korumalıdır. Düz metin asla saklanmaz/dönülmez.
-- **HTTP güvenlik başlıkları** — tüm yanıtlara CSP, HSTS, `X-Frame-Options`,
-  `X-Content-Type-Options`, `Referrer-Policy` ve `Permissions-Policy` (`next.config.ts`).
-- **Brute-force koruması** — giriş ve kayıt uçlarında IP / e-posta bazlı hız sınırı
-  (`src/lib/rate-limit.ts`); başarısız giriş denemeleri denetim günlüğüne
-  (`LOGIN_FAILED`) yazılır. *Not: Bellek içi (in-memory Map) çalıştığından serverless
-  (Vercel) dağıtımlarda kararsızlık gösterir; dağıtık üretim ortamlarında Upstash Redis
-  veya veritabanı tabanlı bir rate-limiter'a geçilmesi önerilir.*
-- **Güvenli görsel URL'leri** — hayvan görseli yalnızca `http(s)` URL kabul eder
-  (Zod); `javascript:` / `data:` şemaları reddedilir (CSP `img-src` ile uyumlu).
-- **Çift taraflı doğrulama** — Zod şemaları hem istemcide hem her yazma ucunda sunucuda çalışır.
-- **Denetim günlüğü** — her yazma işlemi (kim / ne / ne zaman) `AuditLog`'a kaydedilir.
-- **Korumalı cron** — bildirim ucu `CRON_SECRET` ile `Authorization` başlığı doğrular.
+| Role | Can write |
+| --- | --- |
+| **Admin** | Everything + staff management + audit log |
+| **Worker** | Animals, milk, weight, fields/crops, inventory/feed, structures, breeding |
+| **Vet** | Health & vaccinations, breeding, weight |
+| **Accountant** | Finance, sales, customers, products/storefront, orders |
 
-## 🏢 Çok-kiracılık (Multi-tenant SaaS)
+Hardening:
 
-Proje tek-çiftlik bir ERP'den, **her çiftlik sahibinin kendi izole çiftliğini
-(tenant) yönettiği** çok-kiracılı bir SaaS'a dönüştürülmüştür. **#1 risk veri
-sızıntısıdır:** tek bir tenant'sız sorgu = ihlal. Bu yüzden izolasyon **iki
-bağımsız katmanda** zorlanır:
+- **Tenant isolation in two layers** (see above), with a non-superuser database
+  role in production.
+- **Passwords hashed with scrypt** (async, so the event loop never blocks),
+  constant-time comparison, and full backward compatibility with legacy bcrypt
+  hashes. Plaintext is never stored or returned.
+- **Security headers on every response** — CSP, HSTS, `X-Frame-Options`,
+  `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`.
+- **Brute-force protection** — per-IP and per-IP+email rate limits on login and
+  registration; failed logins are written to the audit log as `LOGIN_FAILED`.
+  *Note: the limiter is in-memory, so on serverless it is divided across
+  instances — see [known limitations](docs/ARCHITECTURE.md#known-limitations).*
+- **Safe image URLs** — animal images accept `http(s)` only; `javascript:` and
+  `data:` are rejected.
+- **Double validation** — the same Zod schemas run on the client and on every
+  write endpoint.
+- **Audit log** — every write records who did what and when.
+- **Protected cron** — fail-closed; without `CRON_SECRET` the endpoints return
+  `503`, with it they require a bearer token.
+- **Read-only demo account** — cannot write anything, so the live demo stays intact.
 
-1. **Postgres Row-Level Security (RLS)** — her tenant-tablosunda `ENABLE` + `FORCE`
-   ve `tenant_isolation` policy'si (`tenantId = current_setting('app.tenant_id')`,
-   yazmada `WITH CHECK`). Sorgu nereyi unutursa unutsun **veritabanı sızdırmaz**.
-   Üretimde uygulama **non-superuser** rolle bağlanır (`prisma/rls-app-role.sql`,
-   bkz. [`docs/PRODUCTION-RLS.md`](docs/PRODUCTION-RLS.md)).
-2. **Uygulama katmanı** — bir Prisma Client Extension (`forTenant`) `where`'lere
-   otomatik `tenantId` enjekte eder; `withTenant` interaktif `$transaction` içinde
-   `SET LOCAL app.tenant_id` ayarlar — **pgbouncer/serverless uyumlu** desen.
+---
 
-Öne çıkanlar:
+## Multi-tenancy
 
-- **Per-tenant unique kısıtlar** — örn. kulak numarası `@@unique([tenantId, tagNumber])`.
-- **Oturum** — JWT/session'da `tenantId`; tüm okuma/yazma bu bağlamda çalışır.
-- **Kayıt & davet** — public çiftlik kaydı (`/kayit`) + token'lı personel daveti (`/davet/[token]`).
-- **Planlar** — FREE/PRO, zorlanan limitler, env-gated Stripe abonelik + kullanım panosu.
-- **Per-tenant mağaza** — `/magaza/[slug]`; sipariş slug→tenant çözümüyle oluşturulur.
-- **Cron çok-kiracılı** — günlük uyarılar her tenant'ın kendi verisiyle, kendi admin'lerine.
-- **KVKK self-servis** — tenant verisi JSON ihracı + çiftlik silme (ADMIN).
-- **İzolasyon testleri** — gerçek DB + non-superuser rolle: tenant A, tenant B'nin verisini göremez.
+Çiftlik Pro started as a single-farm ERP and was migrated to a multi-tenant SaaS
+where **every owner runs an isolated tenant**. Highlights:
 
-> Tam mimari ve fazlı durum: **[`docs/SAAS-PLAN.md`](docs/SAAS-PLAN.md)**.
+- **Per-tenant unique constraints** — e.g. ear tags are `@@unique([tenantId, tagNumber])`.
+- **Session-carried tenant** — `tenantId` lives in the JWT; every read and write
+  runs in that context.
+- **Sign-up & invitations** — public farm sign-up (`/kayit`) and tokenized staff
+  invitations (`/davet/[token]`).
+- **Plans** — FREE/PRO with enforced limits, env-gated Stripe subscription, usage
+  dashboard.
+- **Per-tenant storefront** — `/magaza/[slug]`; orders resolve the tenant from the
+  slug and re-read products inside it, so a foreign product id is rejected.
+- **Multi-tenant cron** — daily alerts are computed per tenant and sent to that
+  tenant's admins.
+- **GDPR/KVKK self-service** — JSON export and farm deletion.
+- **Isolation tests** — against a real database with the non-superuser role.
 
-## 🛠️ Teknolojiler
+---
 
-- [Next.js 16](https://nextjs.org/) (App Router) + TypeScript
-- [PostgreSQL](https://www.postgresql.org/) + [Prisma 6](https://www.prisma.io/) (ORM)
-- [Auth.js (NextAuth v5)](https://authjs.dev/) — kimlik doğrulama
-- [Tailwind CSS](https://tailwindcss.com/) — arayüz
-- [Zod](https://zod.dev/) — veri doğrulama
-- [Stripe](https://stripe.com/) — ödeme (opsiyonel, env-gated)
-- [next-intl](https://next-intl.dev/) — çok dillilik · [next-themes](https://github.com/pacocoursey/next-themes) — dark mode
-- [Recharts](https://recharts.org/) — grafikler
-- [Vitest](https://vitest.dev/) + [Playwright](https://playwright.dev/) — test
-- [Docker](https://www.docker.com/) — yerel veritabanı
+## Tech stack
 
-## Kurulum
+[Next.js 16](https://nextjs.org/) (App Router, RSC) · TypeScript ·
+[PostgreSQL](https://www.postgresql.org/) + [Prisma 6](https://www.prisma.io/) ·
+[Auth.js](https://authjs.dev/) · [Tailwind CSS](https://tailwindcss.com/) ·
+[Zod](https://zod.dev/) · [Stripe](https://stripe.com/) (optional) ·
+[next-intl](https://next-intl.dev/) · [Recharts](https://recharts.org/) ·
+[Vitest](https://vitest.dev/) + [Playwright](https://playwright.dev/) ·
+[Docker](https://www.docker.com/) · Vercel
 
-### Gereksinimler
+---
 
-- Node.js 20+
-- Docker (PostgreSQL için)
+## Getting started
 
-### Adımlar
+**Requirements:** Node.js 20+ and Docker.
 
-1. Bağımlılıkları yükleyin:
+```bash
+# 1. Install dependencies
+npm install
+#    npm 11.17+ blocks install scripts by default; if you see an "allow-scripts"
+#    warning, the postinstall `prisma generate` was skipped — run it once:
+#    npx prisma generate
 
-   ```bash
-   npm install
-   ```
+# 2. Environment
+cp .env.example .env
+#    Generate AUTH_SECRET:
+#    node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 
-   > **npm 11.17+ kullanıyorsanız:** Bu sürümler paketlerin kurulum
-   > betiklerini varsayılan olarak engeller; `postinstall` adımındaki
-   > `prisma generate` sessizce atlanabilir. Kurulum çıktısında
-   > `allow-scripts` uyarısı görürseniz bir kez şunu çalıştırın:
-   >
-   > ```bash
-   > npx prisma generate
-   > ```
+# 3. Database
+docker compose up -d db
+npx prisma migrate dev
 
-2. Ortam değişkenlerini ayarlayın — `.env.example` dosyasını `.env` olarak
-   kopyalayıp değerleri doldurun:
+# 4. Sample data (optional)
+npm run db:seed          # base accounts + a small dataset
+npm run db:seed-demo     # the full showcase dataset + read-only demo account
 
-   ```bash
-   cp .env.example .env
-   ```
+# 5. Run
+npm run dev              # http://localhost:3000
+```
 
-   `AUTH_SECRET` üretmek için:
+### Sample accounts (after `npm run db:seed`)
 
-   ```bash
-   node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
-   ```
+| Email | Password | Role |
+| --- | --- | --- |
+| `admin@ciftlik.com` | `sifre1234` | Admin |
+| `ahmet@ciftlik.com` | `sifre1234` | Worker |
+| `vet@ciftlik.com` | `sifre1234` | Vet |
 
-3. PostgreSQL veritabanını Docker ile başlatın:
+### Commands
 
-   ```bash
-   docker compose up -d
-   ```
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Development server |
+| `npm run build` / `npm run start` | Production build / server |
+| `npm run lint` | ESLint |
+| `npm test` | Unit tests (Vitest) |
+| `npm run test:coverage` | Unit tests with coverage |
+| `npm run test:e2e` | End-to-end tests (Playwright) |
+| `npm run db:seed` | Seed base sample data |
+| `npm run db:seed-demo` | Seed the showcase dataset (`-- --reset` to force) |
 
-4. Veritabanı şemasını uygulayın:
+---
 
-   ```bash
-   npx prisma migrate dev
-   ```
+## Testing & quality
 
-5. (İsteğe bağlı) Örnek verilerle doldurun:
+- **277 unit/component tests** (Vitest + Testing Library) covering validation
+  schemas, RBAC, rate limiting, list query parsing, plan limits, finance/map/date/
+  calendar helpers and UI primitives — **~95% line coverage on business logic**.
+- **Tenant isolation integration tests** against a real PostgreSQL instance using
+  the non-superuser role (`*.int.test.ts`).
+- **7 Playwright e2e tests** — authentication, animal CRUD, and RBAC denial.
+- **CI (GitHub Actions)** — two parallel jobs on every push and PR: `build`
+  (tsc + ESLint + Vitest + production build) and `e2e` (real PostgreSQL service +
+  seed + Playwright).
+- **Pre-commit** — husky + lint-staged run `eslint --fix` on staged files.
 
-   ```bash
-   npm run db:seed
-   ```
+---
 
-6. Geliştirme sunucusunu başlatın:
-
-   ```bash
-   npm run dev
-   ```
-
-   Uygulama [http://localhost:3000](http://localhost:3000) adresinde çalışır.
-
-### Örnek giriş bilgileri
-
-Seed çalıştırıldıysa:
-
-| E-posta             | Parola     | Rol       |
-| ------------------- | ---------- | --------- |
-| admin@ciftlik.com   | sifre1234  | Admin     |
-| ahmet@ciftlik.com   | sifre1234  | Çalışan   |
-| vet@ciftlik.com     | sifre1234  | Veteriner |
-
-## Komutlar
-
-| Komut              | Açıklama                          |
-| ------------------ | --------------------------------- |
-| `npm run dev`      | Geliştirme sunucusu               |
-| `npm run build`    | Üretim derlemesi                  |
-| `npm run start`    | Üretim sunucusu                   |
-| `npm run lint`     | Kod denetimi (ESLint)             |
-| `npm test`         | Birim testleri (Vitest)           |
-| `npm run test:e2e` | Uçtan uca testler (Playwright)    |
-| `npm run db:seed`  | Veritabanını örnek veriyle doldur |
-| `npm run db:seed-demo` | Vitrin (demo) verisi + salt-okunur demo hesabı |
-| `npm run db:seed-demo -- --reset` | Demo tenant'ını koşulsuz sıfırlayıp yeniden kurar |
-
-> **Demo verisi kendi kendini günceller.** İçerik `src/lib/demo-data.ts`
-> içinde sürümlenir (`DEMO_DATA_VERSION`); veritabanındaki sürüm eskiyse üretim
-> derlemesi demo tenant'ını otomatik yeniden kurar. Ayrıca gecelik bir cron
-> (`/api/cron/demo-reset`) demoyu sıfırlar; böylece canlı demo her ziyarette
-> aynı dolu ve derli toplu halde görünür.
-
-> Seed komutları `.env` dosyasını Node'un `--env-file-if-exists` bayrağıyla
-> kendileri yükler; ayrıca ortam değişkeni vermeniz gerekmez.
-
-> **Docker imajı:** `output: "standalone"` yalnızca `BUILD_STANDALONE=1` ile
-> derlendiğinde (Dockerfile bunu ayarlar) etkinleşir ve imaj
-> `node .next/standalone/server.js` ile çalışır. Yerelde ve Vercel'de normal
-> mod kullanılır; bu yüzden `npm run build && npm run start` sorunsuz çalışır.
-
-## Test & Kalite
-
-- **Birim testleri (Vitest):** doğrulama şemaları, RBAC yetkilendirme, hız sınırı,
-  liste sorgu parametreleri, plan limitleri, finans/harita/tarih/takvim yardımcıları
-  + UI bileşenleri (Testing Library: Badge/Button/EmptyState/DataTable/OnboardingModal)
-  — `npm test` (277 test). Kapsam raporu için
-  `npm run test:coverage` (iş mantığı `src/lib` için ~%95 satır kapsamı).
-- **Tenant-izolasyon entegrasyon testleri:** gerçek PostgreSQL + non-superuser rolle
-  `forTenant`/RLS izolasyonu (`*.int.test.ts`); tenant A, tenant B'nin verisine erişemez.
-- **Uçtan uca testler (Playwright):** kimlik doğrulama, hayvan CRUD akışı ve
-  RBAC erişim engeli — `npm run test:e2e` (7 test).
-- **CI (GitHub Actions):** her push/PR'da iki paralel job —
-  `build` (tsc + ESLint + Vitest + üretim derlemesi) ve
-  `e2e` (gerçek PostgreSQL servisi + seed + Playwright).
-- **Pre-commit (husky + lint-staged):** commit öncesi staged `.ts/.tsx`
-  dosyalarında otomatik `eslint --fix` çalışır.
-
-## Proje Yapısı
+## Project structure
 
 ```
-prisma/            Şema ve migration dosyaları
+prisma/            Schema, migrations, seeds, RLS role script
+docs/              Architecture, API reference, production RLS guide
+e2e/               Playwright tests
 src/
-  app/             Sayfalar ve API rotaları (App Router)
-    api/           REST API uç noktaları
-    panel/         Korumalı yönetim paneli
-  components/      Yeniden kullanılabilir bileşenler
-  lib/             Yardımcılar (prisma, auth, doğrulama, etiketler)
+  app/             Pages and API routes (App Router)
+    api/           REST endpoints
+    panel/         Protected dashboard
+    magaza/        Public per-tenant storefront
+  components/      Reusable components
+  lib/             Domain logic, auth, validation, tenant plumbing
+messages/          tr.json / en.json translation catalogues
 ```
 
-## Vercel'e Deploy
+---
 
-1. **Veritabanı:** [Neon](https://neon.tech) veya [Supabase](https://supabase.com)
-   üzerinde bir PostgreSQL oluşturun. İki bağlantı dizesi alın:
-   - **Pooled** (pgbouncer) → `DATABASE_URL` (uygulama çalışma zamanı)
-   - **Direct** (pooler olmayan) → `DIRECT_URL` (migration'lar için)
+## Deploying to Vercel
 
-   > Serverless ortamda (Vercel) bağlantı tükenmesini önlemek için uygulama
-   > havuzlanmış bağlantı, migration'lar ise doğrudan bağlantı kullanır.
+1. **Database** — create PostgreSQL on [Neon](https://neon.tech) or
+   [Supabase](https://supabase.com) and take two connection strings: the **pooled**
+   one for `DATABASE_URL` and the **direct** one for `DIRECT_URL`.
+2. **Import the repo** into Vercel (Next.js is detected automatically).
+   `prisma generate` runs via `postinstall`, and production builds run
+   `prisma migrate deploy` before `next build`.
+3. **Environment variables:**
 
-2. **Vercel:** Bu repoyu Vercel'e import edin (Next.js otomatik algılanır).
-   `prisma generate` deploy sırasında `postinstall` ile otomatik çalışır.
-3. **Ortam değişkenleri** (Vercel → Project Settings → Environment Variables):
+   | Variable | Description |
+   | --- | --- |
+   | `DATABASE_URL` | Pooled connection (runtime) |
+   | `DIRECT_URL` | Direct connection (migrations) |
+   | `AUTH_SECRET` | `openssl rand -base64 32` |
+   | `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NAME` | First admin bootstrap |
 
-   | Değişken         | Açıklama                                       |
-   | ---------------- | ---------------------------------------------- |
-   | `DATABASE_URL`   | Üretim PostgreSQL **pooled** bağlantı dizesi   |
-   | `DIRECT_URL`     | Üretim PostgreSQL **direct** bağlantı dizesi   |
-   | `AUTH_SECRET`    | `openssl rand -base64 32` ile üretin           |
-   | `ADMIN_EMAIL`    | İlk yönetici e-postası                         |
-   | `ADMIN_PASSWORD` | İlk yönetici parolası (en az 8 karakter)       |
-   | `ADMIN_NAME`     | İlk yönetici adı (opsiyonel)                   |
+   **Optional, env-gated** — the related feature disables itself cleanly when
+   absent: `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` (storefront payments),
+   `STRIPE_PRO_PRICE_ID` (subscriptions), `RESEND_API_KEY` + `ALERT_EMAIL_FROM`
+   (email alerts), `CRON_SECRET` (cron protection), `NEXT_PUBLIC_SITE_URL`.
 
-   > **Opsiyonel (env-gated):** `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET`
-   > (mağaza ödemesi), `STRIPE_PRO_PRICE_ID` (PRO abonelik faturalandırması),
-   > `RESEND_API_KEY` + `ALERT_EMAIL_FROM` (e-posta uyarıları), `CRON_SECRET`
-   > (cron koruması), `NEXT_PUBLIC_SITE_URL` (Stripe redirect adresi). Tanımlı
-   > değilse ilgili özellik zarif biçimde devre dışı kalır. Tümü `.env.example`'da listelidir.
+4. **Enable RLS properly in production** — create the non-superuser role and point
+   the runtime connection at it: see
+   [docs/PRODUCTION-RLS.md](docs/PRODUCTION-RLS.md).
 
-4. **Şemayı üretim DB'sine uygulayın** (ilk deploy'dan önce, yerelden):
+5. Push to `main` → Vercel builds and deploys.
 
-   ```bash
-   # Migration'lar direct bağlantı üzerinden uygulanır
-   DATABASE_URL="<pooled>" DIRECT_URL="<direct>" npm run db:deploy
-   DATABASE_URL="<pooled>" DIRECT_URL="<direct>" \
-     ADMIN_EMAIL=... ADMIN_PASSWORD=... npm run db:seed-admin
-   ```
+---
 
-   Alternatif: Vercel **Build Command**'i `prisma migrate deploy && next build`
-   yaparak migration'ı her deploy'da otomatik uygulayabilirsiniz.
+## License
 
-5. `main` dalına push → Vercel otomatik derleyip yayınlar.
+[MIT](LICENSE)
