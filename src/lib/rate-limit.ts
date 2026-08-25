@@ -1,10 +1,21 @@
-// Basit, bagimliliksiz hiz sinirlayici (sabit pencere sayaci).
+import { prisma } from "@/lib/prisma";
+
+// Hiz sinirlayici (sabit pencere sayaci).
 //
-// NEDEN BOYLE: Harici bir Redis (orn. Upstash) provizyonu gerektirmeden,
-// bellek-ici calisan bir sinirlayici. Tek ornekli/yerel/demo dagitimda gercek
-// koruma saglar. Serverless'ta her ornek kendi sayacini tutar; coklu ornekte
-// koruma orneklere bolunur (yani daha gevsek). Dagitik kesinlik gerektiginde
-// `rateLimit` govdesini Upstash Ratelimit ile degistirmek yeterli — arayuz ayni.
+// SAYAC NEREDE TUTULUR: Postgres. Bellek-ici bir sayac tek ornekte dogru
+// calisir, ama serverless'ta (Vercel) her ornek kendi sayacini tuttugu icin
+// koruma ornek sayisina bolunur — 3 ornek, 3 kat daha gevsek limit demektir.
+// Paylasilan tek bir sayac icin zaten elimizde olan veritabanini kullaniyoruz;
+// yeni bir servis (Redis vb.) ve yeni bir gizli anahtar gerektirmez.
+//
+// ATOMIKLIK: Artirma TEK bir INSERT ... ON CONFLICT DO UPDATE ile yapilir ve
+// guncel sayaci RETURNING ile geri verir. Oku-sonra-yaz yaris kosulu yoktur:
+// es zamanli iki istek de sayilir.
+//
+// DAYANIKLILIK: Veritabanina ulasilamazsa istek REDDEDILMEZ; bellek-ici
+// sayaca dusulur (fail-open). Hiz siniri bir guvenlik derinligi katmanidir,
+// tek basina bir kapi degil — DB kesintisinde girisi tamamen kilitlemek
+// (fail-closed) korumadan daha buyuk bir zarar olurdu.
 
 export type RateLimitResult = {
   success: boolean; // Istek izinli mi?
@@ -12,9 +23,10 @@ export type RateLimitResult = {
   retryAfterSec: number; // Engellendiyse, kac saniye sonra tekrar denenebilir
 };
 
+// --- Bellek-ici uygulama (yedek + birim testleri) ---------------------------
+
 type Bucket = { count: number; resetAt: number };
 
-// Anahtar -> sayac. Modul kapsaminda tutulur (ornek omru boyunca yasar).
 const store = new Map<string, Bucket>();
 
 // Bellek sismesini onlemek icin kaba bir ust sinir; asilirsa suresi gecmisler
@@ -35,11 +47,12 @@ function sweep(now: number): void {
   }
 }
 
-// Bir anahtar icin sabit pencere sinir kontrolu. Her cagri bir deneme sayar.
-//   limit    : pencere basina izin verilen deneme sayisi
-//   windowMs : pencere uzunlugu (ms)
-//   now      : test edilebilirlik icin enjekte edilebilir saat
-export function rateLimit(
+/**
+ * Bellek-ici sabit pencere sayaci. Dogrudan kullanilmaz; `rateLimit` bunu
+ * yalnizca veritabanina ulasilamadiginda yedek olarak cagirir. Saf ve
+ * senkron oldugu icin birim testleri bunun uzerinden yazilir.
+ */
+export function rateLimitMemory(
   key: string,
   limit: number,
   windowMs: number,
@@ -71,9 +84,85 @@ export function rateLimit(
   };
 }
 
-// Test/yardimci: belirli bir anahtarin sayacini sifirlar.
-export function resetRateLimit(key: string): void {
+// --- Paylasilan (veritabani) uygulama ---------------------------------------
+
+type CounterRow = { count: number; resetAt: Date };
+
+/**
+ * Bir anahtar icin sabit pencere sinir kontrolu. Her cagri bir deneme sayar.
+ *   limit    : pencere basina izin verilen deneme sayisi
+ *   windowMs : pencere uzunlugu (ms)
+ */
+export async function rateLimit(
+  key: string,
+  limit: number,
+  windowMs: number
+): Promise<RateLimitResult> {
+  const now = new Date();
+  const resetAt = new Date(now.getTime() + windowMs);
+
+  try {
+    // Tek atomik adim: satir yoksa 1'den baslat; varsa penceresi gecmisse
+    // sifirla, gecmemisse artir. RETURNING guncel degeri verir.
+    const rows = await prisma.$queryRaw<CounterRow[]>`
+      INSERT INTO "RateLimit" ("key", "count", "resetAt")
+      VALUES (${key}, 1, ${resetAt})
+      ON CONFLICT ("key") DO UPDATE SET
+        "count"   = CASE WHEN "RateLimit"."resetAt" <= ${now} THEN 1 ELSE "RateLimit"."count" + 1 END,
+        "resetAt" = CASE WHEN "RateLimit"."resetAt" <= ${now} THEN ${resetAt} ELSE "RateLimit"."resetAt" END
+      RETURNING "count", "resetAt"
+    `;
+
+    const row = rows[0];
+    if (!row) return rateLimitMemory(key, limit, windowMs, now.getTime());
+
+    if (row.count > limit) {
+      return {
+        success: false,
+        remaining: 0,
+        retryAfterSec: Math.max(
+          1,
+          Math.ceil((new Date(row.resetAt).getTime() - now.getTime()) / 1000)
+        ),
+      };
+    }
+    return { success: true, remaining: limit - row.count, retryAfterSec: 0 };
+  } catch (error) {
+    // Veritabani erisilemez: fail-open + bellek-ici yedek (bkz. dosya basi).
+    console.error("Hiz siniri sayaci veritabanina yazilamadi:", error);
+    return rateLimitMemory(key, limit, windowMs, now.getTime());
+  }
+}
+
+/** Yalnizca bellek-ici sayaci sifirlar (yedek yol + birim testleri). */
+export function resetRateLimitMemory(key: string): void {
   store.delete(key);
+}
+
+/** Belirli bir anahtarin sayacini sifirlar (orn. basarili giristen sonra). */
+export async function resetRateLimit(key: string): Promise<void> {
+  resetRateLimitMemory(key);
+  try {
+    await prisma.rateLimit.deleteMany({ where: { key } });
+  } catch (error) {
+    console.error("Hiz siniri sayaci silinemedi:", error);
+  }
+}
+
+/**
+ * Suresi gecmis sayaclari temizler. Gunluk cron tarafindan cagrilir; tablo
+ * sinirsiz buyumesin diye. Silinen satir sayisini doner.
+ */
+export async function pruneRateLimits(): Promise<number> {
+  try {
+    const { count } = await prisma.rateLimit.deleteMany({
+      where: { resetAt: { lte: new Date() } },
+    });
+    return count;
+  } catch (error) {
+    console.error("Hiz siniri temizligi basarisiz:", error);
+    return 0;
+  }
 }
 
 // Bir Request'ten istemci IP'sini cikarir (proxy/Vercel basliklari oncelikli).

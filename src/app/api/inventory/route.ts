@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
-import { logAudit } from "@/lib/audit";
+import { logAudit, logAuditMany } from "@/lib/audit";
 import { inventorySchema } from "@/lib/validations/inventory";
 
 // POST /api/inventory -> yeni stok kalemi olusturur
@@ -75,11 +75,14 @@ export async function DELETE(request: Request) {
       return existing;
     });
 
-    if (result.length > 0) {
-      for (const item of result) {
-        await logAudit(authz.session.user, "DELETE", "InventoryItem", item.id, item.name);
-      }
-    }
+    // Tek createMany (bkz. audit.ts logAuditMany): toplu silmede kayit basina
+    // ayri INSERT yerine tek yazma.
+    await logAuditMany(
+      authz.session.user,
+      "DELETE",
+      "InventoryItem",
+      result.map((item) => ({ entityId: item.id, summary: item.name }))
+    );
 
     return NextResponse.json({ success: true, count: result.length });
   } catch (error) {

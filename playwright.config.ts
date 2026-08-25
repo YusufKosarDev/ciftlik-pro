@@ -4,10 +4,11 @@ export default defineConfig({
   testDir: "./e2e",
   globalSetup: "./e2e/global-setup.ts",
   fullyParallel: true,
-  // CI'da dev sunucusunun ilk rota derlemesi (cold compile) yavas olabilir;
-  // paralel worker'lar bu yuku artirip kararsizliga yol acar. CI'da tek
-  // worker + birkac deneme ile deterministik hale getiriyoruz.
-  workers: process.env.CI ? 1 : undefined,
+  // Dev sunucusunun ilk rota derlemesi (cold compile) yavastir; paralel
+  // worker'lar ayni anda farkli rotalari derletince testler zaman asimina
+  // ugruyor. Tek worker hem deterministik hem de pratikte DAHA HIZLI
+  // (derlemeler sirayla, tekrar tekrar degil): 18 test ~50sn.
+  workers: 1,
   retries: process.env.CI ? 1 : 0,
   reporter: "list",
   // Varsayilan 5sn, cold compile'da yetersiz kalabiliyor.

@@ -13,7 +13,7 @@ role-based dashboard.
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Tests](https://img.shields.io/badge/tests-277%20unit%20%2B%207%20e2e-success)](#testing--quality)
+[![Tests](https://img.shields.io/badge/tests-288%20unit%20%2B%2018%20e2e-success)](#testing--quality)
 [![Multi-tenant](https://img.shields.io/badge/multi--tenant-Postgres%20RLS-4169E1)](#multi-tenancy)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -127,7 +127,7 @@ and a monthly income/expense chart:
 - **Modern UI** — sidebar layout, dark mode via semantic tokens, a ⌘K command
   palette, and a `cva`-based design system.
 - **Fully bilingual** — Turkish/English across the whole app (next-intl):
-  **all 459 translation keys** exist in both locales, including localized date
+  **all 466 translation keys** exist in both locales, including localized date
   and currency formatting.
 - **Email alerts** — a daily cron emails each tenant's admins a digest of critical
   stock, overdue tasks and upcoming vaccinations (Resend).
@@ -207,8 +207,10 @@ Hardening:
   `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`.
 - **Brute-force protection** — per-IP and per-IP+email rate limits on login and
   registration; failed logins are written to the audit log as `LOGIN_FAILED`.
-  *Note: the limiter is in-memory, so on serverless it is divided across
-  instances — see [known limitations](docs/ARCHITECTURE.md#known-limitations).*
+  Counters live in Postgres and are incremented with a single atomic upsert, so
+  the limit holds across serverless instances (an in-memory counter would be
+  divided among them). Verified by an integration test that fires ten concurrent
+  requests against a limit of four.
 - **Safe image URLs** — animal images accept `http(s)` only; `javascript:` and
   `data:` are rejected.
 - **Double validation** — the same Zod schemas run on the client and on every
@@ -306,16 +308,21 @@ npm run dev              # http://localhost:3000
 
 ## Testing & quality
 
-- **277 unit/component tests** (Vitest + Testing Library) covering validation
+- **288 unit/component tests** (Vitest + Testing Library) covering validation
   schemas, RBAC, rate limiting, list query parsing, plan limits, finance/map/date/
-  calendar helpers and UI primitives — **~95% line coverage on business logic**.
+  calendar helpers and UI primitives — **~91% line coverage on business logic** (the shared, database-backed paths are covered by integration tests instead).
 - **Tenant isolation integration tests** against a real PostgreSQL instance using
   the non-superuser role (`*.int.test.ts`).
-- **7 Playwright e2e tests** — authentication, animal CRUD, and RBAC denial.
+- **18 Playwright e2e tests** — authentication, animal CRUD, RBAC denial (real
+  307 at the edge), sale → automatic income transaction, storefront cart → order,
+  invitation → accept → role, and demo read-only enforcement.
 - **CI (GitHub Actions)** — two parallel jobs on every push and PR: `build`
   (tsc + ESLint + Vitest + production build) and `e2e` (real PostgreSQL service +
   seed + Playwright).
 - **Pre-commit** — husky + lint-staged run `eslint --fix` on staged files.
+- **Lighthouse** (production build, mobile emulation): sign-in **88** / storefront
+  **92** performance, **95-96** accessibility, **100** best practices, **100** SEO,
+  **CLS 0** on both. Details and caveats in [docs/LIGHTHOUSE.md](docs/LIGHTHOUSE.md).
 
 ---
 

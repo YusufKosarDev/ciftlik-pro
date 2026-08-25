@@ -533,3 +533,22 @@ model SeedState {
   value     String
   updatedAt DateTime @updatedAt
 }
+
+// Hiz siniri sayaclari (sabit pencere).
+//
+// NEDEN VERITABANINDA: Sayac bellekte tutuldugunda serverless'ta her ornek
+// kendi sayacini tutar; 3 ornek = 3 kat gevsek koruma. Paylasilan tek bir
+// sayac icin zaten elimizde olan Postgres'i kullaniyoruz — yeni bir servis
+// (Redis vb.) ve yeni bir gizli anahtar gerekmiyor. Artirma tek bir atomik
+// UPSERT ile yapilir, boylece es zamanli istekler sayaci kacirmaz.
+//
+// NOT: Tenant'a ait degildir (giris/kayit tenant BILINMEDEN olur), bu yuzden
+// RLS disidir — Tenant, Invitation ve SeedState ile ayni kategori.
+model RateLimit {
+  key     String   @id // orn. "login:1.2.3.4:mail@x.com"
+  count   Int
+  resetAt DateTime // Bu andan sonra pencere sifirlanir
+
+  // Suresi gecmis satirlarin toplu temizligi icin.
+  @@index([resetAt])
+}

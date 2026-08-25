@@ -35,8 +35,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // Hiz siniri: once IP+e-posta (dar), sonra IP (genis). Asilirsa
         // dogrulama yapmadan reddederiz; mesaj genel kalir (kilit bilgisi sizmaz).
         const ip = clientIp(request as unknown as Request);
-        const ipEmail = rateLimit(`login:${ip}:${normalizedEmail}`, MAX_PER_IP_EMAIL, LOGIN_WINDOW_MS);
-        const perIp = rateLimit(`login:${ip}`, MAX_PER_IP, LOGIN_WINDOW_MS);
+        const ipEmail = await rateLimit(`login:${ip}:${normalizedEmail}`, MAX_PER_IP_EMAIL, LOGIN_WINDOW_MS);
+        const perIp = await rateLimit(`login:${ip}`, MAX_PER_IP, LOGIN_WINDOW_MS);
         if (!ipEmail.success || !perIp.success) {
           console.warn(`Giris hiz siniri asildi: ip=${ip} email=${normalizedEmail}`);
           return null;
@@ -70,7 +70,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         // Basarili giris: bu hesaba ait IP+e-posta sayacini sifirla ki mesru
         // kullanici onceki yanlis denemelerden dolayi kilitlenmesin.
-        resetRateLimit(`login:${ip}:${normalizedEmail}`);
+        await resetRateLimit(`login:${ip}:${normalizedEmail}`);
 
         // Donen nesne token'a (jwt callback) gider. Parolayi ASLA dondurmuyoruz.
         return {

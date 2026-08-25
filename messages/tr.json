@@ -212,7 +212,12 @@
     "mother": "Anne (soy)",
     "motherNone": "— Anne seçilmedi —",
     "imageUrl": "Görsel URL",
-    "notes": "Notlar"
+    "notes": "Notlar",
+    "milkChartTitle": "Günlük Süt Verimi (son {count} gün)",
+    "weightChartTitle": "Ağırlık Değişimi",
+    "milkUnit": "Litre",
+    "weightSeries": "Ağırlık",
+    "milkChartLabel": "Günlük Süt Verimi"
   },
   "Fields": {
     "title": "Tarlalar",
@@ -299,7 +304,9 @@
     "income": "Gelir",
     "expense": "Gider",
     "breakdown": "Kategori Dağılımı",
-    "noRecords": "Kayıt yok."
+    "noRecords": "Kayıt yok.",
+    "incomeBreakdownTitle": "Gelir Kategori Dağılımı",
+    "expenseBreakdownTitle": "Gider Kategori Dağılımı"
   },
   "Sales": {
     "title": "Satışlar",

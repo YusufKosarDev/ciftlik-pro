@@ -207,6 +207,33 @@ disagree with the sales list. A storefront order writes the order and its lines
 together, snapshotting product name and unit price per line — a later price change
 must not rewrite history.
 
+**Rate limiting** has the same shape of problem. An in-memory counter is correct on
+one instance and progressively wrong as instances multiply: on serverless, three
+instances mean three separate counters and three times the effective limit. The
+counter therefore lives in Postgres, and the increment is a single statement:
+
+```sql
+INSERT INTO "RateLimit" (key, count, "resetAt") VALUES ($key, 1, $resetAt)
+ON CONFLICT (key) DO UPDATE SET
+  count   = CASE WHEN "RateLimit"."resetAt" <= now() THEN 1 ELSE "RateLimit".count + 1 END,
+  "resetAt" = CASE WHEN "RateLimit"."resetAt" <= now() THEN $resetAt ELSE "RateLimit"."resetAt" END
+RETURNING count, "resetAt";
+```
+
+Read-then-write would let concurrent requests read the same value and undercount;
+the upsert cannot. An integration test fires ten simultaneous requests against a
+limit of four and asserts that exactly four succeed and the stored count is ten.
+
+**Redis was considered and rejected** for this project: it would add a service, a
+secret and a failure mode to solve a problem the existing database already solves
+at this scale. If write volume ever made the counter table hot, moving to Redis is
+a contained change — the module's interface does not name its storage.
+
+If the database is unreachable the limiter **fails open** onto the in-memory
+counter rather than locking everyone out. Rate limiting is a depth layer, not the
+gate: refusing all logins during a database blip would cause more harm than the
+abuse it prevents.
+
 ---
 
 ## Decision 6 — Optional integrations degrade, never break
@@ -224,13 +251,39 @@ remembering to run a script.
 
 ---
 
+## Decision 7 — Observability without a new vendor (for now)
+
+Three surfaces answer "what happened in production", and none of them requires an
+extra service:
+
+| Surface | Answers |
+| --- | --- |
+| **Vercel runtime logs & error grouping** | Unhandled exceptions, per-route error rates, cold starts. Available on the platform the app already deploys to. |
+| **`AuditLog` table** | Who changed what and when — including `LOGIN_FAILED` with the source IP. This is a product feature, not just telemetry: admins read it in `/panel/denetim`. |
+| **Structured server logging** | Every catch block logs a named error before returning a 5xx, so a log search by message lands on the code path. |
+
+Error-tracking SaaS (Sentry and friends) was **deliberately not added**. It would
+introduce a dependency, a DSN to manage, and a second place to look — to improve on
+what the platform already reports, at a scale this project does not have. The
+honest trigger for revisiting is real users: once errors need assignment, release
+tracking and alerting, platform logs stop being enough.
+
+Two smaller choices follow the same "fail visibly, not loudly" principle:
+
+- Missing configuration returns **`503`**, not `500` — a cron without `CRON_SECRET`
+  or a webhook without Stripe keys is not a crash, and should not inflate the
+  5xx rate that alerting watches.
+- Best-effort writes (audit logging) **never** throw into the request path; they
+  log and continue. An audit failure must not roll back the user's actual work.
+
+---
+
 ## Known limitations
 
 Stated plainly, because pretending they do not exist is worse than having them.
 
 | Limitation | Impact | Path forward |
 | --- | --- | --- |
-| **In-memory rate limiter** | On serverless, each instance keeps its own counters, so protection is divided across instances. Correct on a single instance; looser when scaled out. | The interface (`rateLimit`, `resetRateLimit`) is deliberately storage-agnostic — swapping the body for a shared store is a contained change. |
 | **One tenant per user** | `User.tenantId` is a single value; a person cannot belong to two farms. | Introduce a `Membership` join table; the session already carries `tenantId`, so the change is mostly in auth and the tenant resolver. |
 | **Tenant resolved from the session, not the URL** | No `acme.ciftlik-pro.app` subdomains yet. | `Tenant.slug` already exists and the storefront already resolves by slug; extending it to the panel is additive. |
 | **Invitation tokens stored in plaintext** | Database read access exposes pending invite tokens. | Store a hash and compare on accept — tokens are already single-use and time-limited. |

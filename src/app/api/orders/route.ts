@@ -10,7 +10,7 @@ import { getStripe } from "@/lib/stripe";
 // Siparis, slug ile cozumlenen tenant'a baglanir; fiyat/ad her kalem icin snapshot.
 export async function POST(request: Request) {
   try {
-    const rl = rateLimit(`order:${clientIp(request)}`, 10, 5 * 60 * 1000);
+    const rl = await rateLimit(`order:${clientIp(request)}`, 10, 5 * 60 * 1000);
     if (!rl.success) {
       return NextResponse.json(
         { error: "Cok fazla istek. Lutfen biraz sonra tekrar deneyin." },

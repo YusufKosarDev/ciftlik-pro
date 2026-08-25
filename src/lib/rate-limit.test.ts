@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { rateLimit, resetRateLimit, clientIp } from "./rate-limit";
+
+// Not: bu testler SAF, senkron bellek-ici uygulamayi hedefler. Paylasilan
+// (Postgres) yol veritabani gerektirir ve entegrasyon testiyle dogrulanir
+// (rate-limit.int.test.ts).
+import { rateLimitMemory as rateLimit, resetRateLimitMemory as resetRateLimit, clientIp } from "./rate-limit";
 
 describe("rateLimit", () => {
   beforeEach(() => {

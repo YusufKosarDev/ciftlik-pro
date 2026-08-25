@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant-prisma";
 import { collectAlerts, renderAlertsHtml, VACCINATION_WINDOW_DAYS } from "@/lib/notifications";
 import { sendEmail } from "@/lib/email";
+import { pruneRateLimits } from "@/lib/rate-limit";
 
 // GET /api/cron/alerts
 // Gunluk cron tarafindan cagrilir (Vercel Cron). Kritik stok, geciken gorev ve
@@ -31,6 +32,10 @@ export async function GET(request: Request) {
   }
 
   try {
+    // Bakim: suresi gecmis hiz siniri sayaclarini temizle (tablo sinirsiz
+    // buyumesin). Uyari gonderiminden bagimsizdir; hata durumunda 0 doner.
+    const prunedRateLimits = await pruneRateLimits();
+
     const now = new Date();
     const windowEnd = new Date(now);
     windowEnd.setDate(windowEnd.getDate() + VACCINATION_WINDOW_DAYS);
@@ -102,6 +107,7 @@ export async function GET(request: Request) {
       tenantsNotified,
       total: totalAlerts,
       recipients: totalRecipients,
+      prunedRateLimits,
     });
   } catch (error) {
     console.error("Cron uyari hatasi:", error);

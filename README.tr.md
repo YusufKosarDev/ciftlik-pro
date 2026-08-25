@@ -12,7 +12,7 @@ Sistemi (ERP) — hayvan, tarla, stok, finans, satış, mağaza ve personel tek 
 [![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![codecov](https://codecov.io/gh/YusufKosarDev/ciftlik-pro/branch/main/graph/badge.svg)](https://codecov.io/gh/YusufKosarDev/ciftlik-pro)
-[![Tests](https://img.shields.io/badge/tests-277%20unit%20%2B%207%20e2e-success)](#test--kalite)
+[![Tests](https://img.shields.io/badge/tests-288%20unit%20%2B%2018%20e2e-success)](#test--kalite)
 [![Multi-tenant](https://img.shields.io/badge/multi--tenant-Postgres%20RLS-4169E1)](#-çok-kiracılık-multi-tenant-saas)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -102,7 +102,7 @@ göstergeleriyle) ve aylık gelir-gider grafiği:
 - **Modern arayüz** — sol sidebar düzeni, dark mode (semantik renk token'ları), `⌘K`
   komut paleti (hızlı gezinme + eylem) ve `cva` tabanlı tasarım sistemi.
 - **Çok dillilik (i18n)** — uygulama **tamamen** Türkçe/İngilizce (next-intl,
-  cookie-locale, varsayılan TR): **459 çeviri anahtarının tamamı** iki dilde de
+  cookie-locale, varsayılan TR): **466 çeviri anahtarının tamamı** iki dilde de
   karşılanıyor; tarih ve para biçimlendirmesi de yerelleştirilmiş.
 - **Hoş geldin turu (onboarding)** — ilk panel girişinde role özel, çok adımlı
   tanıtım modal'ı; Profil'den istenildiğinde yeniden başlatılabilir.
@@ -121,8 +121,8 @@ göstergeleriyle) ve aylık gelir-gider grafiği:
   (API) hem hassas okuma (sayfa) düzeyinde uygulanır.
 - **Uçtan uca tip güvenliği** — Zod şemaları hem istemci hem sunucuda doğrular;
   Prisma ile veritabanı tipleri.
-- **Test & CI/CD** — 277 birim/bileşen testi (Vitest + Testing Library) +
-  tenant-izolasyon entegrasyon testleri + 7 uçtan uca test (Playwright),
+- **Test & CI/CD** — 288 birim/bileşen testi (Vitest + Testing Library) +
+  tenant-izolasyon entegrasyon testleri + 18 uçtan uca test (Playwright),
   GitHub Actions'ta gerçek PostgreSQL servisiyle her PR'da çalışır.
 - **Transactional bütünlük** — yem tüketimi stoğu atomik düşürür (TOCTOU'ya karşı
   koşullu `updateMany`); satış + bağlı gelir işlemi ve sepet → çok-kalemli sipariş
@@ -193,9 +193,10 @@ Sertleştirme önlemleri:
   `X-Content-Type-Options`, `Referrer-Policy` ve `Permissions-Policy` (`next.config.ts`).
 - **Brute-force koruması** — giriş ve kayıt uçlarında IP / e-posta bazlı hız sınırı
   (`src/lib/rate-limit.ts`); başarısız giriş denemeleri denetim günlüğüne
-  (`LOGIN_FAILED`) yazılır. *Not: Bellek içi (in-memory Map) çalıştığından serverless
-  (Vercel) dağıtımlarda kararsızlık gösterir; dağıtık üretim ortamlarında Upstash Redis
-  veya veritabanı tabanlı bir rate-limiter'a geçilmesi önerilir.*
+  (`LOGIN_FAILED`) yazılır. Sayaçlar **Postgres'ta** tutulur ve tek bir atomik
+  upsert ile artırılır; böylece limit serverless örnekleri arasında bölünmez.
+  Eşzamanlılık, gerçek veritabanına karşı çalışan bir entegrasyon testiyle
+  doğrulanır (limit 4 iken 10 eşzamanlı istek → tam olarak 4 başarılı).
 - **Güvenli görsel URL'leri** — hayvan görseli yalnızca `http(s)` URL kabul eder
   (Zod); `javascript:` / `data:` şemaları reddedilir (CSP `img-src` ile uyumlu).
 - **Çift taraflı doğrulama** — Zod şemaları hem istemcide hem her yazma ucunda sunucuda çalışır.
@@ -350,15 +351,19 @@ Seed çalıştırıldıysa:
 - **Birim testleri (Vitest):** doğrulama şemaları, RBAC yetkilendirme, hız sınırı,
   liste sorgu parametreleri, plan limitleri, finans/harita/tarih/takvim yardımcıları
   + UI bileşenleri (Testing Library: Badge/Button/EmptyState/DataTable/OnboardingModal)
-  — `npm test` (277 test). Kapsam raporu için
-  `npm run test:coverage` (iş mantığı `src/lib` için ~%95 satır kapsamı).
+  — `npm test` (288 test). Kapsam raporu için
+  `npm run test:coverage` (iş mantığı `src/lib` için ~%91 satır kapsamı; paylaşılan veritabanı yolları entegrasyon testleriyle kapsanır).
 - **Tenant-izolasyon entegrasyon testleri:** gerçek PostgreSQL + non-superuser rolle
   `forTenant`/RLS izolasyonu (`*.int.test.ts`); tenant A, tenant B'nin verisine erişemez.
-- **Uçtan uca testler (Playwright):** kimlik doğrulama, hayvan CRUD akışı ve
-  RBAC erişim engeli — `npm run test:e2e` (7 test).
+- **Uçtan uca testler (Playwright):** kimlik doğrulama, hayvan CRUD, RBAC
+  reddi (gerçek 307), satış → otomatik gelir işlemi, mağaza sepeti → sipariş,
+  davet → kabul → rol ve demo salt-okunurluğu — `npm run test:e2e` (18 test).
 - **CI (GitHub Actions):** her push/PR'da iki paralel job —
   `build` (tsc + ESLint + Vitest + üretim derlemesi) ve
   `e2e` (gerçek PostgreSQL servisi + seed + Playwright).
+- **Lighthouse** (üretim derlemesi, mobil emülasyon): giriş **88** / mağaza **92**
+  performans, **95-96** erişilebilirlik, **100** best practices, **100** SEO,
+  ikisinde de **CLS 0**. Ayrıntı: [docs/LIGHTHOUSE.md](docs/LIGHTHOUSE.md).
 - **Pre-commit (husky + lint-staged):** commit öncesi staged `.ts/.tsx`
   dosyalarında otomatik `eslint --fix` çalışır.
 
