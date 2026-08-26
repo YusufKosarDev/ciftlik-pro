@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ const inputClass =
 import { useFormat } from "@/lib/format";
 
 export function CartView({ slug }: { slug: string }) {
+  const t = useTranslations("Store");
   const { formatMoney } = useFormat();
   const { items, setQty, remove, total, count, clear } = useCart();
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +44,7 @@ export function CartView({ slug }: { slug: string }) {
     const data = await res.json().catch(() => null);
     if (!res.ok) {
       setLoading(false);
-      setError(data?.error ?? "Sipariş alınamadı, lütfen tekrar deneyin");
+      setError(data?.error ?? t("orderFailed"));
       return;
     }
 
@@ -56,20 +58,20 @@ export function CartView({ slug }: { slug: string }) {
     setLoading(false);
     clear();
     setDone(true);
-    toast.success("Siparişiniz alındı!");
+    toast.success(t("orderToast"));
   }
 
   if (done) {
     return (
       <div className="rounded-xl border border-border bg-card p-8 text-center">
         <p className="text-lg font-semibold text-green-600 dark:text-green-400">
-          ✓ Siparişiniz alındı
+          {t("orderPlacedTitle")}
         </p>
         <p className="mt-1 text-sm text-muted-foreground">
-          En kısa sürede sizinle iletişime geçilecek.
+          {t("orderPlacedBody")}
         </p>
         <Link href={`/magaza/${slug}`} className="mt-4 inline-block text-sm font-medium text-green-600 hover:underline dark:text-green-400">
-          ← Mağazaya dön
+          {t("backToStore")}
         </Link>
       </div>
     );
@@ -78,9 +80,9 @@ export function CartView({ slug }: { slug: string }) {
   if (count === 0) {
     return (
       <div className="rounded-xl border border-dashed border-border bg-card p-12 text-center">
-        <p className="text-muted-foreground">Sepetiniz boş.</p>
+        <p className="text-muted-foreground">{t("cartEmpty")}</p>
         <Link href={`/magaza/${slug}`} className="mt-3 inline-block text-sm font-medium text-green-600 hover:underline dark:text-green-400">
-          ← Ürünlere göz at
+          {t("browseProducts")}
         </Link>
       </div>
     );
@@ -107,7 +109,7 @@ export function CartView({ slug }: { slug: string }) {
                 type="button"
                 onClick={() => setQty(i.productId, i.quantity - 1)}
                 className="rounded-lg border border-border p-1.5 text-muted-foreground hover:bg-muted"
-                aria-label="Azalt"
+                aria-label={t("decrease")}
               >
                 <Minus className="h-3.5 w-3.5" />
               </button>
@@ -116,7 +118,7 @@ export function CartView({ slug }: { slug: string }) {
                 type="button"
                 onClick={() => setQty(i.productId, i.quantity + 1)}
                 className="rounded-lg border border-border p-1.5 text-muted-foreground hover:bg-muted"
-                aria-label="Artır"
+                aria-label={t("increase")}
               >
                 <Plus className="h-3.5 w-3.5" />
               </button>
@@ -128,7 +130,7 @@ export function CartView({ slug }: { slug: string }) {
               type="button"
               onClick={() => remove(i.productId)}
               className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-red-600"
-              aria-label="Kaldır"
+              aria-label={t("remove")}
             >
               <Trash2 className="h-4 w-4" />
             </button>
@@ -139,19 +141,19 @@ export function CartView({ slug }: { slug: string }) {
       {/* Ozet + iletisim + onay */}
       <form onSubmit={checkout} className="h-fit space-y-4 rounded-xl border border-border bg-card p-5">
         <div className="flex items-center justify-between text-lg font-bold text-foreground">
-          <span>Toplam</span>
+          <span>{t("total")}</span>
           <span className="tabular-nums">{formatMoney(total)}</span>
         </div>
         <div className="space-y-3 border-t border-border pt-4">
-          <input name="customerName" type="text" required placeholder="Adınız *" aria-label="Adınız" className={inputClass} />
-          <input name="customerPhone" type="text" placeholder="Telefon (opsiyonel)" aria-label="Telefon" className={inputClass} />
-          <textarea name="note" rows={2} placeholder="Not (opsiyonel)" aria-label="Not" className={inputClass} />
+          <input name="customerName" type="text" required placeholder={t("namePlaceholder")} aria-label={t("nameAria")} className={inputClass} />
+          <input name="customerPhone" type="text" placeholder={t("phonePlaceholder")} aria-label={t("phoneAria")} className={inputClass} />
+          <textarea name="note" rows={2} placeholder={t("notePlaceholder")} aria-label={t("noteAria")} className={inputClass} />
         </div>
         {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
         <Button type="submit" loading={loading} className="w-full">
-          Siparişi tamamla
+          {t("submitOrder")}
         </Button>
-        <p className="text-center text-xs text-muted-foreground">Ödeme teslimatta</p>
+        <p className="text-center text-xs text-muted-foreground">{t("payOnDelivery")}</p>
       </form>
     </div>
   );
