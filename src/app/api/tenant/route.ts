@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant-prisma";
+import { logAudit } from "@/lib/audit";
 
 // DELETE /api/tenant -> ADMIN, kendi tenant'ini ve TUM verisini kalici siler
 // (hesap kapatma / KVKK silme hakki). Onay: govdedeki `confirm` ciftlik adina
@@ -68,6 +69,18 @@ export async function DELETE(request: Request) {
 
   // Tenant satiri RLS disidir; en son silinir.
   await prisma.tenant.delete({ where: { id: tenantId } });
+
+  // Denetim kaydi SILMEDEN SONRA ve TENANT'SIZ yazilir: yukaridaki
+  // `auditLog.deleteMany` bu tenant'in tum kayitlarini sildigi icin, tenant
+  // baglaminda yazilan bir kayit ya silinirdi ya da olmayan bir tenant'a
+  // baglanirdi. Hesap kapatma, LOGIN_FAILED gibi tenant'siz bir SISTEM olayidir.
+  await logAudit(
+    { id: session.user.id, name: session.user.name, email: session.user.email },
+    "DELETE",
+    "Tenant",
+    tenantId,
+    `çiftlik kalıcı olarak silindi (${tenant.name})`
+  );
 
   return NextResponse.json({ ok: true });
 }

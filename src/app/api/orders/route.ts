@@ -4,6 +4,7 @@ import { resolveStorefront } from "@/lib/storefront";
 import { orderSchema } from "@/lib/validations/order";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 import { getStripe } from "@/lib/stripe";
+import { logAudit } from "@/lib/audit";
 
 // POST /api/orders -> HERKESE ACIK per-tenant magaza siparisi (cok kalemli, odemesiz).
 // Kimlik gerektirmez; hiz siniri + dogrulama + urun aktiflik kontrolu uygulanir.
@@ -77,7 +78,18 @@ export async function POST(request: Request) {
     if ("error" in result) {
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
-    const { order, itemsData } = result;
+    const { order, itemsData, total } = result;
+
+    // Denetim kaydi: siparis herkese acik akistan gelir (oturum yok), bu yuzden
+    // aktor kimligi musteri adidir. Kayit, siparisin ait oldugu tenant'in
+    // baglaminda yazilir; boylece ciftlik kendi denetim gunlugunde gorur.
+    await logAudit(
+      { tenantId: tenant.id, name: data.customerName },
+      "CREATE",
+      "Order",
+      order.id,
+      `${itemsData.length} kalem, toplam ${total} (magaza siparisi)`
+    );
 
     // Gercek odeme yapilandirildiysa Stripe Checkout oturumu olustur ve URL dondur.
     // Kesirli miktari desteklemek icin her satir quantity:1 + unit_amount=lineTotal.

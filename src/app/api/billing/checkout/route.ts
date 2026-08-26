@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { isDemoUser } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
+import { logAudit } from "@/lib/audit";
 
 // POST /api/billing/checkout -> ADMIN, tenant'ı PRO'ya yükseltir.
 // Env-gated: Stripe + STRIPE_PRO_PRICE_ID varsa gerçek abonelik Checkout'u açar
@@ -39,10 +40,20 @@ export async function POST(request: Request) {
       success_url: `${origin}/panel/abonelik?ok=1`,
       cancel_url: `${origin}/panel/abonelik`,
     });
+    // Planı henüz değiştirmedik (bunu webhook yapar); yine de "kim, ne zaman
+    // ödeme akışını başlattı" izi denetim kaydına girer.
+    await logAudit(
+      session.user,
+      "UPDATE",
+      "Tenant",
+      tenantId,
+      "PRO aboneliği için Stripe Checkout başlatıldı"
+    );
     return NextResponse.json({ ok: true, checkoutUrl: checkout.url });
   }
 
   // Demo modu (ödeme yapılandırılmamış): planı doğrudan yükselt.
   await prisma.tenant.update({ where: { id: tenantId }, data: { plan: "PRO" } });
+  await logAudit(session.user, "UPDATE", "Tenant", tenantId, "plan: FREE → PRO");
   return NextResponse.json({ ok: true, upgraded: true });
 }
