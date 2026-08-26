@@ -208,6 +208,9 @@ export function OnboardingModal({
             type="button"
             onClick={finish}
             aria-label={t("close")}
+            // Ekran goruntusu/GIF script'leri modali dilden BAGIMSIZ kapatabilsin diye
+            // (aria-label artik cevriliyor; metne dayali secici EN kosusunda kirilirdi).
+            data-testid="onboarding-close"
             className="absolute right-4 top-4 rounded-lg p-1 text-white/80 transition hover:bg-card/20 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
           >
             <X className="h-5 w-5" />

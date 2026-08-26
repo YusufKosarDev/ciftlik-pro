@@ -129,7 +129,7 @@ export default async function PanelPage() {
 
   const criticalItems = inventoryItems;
 
-  const monthlyFinance = buildMonthlyFinance(recentTransactions);
+  const monthlyFinance = buildMonthlyFinance(recentTransactions, locale);
 
   const hasAlerts =
     criticalItems.length > 0 ||

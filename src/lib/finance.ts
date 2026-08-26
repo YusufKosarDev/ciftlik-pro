@@ -6,10 +6,8 @@ export type MonthlyFinance = {
   gider: number;
 };
 
-const MONTH_NAMES = [
-  "Oca", "Sub", "Mar", "Nis", "May", "Haz",
-  "Tem", "Agu", "Eyl", "Eki", "Kas", "Ara",
-];
+// Ay etiketi aktif dile gore uretilir: Intl kisa ay adini (Oca / Jan) verir,
+// boylece sabit bir Turkce dizi tutmaya gerek kalmaz.
 
 type SimpleTransaction = {
   type: "INCOME" | "EXPENSE";
@@ -19,8 +17,12 @@ type SimpleTransaction = {
 
 // Islemleri son 6 aya gore gruplayip grafik verisi uretir.
 export function buildMonthlyFinance(
-  transactions: SimpleTransaction[]
+  transactions: SimpleTransaction[],
+  locale: string = "tr"
 ): MonthlyFinance[] {
+  const monthLabel = new Intl.DateTimeFormat(locale === "tr" ? "tr-TR" : "en-US", {
+    month: "short",
+  });
   const now = new Date();
   const buckets: MonthlyFinance[] = [];
   const keyToIndex = new Map<string, number>();
@@ -29,7 +31,7 @@ export function buildMonthlyFinance(
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const key = `${d.getFullYear()}-${d.getMonth()}`;
-    const label = `${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
+    const label = `${monthLabel.format(d)} ${d.getFullYear()}`;
     keyToIndex.set(key, buckets.length);
     buckets.push({ month: label, gelir: 0, gider: 0 });
   }

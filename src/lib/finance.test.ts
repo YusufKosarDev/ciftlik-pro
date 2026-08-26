@@ -7,6 +7,19 @@ describe("buildMonthlyFinance", () => {
     expect(result).toHaveLength(6);
   });
 
+  it("ay etiketi aktif dile gore uretilir", () => {
+    const tr = buildMonthlyFinance([], "tr").map((m) => m.month);
+    const en = buildMonthlyFinance([], "en").map((m) => m.month);
+    // Etiket "<kisa ay> <yil>" bicimindedir ve dile gore FARKLI olmalidir
+    // (grafik ekseninde Ingilizce arayuzde Turkce ay adi gorunmesin).
+    expect(tr).toHaveLength(6);
+    expect(en).toHaveLength(6);
+    expect(tr.every((label) => /^\S+ \d{4}$/.test(label))).toBe(true);
+    expect(en.every((label) => /^\S+ \d{4}$/.test(label))).toBe(true);
+    // Yil ayni, ay adi dile bagli: en az bir ayda ayrisirlar.
+    expect(tr.some((label, i) => label !== en[i])).toBe(true);
+  });
+
   it("bos veride tum aylar sifirdir", () => {
     const result = buildMonthlyFinance([]);
     for (const month of result) {
