@@ -38,7 +38,6 @@ export default defineConfig({
         // gorulur. Kapsam olcumu is mantigiyla sinirli tutulur.
         "src/lib/demo-data.ts",
         // Saf sabit/yardimci dosyalar (dallanma mantigi yok)
-        "src/lib/labels.ts",
         "src/lib/cn.ts",
       ],
       thresholds: {
