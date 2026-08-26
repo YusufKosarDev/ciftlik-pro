@@ -648,7 +648,9 @@
     "deleteFailed": "Çiftlik silinemedi.",
     "cannotDeleteDemo": "Demo çiftliği silinemez.",
     "deleteFarm": "Çiftliği Kalıcı Olarak Sil",
-    "deleteDesc": "Çiftliğinizi ve ilişkili tüm verileri (hayvanlar, finans, personel vb.) kalıcı olarak siler. Bu işlem geri alınamaz."
+    "deleteDesc": "Çiftliğinizi ve ilişkili tüm verileri (hayvanlar, finans, personel vb.) kalıcı olarak siler. Bu işlem geri alınamaz.",
+    "language": "Dil",
+    "languageDesc": "Arayüz dilini seçin. Tercihiniz bu tarayıcıda hatırlanır."
   },
   "Billing": {
     "title": "Abonelik ve Kullanım",

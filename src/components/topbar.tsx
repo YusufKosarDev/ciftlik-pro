@@ -6,9 +6,7 @@ import { Menu, Search } from "lucide-react";
 import type { NavItem } from "@/components/sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { NotificationBell } from "@/components/notification-bell";
-// NOT: Panel string'lerinin tam cevirisi tamamlanana kadar panel ici dil
-// degistirici gizli (karisik-dil gorunmemesi icin). Giris ekrani iki dilli kalir.
-// Tamamlandiginda asagidaki <LanguageSwitcher /> geri eklenir.
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 // Aktif yola gore sayfa basligini bulur (en uzun eslesen on-ek).
 function titleFor(pathname: string, navItems: NavItem[]): string {
@@ -57,6 +55,7 @@ export function Topbar({
           </kbd>
         </button>
         <NotificationBell />
+        <LanguageSwitcher className="hidden sm:inline-flex" />
         <ThemeToggle />
       </div>
     </header>

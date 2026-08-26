@@ -648,7 +648,9 @@
     "deleteFailed": "Failed to delete farm.",
     "cannotDeleteDemo": "Demo farm cannot be deleted.",
     "deleteFarm": "Permanently Delete Farm",
-    "deleteDesc": "Permanently deletes your farm and all associated data (animals, finance, staff, etc.). This action cannot be undone."
+    "deleteDesc": "Permanently deletes your farm and all associated data (animals, finance, staff, etc.). This action cannot be undone.",
+    "language": "Language",
+    "languageDesc": "Choose the interface language. Your choice is remembered in this browser."
   },
   "Billing": {
     "title": "Subscription & Usage",
