@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { isDemoUser } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
@@ -40,6 +41,7 @@ function UsageRow({
 }
 
 export default async function AbonelikPage() {
+  const t = await getTranslations("Billing");
   const session = await auth();
   if (!session?.user) {
     redirect("/giris");
@@ -68,17 +70,17 @@ export default async function AbonelikPage() {
   return (
     <div className="mx-auto max-w-xl space-y-6">
       <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
-        <span>💳</span> Abonelik
+        <span>💳</span> {t("heading")}
       </h1>
 
       <div className="space-y-5 rounded-xl border border-border bg-card p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-muted-foreground">Mevcut plan</p>
+            <p className="text-sm text-muted-foreground">{t("currentPlan")}</p>
             <p className="mt-0.5 flex items-center gap-2 text-xl font-bold text-foreground">
               {plan}
               <Badge tone={plan === "PRO" ? "green" : "blue"}>
-                {plan === "PRO" ? "Sınırsız" : "Ücretsiz"}
+                {plan === "PRO" ? t("planUnlimited") : t("planFree")}
               </Badge>
             </p>
           </div>
@@ -86,14 +88,14 @@ export default async function AbonelikPage() {
         </div>
 
         <div className="space-y-4 border-t border-border pt-5">
-          <UsageRow label="Aktif hayvan" current={animals} limit={limits.animals} />
-          <UsageRow label="Personel" current={users} limit={limits.users} />
+          <UsageRow label={t("usageAnimals")} current={animals} limit={limits.animals} />
+          <UsageRow label={t("usageStaff")} current={users} limit={limits.users} />
         </div>
 
         {plan === "FREE" && (
           <p className="rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground">
-            PRO planı hayvan ve personel sınırlarını kaldırır.
-            {!stripeEnabled && " (Demo: yükseltme anında uygulanır, ödeme alınmaz.)"}
+            {t("freeHint")}
+            {!stripeEnabled && t("freeHintDemo")}
           </p>
         )}
       </div>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ export function BillingActions({
   stripeEnabled: boolean;
   isDemo?: boolean;
 }) {
+  const t = useTranslations("Billing");
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -27,9 +29,9 @@ export function BillingActions({
       <div className="text-right">
         <Button type="button" disabled>
           <Sparkles className="h-4 w-4" />
-          {plan === "FREE" ? "PRO'ya yükselt" : "Planı değiştir"}
+          {plan === "FREE" ? t("upgradeCta") : t("changePlan")}
         </Button>
-        <p className="mt-1 text-xs text-muted-foreground">Demo modunda devre dışı</p>
+        <p className="mt-1 text-xs text-muted-foreground">{t("demoDisabled")}</p>
       </div>
     );
   }
@@ -40,7 +42,7 @@ export function BillingActions({
     const j = (await res.json().catch(() => ({}))) as { checkoutUrl?: string; error?: string };
     if (!res.ok) {
       setLoading(false);
-      toast.error(j.error ?? "İşlem başarısız");
+      toast.error(j.error ?? t("actionFailed"));
       return;
     }
     if (j.checkoutUrl) {
@@ -48,7 +50,7 @@ export function BillingActions({
       return;
     }
     setLoading(false);
-    toast.success("PRO'ya yükseltildi");
+    toast.success(t("upgraded"));
     router.refresh();
   }
 
@@ -58,17 +60,17 @@ export function BillingActions({
     const j = (await res.json().catch(() => ({}))) as { error?: string };
     setLoading(false);
     if (!res.ok) {
-      toast.error(j.error ?? "İşlem başarısız");
+      toast.error(j.error ?? t("actionFailed"));
       return;
     }
-    toast.success("FREE planına dönüldü");
+    toast.success(t("downgraded"));
     router.refresh();
   }
 
   if (plan === "FREE") {
     return (
       <Button type="button" onClick={upgrade} loading={loading}>
-        <Sparkles className="h-4 w-4" /> PRO&apos;ya yükselt
+        <Sparkles className="h-4 w-4" /> {t("upgradeCta")}
       </Button>
     );
   }
@@ -76,11 +78,11 @@ export function BillingActions({
   // PRO
   return stripeEnabled ? (
     <p className="text-sm text-muted-foreground">
-      Aboneliğinizi Stripe müşteri portalından yönetebilirsiniz.
+      {t("stripePortalHint")}
     </p>
   ) : (
     <Button type="button" variant="outline" onClick={downgrade} loading={loading}>
-      Demo: FREE planına dön
+      {t("demoDowngrade")}
     </Button>
   );
 }

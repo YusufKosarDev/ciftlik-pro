@@ -406,7 +406,9 @@
     "expiresAt": "Son Geçerlilik",
     "sendInvite": "Davet Gönder",
     "noInvitations": "Bekleyen davet yok.",
-    "inviteSent": "Davet gönderildi."
+    "inviteSent": "Davet gönderildi.",
+    "pendingInvitations": "Bekleyen davetler ({count})",
+    "expiresOn": "son geçerlilik {date}"
   },
   "Audit": {
     "title": "Denetim Günlüğü",
@@ -505,7 +507,23 @@
     "upgrade": "PRO Plana Yükselt",
     "downgrade": "FREE Plana Düşür",
     "stripePortal": "Stripe ile Yönet",
-    "unlimited": "Sınırsız"
+    "unlimited": "Sınırsız",
+    "heading": "Abonelik",
+    "currentPlan": "Mevcut plan",
+    "planUnlimited": "Sınırsız",
+    "planFree": "Ücretsiz",
+    "usageAnimals": "Aktif hayvan",
+    "usageStaff": "Personel",
+    "freeHint": "PRO planı hayvan ve personel sınırlarını kaldırır.",
+    "freeHintDemo": " (Demo: yükseltme anında uygulanır, ödeme alınmaz.)",
+    "upgradeCta": "PRO’ya yükselt",
+    "changePlan": "Planı değiştir",
+    "demoDisabled": "Demo modunda devre dışı",
+    "actionFailed": "İşlem başarısız",
+    "upgraded": "PRO’ya yükseltildi",
+    "downgraded": "FREE planına dönüldü",
+    "stripePortalHint": "Aboneliğinizi Stripe müşteri portalından yönetebilirsiniz.",
+    "demoDowngrade": "Demo: FREE planına dön"
   },
   "Onboarding": {
     "step": "Adım {step} / {total}",
@@ -599,5 +617,29 @@
     "doneTitle": "Siparişiniz alındı",
     "doneBody": "Teşekkürler! Ödemeniz onaylandığında siparişiniz hazırlanmaya başlanacak.",
     "adminLogin": "Yönetim girişi →"
+  },
+  "Invite": {
+    "formTitle": "Personel davet et",
+    "email": "E-posta",
+    "emailPlaceholder": "personel@ciftlik.com",
+    "role": "Rol",
+    "submit": "Davet gönder",
+    "demoDisabled": "Demo modunda devre dışı",
+    "createFailed": "Davet oluşturulamadı.",
+    "created": "Davet oluşturuldu. Bağlantıyı paylaşın (e-posta yapılandırıldıysa otomatik gönderildi):",
+    "copy": "Kopyala",
+    "copied": "Kopyalandı",
+    "joinTitle": "Ekibe katıl",
+    "joinSubtitle": "{farm} ekibine {role} olarak davet edildiniz.",
+    "unknownFarm": "Bir çiftlik",
+    "invalidTitle": "Davet geçersiz",
+    "invalidBody": "Bu davet bağlantısı geçersiz, süresi dolmuş veya zaten kullanılmış.",
+    "backToLogin": "Giriş sayfasına dön",
+    "name": "Ad Soyad",
+    "namePlaceholder": "Ad Soyad",
+    "password": "Parola",
+    "joinCta": "Katıl ve giriş yap",
+    "joinFailed": "Katılım başarısız. Lütfen tekrar deneyin.",
+    "kind": "Davet"
   }
 }

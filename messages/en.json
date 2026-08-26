@@ -406,7 +406,9 @@
     "expiresAt": "Expires At",
     "sendInvite": "Send Invitation",
     "noInvitations": "No pending invitations.",
-    "inviteSent": "Invitation sent."
+    "inviteSent": "Invitation sent.",
+    "pendingInvitations": "Pending invitations ({count})",
+    "expiresOn": "expires {date}"
   },
   "Audit": {
     "title": "Audit Log",
@@ -505,7 +507,23 @@
     "upgrade": "Upgrade to PRO",
     "downgrade": "Downgrade to FREE",
     "stripePortal": "Manage via Stripe",
-    "unlimited": "Unlimited"
+    "unlimited": "Unlimited",
+    "heading": "Billing",
+    "currentPlan": "Current plan",
+    "planUnlimited": "Unlimited",
+    "planFree": "Free",
+    "usageAnimals": "Active animals",
+    "usageStaff": "Staff",
+    "freeHint": "The PRO plan removes the animal and staff limits.",
+    "freeHintDemo": " (Demo: the upgrade applies instantly and nothing is charged.)",
+    "upgradeCta": "Upgrade to PRO",
+    "changePlan": "Change plan",
+    "demoDisabled": "Disabled in demo mode",
+    "actionFailed": "Something went wrong",
+    "upgraded": "Upgraded to PRO",
+    "downgraded": "Back on the FREE plan",
+    "stripePortalHint": "You can manage your subscription from the Stripe customer portal.",
+    "demoDowngrade": "Demo: back to FREE"
   },
   "Onboarding": {
     "step": "Step {step} / {total}",
@@ -599,5 +617,29 @@
     "doneTitle": "Your order has been received",
     "doneBody": "Thank you! Once your payment is confirmed we will start preparing your order.",
     "adminLogin": "Admin sign-in →"
+  },
+  "Invite": {
+    "formTitle": "Invite a staff member",
+    "email": "Email",
+    "emailPlaceholder": "staff@farm.com",
+    "role": "Role",
+    "submit": "Send invitation",
+    "demoDisabled": "Disabled in demo mode",
+    "createFailed": "The invitation could not be created.",
+    "created": "Invitation created. Share the link (it was emailed automatically if email is configured):",
+    "copy": "Copy",
+    "copied": "Copied",
+    "joinTitle": "Join the team",
+    "joinSubtitle": "You have been invited to {farm} as {role}.",
+    "unknownFarm": "A farm",
+    "invalidTitle": "Invitation not valid",
+    "invalidBody": "This invitation link is invalid, has expired or has already been used.",
+    "backToLogin": "Back to sign-in",
+    "name": "Full name",
+    "namePlaceholder": "Full name",
+    "password": "Password",
+    "joinCta": "Join and sign in",
+    "joinFailed": "Could not join. Please try again.",
+    "kind": "Invitation"
   }
 }
