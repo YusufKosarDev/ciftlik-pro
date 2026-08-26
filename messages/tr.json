@@ -342,7 +342,12 @@
     "item": "Yem",
     "quantity": "Miktar",
     "note": "Not",
-    "deleteKind": "Tüketim kaydı"
+    "deleteKind": "Tüketim kaydı",
+    "itemRequired": "Yem Kalemi *",
+    "dateRequired": "Tarih *",
+    "quantityRequired": "Miktar *",
+    "addCta": "Tüketim Ekle",
+    "saved": "Tüketim kaydedildi, stok güncellendi."
   },
   "Finance": {
     "title": "Finans",
@@ -384,7 +389,13 @@
     "quantity": "Miktar",
     "unit": "Birim",
     "customer": "Müşteri",
-    "notes": "Notlar"
+    "notes": "Notlar",
+    "itemLabel": "Satılan (ürün/hayvan) *",
+    "itemPlaceholder": "Süt 100L, İnek TR-001...",
+    "amountLabel": "Tutar (TL) *",
+    "dateLabel": "Tarih *",
+    "unitPlaceholder": "kg, litre, adet...",
+    "autoIncomeHint": "Kaydedilen satış otomatik olarak gelir olarak finansa (\"Satış\" kategorisi) işlenir."
   },
   "Customers": {
     "title": "Müşteriler",
@@ -406,7 +417,8 @@
     "sales": "Satışlar",
     "noSales": "Bu müşteriye ait satış kaydı yok.",
     "soldItem": "Satılan",
-    "nameTitle": "Ad / Unvan"
+    "nameTitle": "Ad / Unvan",
+    "nameRequired": "Ad / Unvan *"
   },
   "Products": {
     "title": "Mağaza Ürünleri",
@@ -423,7 +435,11 @@
     "active": "Aktif (Katalogda Göster)",
     "activeBadge": "Satışta",
     "inactiveBadge": "Pasif",
-    "description": "Açıklama"
+    "description": "Açıklama",
+    "nameLabel": "Ürün adı *",
+    "priceLabel": "Fiyat (TL) *",
+    "unitPlaceholder": "kg, litre, adet...",
+    "showInCatalog": "Katalogda göster (satışta)"
   },
   "Orders": {
     "title": "Siparişler",
@@ -454,7 +470,9 @@
     "assignedTo": "Atanan Personel",
     "status": "Durum",
     "dueDate": "Son Tarih",
-    "overdue": "Gecikmiş"
+    "overdue": "Gecikmiş",
+    "titleRequired": "Başlık *",
+    "unassigned": "Atanmadı"
   },
   "Staff": {
     "title": "Personel",
@@ -475,7 +493,14 @@
     "noInvitations": "Bekleyen davet yok.",
     "inviteSent": "Davet gönderildi.",
     "pendingInvitations": "Bekleyen davetler ({count})",
-    "expiresOn": "son geçerlilik {date}"
+    "expiresOn": "son geçerlilik {date}",
+    "addTitle": "Yeni Personel Ekle",
+    "nameRequired": "Ad Soyad *",
+    "emailRequired": "E-posta *",
+    "passwordRequired": "Parola *",
+    "roleRequired": "Rol *",
+    "addCta": "Personel Ekle",
+    "added": "Personel eklendi."
   },
   "Audit": {
     "title": "Denetim Günlüğü",
@@ -502,7 +527,12 @@
     "posY": "Konum Y",
     "width": "Genişlik",
     "height": "Yükseklik",
-    "notes": "Notlar"
+    "notes": "Notlar",
+    "nameRequired": "Yapı Adı *",
+    "typeRequired": "Tür *",
+    "positionHint": "Konum haritadan ayarlanır; yeni yapılar otomatik yerleşir.",
+    "defaultName": "{type} {n}",
+    "namePlaceholder": "1 No’lu Ahır"
   },
   "Map": {
     "title": "Çiftlik Haritası",
@@ -726,5 +756,40 @@
     "joinCta": "Katıl ve giriş yap",
     "joinFailed": "Katılım başarısız. Lütfen tekrar deneyin.",
     "kind": "Davet"
+  },
+  "Breeding": {
+    "breedingDate": "Tohumlama Tarihi *",
+    "fatherTag": "Baba Kulak No",
+    "expectedBirthDate": "Tahmini Doğum Tarihi",
+    "actualBirthDate": "Gerçek Doğum Tarihi",
+    "offspringCount": "Yavru Sayısı",
+    "add": "Üreme Kaydı Ekle",
+    "saved": "Üreme kaydı eklendi."
+  },
+  "Health": {
+    "dateRequired": "Tarih *",
+    "diagnosisRequired": "Teşhis *",
+    "treatment": "Tedavi",
+    "addCta": "Sağlık Kaydı Ekle",
+    "saved": "Sağlık kaydı eklendi."
+  },
+  "Vaccination": {
+    "nameRequired": "Aşı Adı *",
+    "dateRequired": "Yapılış Tarihi *",
+    "nextDate": "Sonraki Aşı Tarihi",
+    "addCta": "Aşı Kaydı Ekle",
+    "saved": "Aşı kaydı eklendi."
+  },
+  "Milk": {
+    "dateRequired": "Tarih *",
+    "amountRequired": "Miktar (litre) *",
+    "addCta": "Süt Verimi Ekle",
+    "saved": "Süt verimi eklendi."
+  },
+  "Weight": {
+    "dateRequired": "Tarih *",
+    "weightRequired": "Ağırlık (kg) *",
+    "addCta": "Ağırlık Kaydı Ekle",
+    "saved": "Ağırlık kaydı eklendi."
   }
 }

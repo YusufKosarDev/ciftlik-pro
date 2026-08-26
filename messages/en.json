@@ -342,7 +342,12 @@
     "item": "Feed",
     "quantity": "Quantity",
     "note": "Notes",
-    "deleteKind": "Consumption record"
+    "deleteKind": "Consumption record",
+    "itemRequired": "Feed item *",
+    "dateRequired": "Date *",
+    "quantityRequired": "Quantity *",
+    "addCta": "Log consumption",
+    "saved": "Consumption logged, stock updated."
   },
   "Finance": {
     "title": "Finance",
@@ -384,7 +389,13 @@
     "quantity": "Quantity",
     "unit": "Unit",
     "customer": "Customer",
-    "notes": "Notes"
+    "notes": "Notes",
+    "itemLabel": "Item sold (product/animal) *",
+    "itemPlaceholder": "100L milk, cow TR-001...",
+    "amountLabel": "Amount (TRY) *",
+    "dateLabel": "Date *",
+    "unitPlaceholder": "kg, litre, piece...",
+    "autoIncomeHint": "A saved sale is automatically posted to finance as income (category \"Sale\")."
   },
   "Customers": {
     "title": "Customers",
@@ -406,7 +417,8 @@
     "sales": "Sales",
     "noSales": "This customer has no sales yet.",
     "soldItem": "Item",
-    "nameTitle": "Name / Company"
+    "nameTitle": "Name / Company",
+    "nameRequired": "Name / Company *"
   },
   "Products": {
     "title": "Store Products",
@@ -423,7 +435,11 @@
     "active": "Active (Show in Catalog)",
     "activeBadge": "Active",
     "inactiveBadge": "Inactive",
-    "description": "Description"
+    "description": "Description",
+    "nameLabel": "Product name *",
+    "priceLabel": "Price (TRY) *",
+    "unitPlaceholder": "kg, litre, piece...",
+    "showInCatalog": "Show in the catalogue (on sale)"
   },
   "Orders": {
     "title": "Orders",
@@ -454,7 +470,9 @@
     "assignedTo": "Assigned Staff",
     "status": "Status",
     "dueDate": "Due Date",
-    "overdue": "Overdue"
+    "overdue": "Overdue",
+    "titleRequired": "Title *",
+    "unassigned": "Unassigned"
   },
   "Staff": {
     "title": "Staff",
@@ -475,7 +493,14 @@
     "noInvitations": "No pending invitations.",
     "inviteSent": "Invitation sent.",
     "pendingInvitations": "Pending invitations ({count})",
-    "expiresOn": "expires {date}"
+    "expiresOn": "expires {date}",
+    "addTitle": "Add a staff member",
+    "nameRequired": "Full name *",
+    "emailRequired": "Email *",
+    "passwordRequired": "Password *",
+    "roleRequired": "Role *",
+    "addCta": "Add staff",
+    "added": "Staff member added."
   },
   "Audit": {
     "title": "Audit Log",
@@ -502,7 +527,12 @@
     "posY": "Position Y",
     "width": "Width",
     "height": "Height",
-    "notes": "Notes"
+    "notes": "Notes",
+    "nameRequired": "Structure name *",
+    "typeRequired": "Type *",
+    "positionHint": "Position is set on the map; new structures are placed automatically.",
+    "defaultName": "{type} {n}",
+    "namePlaceholder": "Barn no. 1"
   },
   "Map": {
     "title": "Farm Map",
@@ -726,5 +756,40 @@
     "joinCta": "Join and sign in",
     "joinFailed": "Could not join. Please try again.",
     "kind": "Invitation"
+  },
+  "Breeding": {
+    "breedingDate": "Insemination date *",
+    "fatherTag": "Sire ear tag",
+    "expectedBirthDate": "Expected birth date",
+    "actualBirthDate": "Actual birth date",
+    "offspringCount": "Number of offspring",
+    "add": "Add breeding record",
+    "saved": "Breeding record added."
+  },
+  "Health": {
+    "dateRequired": "Date *",
+    "diagnosisRequired": "Diagnosis *",
+    "treatment": "Treatment",
+    "addCta": "Add health record",
+    "saved": "Health record added."
+  },
+  "Vaccination": {
+    "nameRequired": "Vaccine name *",
+    "dateRequired": "Date given *",
+    "nextDate": "Next vaccination date",
+    "addCta": "Add vaccination",
+    "saved": "Vaccination added."
+  },
+  "Milk": {
+    "dateRequired": "Date *",
+    "amountRequired": "Amount (litres) *",
+    "addCta": "Add milk yield",
+    "saved": "Milk yield added."
+  },
+  "Weight": {
+    "dateRequired": "Date *",
+    "weightRequired": "Weight (kg) *",
+    "addCta": "Add weight record",
+    "saved": "Weight record added."
   }
 }

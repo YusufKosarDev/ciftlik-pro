@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
@@ -9,6 +10,8 @@ const inputClass =
   "w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500";
 
 export function HealthRecordForm({ animalId }: { animalId: string }) {
+  const t = useTranslations("Health");
+  const tc = useTranslations("Common");
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -41,7 +44,7 @@ export function HealthRecordForm({ animalId }: { animalId: string }) {
       return;
     }
 
-    toast.success("Sağlık kaydı eklendi.");
+    toast.success(t("saved"));
     form.reset();
     router.refresh();
   }
@@ -51,25 +54,25 @@ export function HealthRecordForm({ animalId }: { animalId: string }) {
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label htmlFor="date" className="mb-1 block text-xs font-medium text-muted-foreground">
-            Tarih *
+            {t("dateRequired")}
           </label>
           <input id="date" name="date" type="date" required className={inputClass} />
         </div>
         <div>
           <label htmlFor="diagnosis" className="mb-1 block text-xs font-medium text-muted-foreground">
-            Teshis *
+            {t("diagnosisRequired")}
           </label>
           <input id="diagnosis" name="diagnosis" type="text" required className={inputClass} />
         </div>
         <div>
           <label htmlFor="treatment" className="mb-1 block text-xs font-medium text-muted-foreground">
-            Tedavi
+            {t("treatment")}
           </label>
           <input id="treatment" name="treatment" type="text" className={inputClass} />
         </div>
         <div>
           <label htmlFor="notes" className="mb-1 block text-xs font-medium text-muted-foreground">
-            Not
+            {tc("note")}
           </label>
           <input id="notes" name="notes" type="text" className={inputClass} />
         </div>
@@ -80,7 +83,7 @@ export function HealthRecordForm({ animalId }: { animalId: string }) {
       )}
 
       <Button type="submit" loading={loading}>
-        Sağlık Kaydı Ekle
+        {t("addCta")}
       </Button>
     </form>
   );

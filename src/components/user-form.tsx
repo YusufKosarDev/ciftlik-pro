@@ -2,15 +2,18 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { roleLabels } from "@/lib/labels";
+import { useLabels } from "@/lib/use-labels";
 
 const inputClass =
   "w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500";
 const labelClass = "mb-1 block text-sm font-medium text-foreground";
 
 export function UserForm() {
+  const t = useTranslations("Staff");
+  const { roleLabels } = useLabels();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -43,7 +46,7 @@ export function UserForm() {
       return;
     }
 
-    toast.success("Personel eklendi.");
+    toast.success(t("added"));
     form.reset();
     router.refresh();
   }
@@ -53,24 +56,24 @@ export function UserForm() {
       onSubmit={handleSubmit}
       className="space-y-4 rounded-xl border border-border bg-card p-6"
     >
-      <h2 className="font-semibold text-foreground">Yeni Personel Ekle</h2>
+      <h2 className="font-semibold text-foreground">{t("addTitle")}</h2>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="name" className={labelClass}>
-            Ad Soyad *
+            {t("nameRequired")}
           </label>
           <input id="name" name="name" type="text" required minLength={2} className={inputClass} />
         </div>
         <div>
           <label htmlFor="email" className={labelClass}>
-            E-posta *
+            {t("emailRequired")}
           </label>
           <input id="email" name="email" type="email" required className={inputClass} />
         </div>
         <div>
           <label htmlFor="password" className={labelClass}>
-            Parola *
+            {t("passwordRequired")}
           </label>
           <input
             id="password"
@@ -83,7 +86,7 @@ export function UserForm() {
         </div>
         <div>
           <label htmlFor="role" className={labelClass}>
-            Rol *
+            {t("roleRequired")}
           </label>
           <select id="role" name="role" required defaultValue="WORKER" className={inputClass}>
             {Object.entries(roleLabels).map(([value, label]) => (
@@ -100,7 +103,7 @@ export function UserForm() {
       )}
 
       <Button type="submit" loading={loading}>
-        Personel Ekle
+        {t("addCta")}
       </Button>
     </form>
   );

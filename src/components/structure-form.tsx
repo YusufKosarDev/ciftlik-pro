@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { structureTypeLabels } from "@/lib/labels";
+import { useLabels } from "@/lib/use-labels";
 import type { Structure } from "@prisma/client";
 
 const inputClass =
@@ -13,6 +14,9 @@ const inputClass =
 const labelClass = "mb-1 block text-sm font-medium text-foreground";
 
 export function StructureForm({ structure }: { structure?: Structure }) {
+  const t = useTranslations("Structures");
+  const tc = useTranslations("Common");
+  const { structureTypeLabels } = useLabels();
   const router = useRouter();
   const isEdit = Boolean(structure);
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +51,7 @@ export function StructureForm({ structure }: { structure?: Structure }) {
       return;
     }
 
-    toast.success("Yapı kaydedildi.");
+    toast.success(t("saved"));
     router.push("/panel/yapilar");
     router.refresh();
   }
@@ -60,14 +64,14 @@ export function StructureForm({ structure }: { structure?: Structure }) {
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="name" className={labelClass}>
-            Yapi Adi *
+            {t("nameRequired")}
           </label>
           <input
             id="name"
             name="name"
             type="text"
             required
-            placeholder="1 No'lu Ahir"
+            placeholder={t("namePlaceholder")}
             defaultValue={structure?.name ?? ""}
             className={inputClass}
           />
@@ -75,7 +79,7 @@ export function StructureForm({ structure }: { structure?: Structure }) {
 
         <div>
           <label htmlFor="type" className={labelClass}>
-            Tur *
+            {t("typeRequired")}
           </label>
           <select
             id="type"
@@ -95,7 +99,7 @@ export function StructureForm({ structure }: { structure?: Structure }) {
 
       <div>
         <label htmlFor="notes" className={labelClass}>
-          Notlar
+          {tc("notes")}
         </label>
         <textarea
           id="notes"
@@ -107,7 +111,7 @@ export function StructureForm({ structure }: { structure?: Structure }) {
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Konum haritadan ayarlanir; yeni yapilar otomatik yerlesir.
+        {t("positionHint")}
       </p>
 
       {error && (
@@ -119,10 +123,10 @@ export function StructureForm({ structure }: { structure?: Structure }) {
           href="/panel/yapilar"
           className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
         >
-          Iptal
+          {tc("cancel")}
         </Link>
         <Button type="submit" loading={loading}>
-          Kaydet
+          {tc("save")}
         </Button>
       </div>
     </form>

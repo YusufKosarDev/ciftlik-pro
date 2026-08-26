@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
@@ -11,6 +12,8 @@ const inputClass =
 type FeedItem = { id: string; name: string; quantity: number; unit: string };
 
 export function FeedForm({ items }: { items: FeedItem[] }) {
+  const t = useTranslations("Feed");
+  const tc = useTranslations("Common");
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -43,7 +46,7 @@ export function FeedForm({ items }: { items: FeedItem[] }) {
       return;
     }
 
-    toast.success("Tüketim kaydedildi, stok güncellendi.");
+    toast.success(t("saved"));
     form.reset();
     router.refresh();
   }
@@ -53,7 +56,7 @@ export function FeedForm({ items }: { items: FeedItem[] }) {
       <div className="grid gap-3 sm:grid-cols-4">
         <div className="sm:col-span-2">
           <label htmlFor="fitem" className="mb-1 block text-xs font-medium text-muted-foreground">
-            Yem Kalemi *
+            {t("itemRequired")}
           </label>
           <select id="fitem" name="inventoryItemId" required className={inputClass}>
             {items.map((i) => (
@@ -65,13 +68,13 @@ export function FeedForm({ items }: { items: FeedItem[] }) {
         </div>
         <div>
           <label htmlFor="fdate" className="mb-1 block text-xs font-medium text-muted-foreground">
-            Tarih *
+            {t("dateRequired")}
           </label>
           <input id="fdate" name="date" type="date" required className={inputClass} />
         </div>
         <div>
           <label htmlFor="fqty" className="mb-1 block text-xs font-medium text-muted-foreground">
-            Miktar *
+            {t("quantityRequired")}
           </label>
           <input
             id="fqty"
@@ -85,7 +88,7 @@ export function FeedForm({ items }: { items: FeedItem[] }) {
         </div>
         <div className="sm:col-span-4">
           <label htmlFor="fnotes" className="mb-1 block text-xs font-medium text-muted-foreground">
-            Not
+            {tc("note")}
           </label>
           <input id="fnotes" name="notes" type="text" className={inputClass} />
         </div>
@@ -96,7 +99,7 @@ export function FeedForm({ items }: { items: FeedItem[] }) {
       )}
 
       <Button type="submit" loading={loading}>
-        Tüketim Ekle
+        {t("addCta")}
       </Button>
     </form>
   );
