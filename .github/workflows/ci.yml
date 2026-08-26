@@ -53,6 +53,75 @@ jobs:
       - name: Uretim derlemesi
         run: npm run build
 
+  # Tenant izolasyonunun GERCEKTEN dogrulandigi is. Bu testler yerelde
+  # RUN_DB_TESTS ile gatelenir; burada acikca acilir, boylece RLS korumasi her
+  # push/PR'da regresyona karsi korunur (yoksa 11 test sessizce skip olurdu).
+  #
+  # NEDEN AYRI JOB: kendi Postgres'iyle e2e'nin seed verisinden izole calisir ve
+  # `build` isinin coverage esiklerine dokunmaz.
+  integration:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ciftlik
+          POSTGRES_PASSWORD: ciftlik
+          POSTGRES_DB: ciftlik_test
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd "pg_isready -U ciftlik -d ciftlik_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      # Kurulum/temizlik adimlari sahip (superuser) rolle yapilir; RLS'i bypass
+      # eder, testlerin iki tenant'i hazirlayabilmesi icin gereklidir.
+      DATABASE_URL: "postgresql://ciftlik:ciftlik@localhost:5432/ciftlik_test?schema=public"
+      DIRECT_URL: "postgresql://ciftlik:ciftlik@localhost:5432/ciftlik_test?schema=public"
+      AUTH_SECRET: "ci-integration-test-secret"
+      APP_USER_PASSWORD: "ci_app_pw"
+
+    steps:
+      - name: Depoyu cek
+        uses: actions/checkout@v4
+
+      - name: Node.js kur
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Bagimliliklari yukle
+        run: npm install
+
+      - name: Prisma Client uret
+        run: npx prisma generate
+
+      - name: Veritabani semasini uygula
+        run: npx prisma migrate deploy
+
+      # Migration'lardan SONRA calismali: betik MEVCUT tablolara GRANT verir.
+      - name: Non-superuser uygulama rolunu olustur (ciftlik_app)
+        run: |
+          psql "$DIRECT_URL" -v ON_ERROR_STOP=1 -v app_pw="$APP_USER_PASSWORD" \
+            -f prisma/rls-app-role.sql
+
+      # RLS izolasyonu yalnizca NOSUPERUSER + NOBYPASSRLS rolle anlamlidir;
+      # testler bu baglantiyi APP_USER_DATABASE_URL'den alir.
+      - name: Entegrasyon testleri (RLS izolasyonu + paylasilan hiz siniri)
+        env:
+          RUN_DB_TESTS: "1"
+          APP_USER_DATABASE_URL: "postgresql://ciftlik_app:ci_app_pw@localhost:5432/ciftlik_test?schema=public"
+        run: |
+          npx vitest run \
+            src/lib/rate-limit.int.test.ts \
+            src/lib/tenant-prisma.int.test.ts \
+            src/lib/tenant-rls.int.test.ts
+
   e2e:
     runs-on: ubuntu-latest
 
