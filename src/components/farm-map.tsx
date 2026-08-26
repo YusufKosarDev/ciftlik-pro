@@ -2,13 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   FARM_CANVAS,
   type FieldRect,
   type StructureRect,
   type CropMapStatus,
 } from "@/lib/farm-map";
-import { structureTypeLabels } from "@/lib/labels";
+import { useLabels } from "@/lib/use-labels";
 import type { StructureType } from "@prisma/client";
 
 // Ekin durumuna gore tarla renkleri.
@@ -60,6 +61,9 @@ export function FarmMap({
   structures?: StructureRect[];
   editable?: boolean;
 }) {
+  const t = useTranslations("Map");
+  const tc = useTranslations("Common");
+  const { structureTypeLabels } = useLabels();
   const router = useRouter();
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -320,7 +324,7 @@ export function FarmMap({
 
       const results = await Promise.all(reqs);
       if (results.some((r) => !r.ok)) {
-        setError("Bazi konumlar kaydedilemedi. Yetkiniz olmayabilir.");
+        setError(t("partialSaveFailed"));
         setSaving(false);
         return;
       }
@@ -331,7 +335,7 @@ export function FarmMap({
       setMoved({ fields: new Set(), structures: new Set() });
       router.refresh();
     } catch {
-      setError("Kayit sirasinda hata olustu.");
+      setError(t("saveError"));
       setSaving(false);
     }
   }
@@ -358,7 +362,7 @@ export function FarmMap({
                 className="inline-block h-3 w-3 rounded"
                 style={{ backgroundColor: "#fef3c7", border: "1px solid #d97706" }}
               />
-              Yapi
+              {t("structure")}
             </span>
           )}
         </div>
@@ -382,7 +386,7 @@ export function FarmMap({
                   disabled={saving}
                   className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted disabled:opacity-60"
                 >
-                  Iptal
+                  {tc("cancel")}
                 </button>
                 <button
                   onClick={saveLayout}
@@ -411,7 +415,7 @@ export function FarmMap({
           viewBox={`0 0 ${FARM_CANVAS.width} ${FARM_CANVAS.height}`}
           className={`h-auto w-full touch-none select-none ${editing ? "" : "cursor-grab active:cursor-grabbing"}`}
           role="img"
-          aria-label="Ciftlik haritasi"
+          aria-label={t("farmMap")}
           onPointerDown={editing ? undefined : (e) => {
             setIsPanning(true);
             setPanStart({ x: e.clientX, y: e.clientY });
@@ -562,21 +566,21 @@ export function FarmMap({
             <button
               onClick={() => handleButtonZoom(true)}
               className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card font-bold text-foreground shadow-sm hover:bg-muted cursor-pointer transition select-none text-base"
-              title="Yakınlaştır"
+              title={t("zoomIn")}
             >
               ＋
             </button>
             <button
               onClick={() => handleButtonZoom(false)}
               className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card font-bold text-foreground shadow-sm hover:bg-muted cursor-pointer transition select-none text-base"
-              title="Uzaklaştır"
+              title={t("zoomOut")}
             >
               －
             </button>
             <button
               onClick={resetZoomPan}
               className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card text-xs font-bold text-foreground shadow-sm hover:bg-muted cursor-pointer transition select-none"
-              title="Sıfırla"
+              title={t("reset")}
             >
               ⟲
             </button>

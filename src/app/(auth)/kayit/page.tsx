@@ -71,7 +71,7 @@ export default function KayitPage() {
             <Label htmlFor="farmName">{t("farmName")}</Label>
             <div className="relative">
               <Building2 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input id="farmName" name="farmName" required maxLength={60} placeholder="Yeşil Vadi Çiftliği" className="pl-9" />
+              <Input id="farmName" name="farmName" required maxLength={60} placeholder={t("farmPlaceholder")} className="pl-9" />
             </div>
           </div>
 
@@ -79,7 +79,7 @@ export default function KayitPage() {
             <Label htmlFor="name">{t("name")}</Label>
             <div className="relative">
               <User className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input id="name" name="name" required maxLength={60} autoComplete="name" placeholder="Ad Soyad" className="pl-9" />
+              <Input id="name" name="name" required maxLength={60} autoComplete="name" placeholder={t("namePlaceholder")} className="pl-9" />
             </div>
           </div>
 
@@ -87,7 +87,7 @@ export default function KayitPage() {
             <Label htmlFor="email">{t("email")}</Label>
             <div className="relative">
               <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input id="email" name="email" type="email" required autoComplete="email" placeholder="ornek@ciftlik.com" className="pl-9" />
+              <Input id="email" name="email" type="email" required autoComplete="email" placeholder={t("emailPlaceholder")} className="pl-9" />
             </div>
           </div>
 

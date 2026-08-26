@@ -11,7 +11,8 @@
     "errorInvalid": "E-posta veya parola hatalı",
     "errorDemo": "Demo girişi şu an kullanılamıyor",
     "noAccount": "Hesabın yok mu?",
-    "signupLink": "Çiftliğini oluştur"
+    "signupLink": "Çiftliğini oluştur",
+    "emailPlaceholder": "ornek@ciftlik.com"
   },
   "Signup": {
     "title": "Çiftliğini oluştur",
@@ -24,7 +25,10 @@
     "haveAccount": "Zaten hesabın var mı?",
     "loginLink": "Giriş yap",
     "errorGeneric": "Kayıt başarısız. Lütfen tekrar deneyin.",
-    "errorConflict": "Bu e-posta adresi zaten kayıtlı"
+    "errorConflict": "Bu e-posta adresi zaten kayıtlı",
+    "farmPlaceholder": "Yeşil Vadi Çiftliği",
+    "namePlaceholder": "Ad Soyad",
+    "emailPlaceholder": "ornek@ciftlik.com"
   },
   "Language": {
     "aria": "Dil seçimi",
@@ -50,7 +54,9 @@
     "audit": "Denetim",
     "sectionGeneral": "Genel",
     "sectionOperations": "Operasyon",
-    "sectionManagement": "Yönetim"
+    "sectionManagement": "Yönetim",
+    "openMenu": "Menüyü aç",
+    "openCommandPalette": "Komut paletini aç"
   },
   "Common": {
     "search": "Ara...",
@@ -109,7 +115,8 @@
     "newCustomer": "Yeni Müşteri",
     "newProduct": "Yeni Ürün",
     "newTask": "Yeni Görev",
-    "newStructure": "Yeni Yapı"
+    "newStructure": "Yeni Yapı",
+    "aria": "Komut paleti"
   },
   "Dashboard": {
     "title": "Panel",
@@ -131,7 +138,9 @@
     "zeroThisMonth": "Bu ay işlem yok",
     "netThisMonth": "Bu ay net {amount}",
     "noOverdue": "Geciken yok",
-    "overdueCount": "{count} geciken"
+    "overdueCount": "{count} geciken",
+    "customizeView": "Görünümü Özelleştir",
+    "visibleCards": "Görünür Kartlar"
   },
   "Labels": {
     "species": {
@@ -261,7 +270,8 @@
     "insemination": "Tohumlama",
     "father": "Baba",
     "calf": "Yavru",
-    "noBreeding": "Henüz üreme kaydı yok."
+    "noBreeding": "Henüz üreme kaydı yok.",
+    "editTitle": "Hayvanı Düzenle"
   },
   "Fields": {
     "title": "Tarlalar",
@@ -293,7 +303,8 @@
     "income": "Gelir",
     "fieldName": "Tarla Adı",
     "areaShort": "Alan",
-    "areaValue": "{area} dönüm"
+    "areaValue": "{area} dönüm",
+    "editTitle": "Tarlayı Düzenle"
   },
   "Crops": {
     "name": "Ürün Adı",
@@ -307,7 +318,8 @@
     "added": "Ekim kaydı eklendi.",
     "updated": "Ekim kaydı güncellendi.",
     "submitAdd": "Ekim Kaydı Ekle",
-    "submitUpdate": "Güncelle"
+    "submitUpdate": "Güncelle",
+    "editTitle": "Ekim Kaydını Düzenle"
   },
   "Inventory": {
     "title": "Stok & Envanter",
@@ -328,7 +340,8 @@
     "unit": "Birim",
     "unitPlaceholder": "kg, adet, litre...",
     "criticalLevel": "Kritik Seviye",
-    "notes": "Notlar"
+    "notes": "Notlar",
+    "editTitle": "Stok Kalemini Düzenle"
   },
   "Feed": {
     "title": "Yem Yönetimi",
@@ -347,7 +360,10 @@
     "dateRequired": "Tarih *",
     "quantityRequired": "Miktar *",
     "addCta": "Tüketim Ekle",
-    "saved": "Tüketim kaydedildi, stok güncellendi."
+    "saved": "Tüketim kaydedildi, stok güncellendi.",
+    "dailyConsumption": "Günlük Tüketim:",
+    "estimatedRunout": "Tahmini Tükenme:",
+    "noData": "Veri yok"
   },
   "Finance": {
     "title": "Finans",
@@ -372,7 +388,9 @@
     "breakdown": "Kategori Dağılımı",
     "noRecords": "Kayıt yok.",
     "incomeBreakdownTitle": "Gelir Kategori Dağılımı",
-    "expenseBreakdownTitle": "Gider Kategori Dağılımı"
+    "expenseBreakdownTitle": "Gider Kategori Dağılımı",
+    "editTitle": "İşlemi Düzenle",
+    "descriptionPlaceholder": "Süt satışı, yem alımı..."
   },
   "Sales": {
     "title": "Satışlar",
@@ -395,7 +413,8 @@
     "amountLabel": "Tutar (TL) *",
     "dateLabel": "Tarih *",
     "unitPlaceholder": "kg, litre, adet...",
-    "autoIncomeHint": "Kaydedilen satış otomatik olarak gelir olarak finansa (\"Satış\" kategorisi) işlenir."
+    "autoIncomeHint": "Kaydedilen satış otomatik olarak gelir olarak finansa (\"Satış\" kategorisi) işlenir.",
+    "editTitle": "Satışı Düzenle"
   },
   "Customers": {
     "title": "Müşteriler",
@@ -418,7 +437,8 @@
     "noSales": "Bu müşteriye ait satış kaydı yok.",
     "soldItem": "Satılan",
     "nameTitle": "Ad / Unvan",
-    "nameRequired": "Ad / Unvan *"
+    "nameRequired": "Ad / Unvan *",
+    "editTitle": "Müşteriyi Düzenle"
   },
   "Products": {
     "title": "Mağaza Ürünleri",
@@ -439,7 +459,10 @@
     "nameLabel": "Ürün adı *",
     "priceLabel": "Fiyat (TL) *",
     "unitPlaceholder": "kg, litre, adet...",
-    "showInCatalog": "Katalogda göster (satışta)"
+    "showInCatalog": "Katalogda göster (satışta)",
+    "totalWithStore": "Toplam {count} ürün · herkese açık",
+    "storeLink": "mağaza",
+    "editTitle": "Ürünü Düzenle"
   },
   "Orders": {
     "title": "Siparişler",
@@ -455,7 +478,13 @@
     "paymentRef": "Ödeme Referansı",
     "date": "Sipariş Tarihi",
     "details": "Sipariş Detayı",
-    "items": "Ürünler"
+    "items": "Ürünler",
+    "confirm": "Onayla",
+    "cancel": "İptal",
+    "itemLabel": "sipariş",
+    "kindLabel": "Sipariş",
+    "statusUpdated": "Durum güncellendi.",
+    "actionFailed": "İşlem başarısız."
   },
   "Tasks": {
     "title": "Görevler",
@@ -507,10 +536,11 @@
     "searchPlaceholder": "Kullanıcı adı veya işlem ara...",
     "actorName": "Kullanıcı",
     "action": "Eylem",
-    "entity": "Varlık Türü",
+    "entity": "Varlık",
     "entityId": "Varlık ID",
     "summary": "Özet Açıklama",
-    "createdAt": "Tarih/Saat"
+    "createdAt": "Tarih/Saat",
+    "empty": "Henüz kayıt yok."
   },
   "Structures": {
     "title": "Yapılar",
@@ -532,7 +562,8 @@
     "typeRequired": "Tür *",
     "positionHint": "Konum haritadan ayarlanır; yeni yapılar otomatik yerleşir.",
     "defaultName": "{type} {n}",
-    "namePlaceholder": "1 No’lu Ahır"
+    "namePlaceholder": "1 No’lu Ahır",
+    "editTitle": "Yapıyı Düzenle"
   },
   "Map": {
     "title": "Çiftlik Haritası",
@@ -548,7 +579,13 @@
     "errorSave": "Bazı konumlar kaydedilemedi. Yetkiniz olmayabilir.",
     "errorGeneric": "Kayıt sırasında hata oluştu.",
     "field": "Tarla",
-    "structure": "Yapı"
+    "structure": "Yapı",
+    "farmMap": "Çiftlik haritası",
+    "zoomIn": "Yakınlaştır",
+    "zoomOut": "Uzaklaştır",
+    "reset": "Sıfırla",
+    "partialSaveFailed": "Bazı konumlar kaydedilemedi. Yetkiniz olmayabilir.",
+    "saveError": "Kayıt sırasında hata oluştu."
   },
   "Calendar": {
     "title": "Takvim",
@@ -791,5 +828,16 @@
     "weightRequired": "Ağırlık (kg) *",
     "addCta": "Ağırlık Kaydı Ekle",
     "saved": "Ağırlık kaydı eklendi."
+  },
+  "Notifications": {
+    "title": "Bildirimler",
+    "empty": "Aktif bildiriminiz bulunmuyor."
+  },
+  "Errors": {
+    "pageTitle": "Bir şeyler ters gitti",
+    "pageBody": "Bu sayfa yüklenirken beklenmeyen bir hata oluştu.",
+    "retry": "Tekrar dene",
+    "notFound": "Aradığınız sayfa bulunamadı.",
+    "backToPanel": "Panele dön"
   }
 }

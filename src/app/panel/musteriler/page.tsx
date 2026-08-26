@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import type { Prisma } from "@prisma/client";
 import { canWrite, requirePageView } from "@/lib/authz";
 import { parseListParams, type ListState } from "@/lib/list-query";
@@ -11,6 +12,7 @@ export default async function MusterilerPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const t = await getTranslations("Customers");
   const session = await requirePageView("/panel/musteriler");
 
   const { page, q, sort, dir, skip, take } = parseListParams(await searchParams, {
@@ -51,7 +53,7 @@ export default async function MusterilerPage({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
-            <span>🧑‍🌾</span> Müşteriler
+            <span>🧑‍🌾</span> {t("title")}
           </h1>
           <p className="text-sm text-muted-foreground">Toplam {total} müşteri</p>
         </div>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import type { OrderStatus } from "@prisma/client";
 import { DeleteButton } from "@/components/delete-button";
@@ -9,6 +10,7 @@ import { DeleteButton } from "@/components/delete-button";
 // Siparis durumunu gunceller (Onayla / Iptal) + silme. Yalnizca yetkili (admin
 // tarafi) tabloda gosterilir.
 export function OrderActions({ id, status }: { id: string; status: OrderStatus }) {
+  const t = useTranslations("Orders");
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -21,10 +23,10 @@ export function OrderActions({ id, status }: { id: string; status: OrderStatus }
     });
     setLoading(false);
     if (res.ok) {
-      toast.success("Durum güncellendi.");
+      toast.success(t("statusUpdated"));
       router.refresh();
     } else {
-      toast.error("İşlem başarısız.");
+      toast.error(t("actionFailed"));
     }
   }
 
@@ -36,7 +38,7 @@ export function OrderActions({ id, status }: { id: string; status: OrderStatus }
           disabled={loading}
           className="text-sm font-medium text-green-600 hover:underline disabled:opacity-50 dark:text-green-400"
         >
-          Onayla
+          {t("confirm")}
         </button>
       )}
       {status !== "CANCELLED" && (
@@ -45,10 +47,10 @@ export function OrderActions({ id, status }: { id: string; status: OrderStatus }
           disabled={loading}
           className="text-sm font-medium text-muted-foreground hover:underline disabled:opacity-50"
         >
-          İptal
+          {t("cancel")}
         </button>
       )}
-      <DeleteButton endpoint={`/api/orders/${id}`} itemLabel="sipariş" kind="Sipariş" />
+      <DeleteButton endpoint={`/api/orders/${id}`} itemLabel={t("itemLabel")} kind={t("kindLabel")} />
     </div>
   );
 }

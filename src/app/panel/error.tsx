@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { AlertTriangle, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -12,6 +13,8 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations("Errors");
+
   useEffect(() => {
     console.error(error);
   }, [error]);
@@ -22,14 +25,14 @@ export default function Error({
         <AlertTriangle className="h-7 w-7" />
       </div>
       <div>
-        <h2 className="text-xl font-bold text-foreground">Bir şeyler ters gitti</h2>
+        <h2 className="text-xl font-bold text-foreground">{t("pageTitle")}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Bu sayfa yüklenirken beklenmeyen bir hata oluştu.
+          {t("pageBody")}
         </p>
       </div>
       <Button onClick={reset}>
         <RotateCw className="h-4 w-4" />
-        Tekrar dene
+        {t("retry")}
       </Button>
     </div>
   );

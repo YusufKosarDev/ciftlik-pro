@@ -109,7 +109,7 @@ export function TransactionForm({ transaction }: { transaction?: Transaction }) 
             name="category"
             type="text"
             required
-            placeholder="Sut satisi, Yem alimi..."
+            placeholder={t("descriptionPlaceholder")}
             defaultValue={transaction?.category ?? ""}
             className={inputClass}
           />

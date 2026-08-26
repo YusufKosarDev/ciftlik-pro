@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import { getTranslations } from "next-intl/server";
 import { canWrite, requirePageView } from "@/lib/authz";
 import { parseListParams, type ListState } from "@/lib/list-query";
 import { withTenant } from "@/lib/tenant-prisma";
@@ -9,6 +10,7 @@ export default async function SiparislerPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const t = await getTranslations("Orders");
   const session = await requirePageView("/panel/siparisler");
 
   const { page, q, sort, dir, skip, take } = parseListParams(await searchParams, {
@@ -48,7 +50,7 @@ export default async function SiparislerPage({
     <div className="space-y-6">
       <div>
         <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
-          <span>📋</span> Siparişler
+          <span>📋</span> {t("title")}
         </h1>
         <p className="text-sm text-muted-foreground">
           Toplam {total} sipariş

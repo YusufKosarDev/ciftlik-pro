@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import type { Prisma } from "@prisma/client";
 import { canWrite, requirePageView } from "@/lib/authz";
 import { parseListParams, type ListState } from "@/lib/list-query";
@@ -12,7 +13,10 @@ export default async function UrunlerPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const session = await requirePageView("/panel/urunler");
+  const [session, t] = await Promise.all([
+    requirePageView("/panel/urunler"),
+    getTranslations("Products"),
+  ]);
 
   const { page, q, sort, dir, skip, take } = parseListParams(await searchParams, {
     sortableKeys: ["name", "price", "active", "createdAt"],
@@ -56,15 +60,15 @@ export default async function UrunlerPage({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
-            <span>🏷️</span> Ürünler
+            <span>🏷️</span> {t("title")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Toplam {total} ürün · herkese açık{" "}
+            {t("totalWithStore", { count: total })}{" "}
             <Link
               href={tenant ? `/magaza/${tenant.slug}` : "/magaza"}
               className="text-green-600 hover:underline dark:text-green-400"
             >
-              mağaza
+              {t("storeLink")}
             </Link>
           </p>
         </div>

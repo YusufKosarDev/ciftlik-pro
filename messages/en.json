@@ -11,7 +11,8 @@
     "errorInvalid": "Invalid email or password",
     "errorDemo": "Demo sign-in is currently unavailable",
     "noAccount": "Don't have an account?",
-    "signupLink": "Create your farm"
+    "signupLink": "Create your farm",
+    "emailPlaceholder": "you@farm.com"
   },
   "Signup": {
     "title": "Create your farm",
@@ -24,7 +25,10 @@
     "haveAccount": "Already have an account?",
     "loginLink": "Sign in",
     "errorGeneric": "Sign-up failed. Please try again.",
-    "errorConflict": "This email is already registered"
+    "errorConflict": "This email is already registered",
+    "farmPlaceholder": "Green Valley Farm",
+    "namePlaceholder": "Full name",
+    "emailPlaceholder": "you@farm.com"
   },
   "Language": {
     "aria": "Language selection",
@@ -50,7 +54,9 @@
     "audit": "Audit log",
     "sectionGeneral": "General",
     "sectionOperations": "Operations",
-    "sectionManagement": "Management"
+    "sectionManagement": "Management",
+    "openMenu": "Open menu",
+    "openCommandPalette": "Open command palette"
   },
   "Common": {
     "search": "Search...",
@@ -109,7 +115,8 @@
     "newCustomer": "New Customer",
     "newProduct": "New Product",
     "newTask": "New Task",
-    "newStructure": "New Structure"
+    "newStructure": "New Structure",
+    "aria": "Command palette"
   },
   "Dashboard": {
     "title": "Dashboard",
@@ -131,7 +138,9 @@
     "zeroThisMonth": "No transactions this month",
     "netThisMonth": "Net {amount} this month",
     "noOverdue": "No overdue",
-    "overdueCount": "{count} overdue"
+    "overdueCount": "{count} overdue",
+    "customizeView": "Customise view",
+    "visibleCards": "Visible cards"
   },
   "Labels": {
     "species": {
@@ -261,7 +270,8 @@
     "insemination": "Insemination",
     "father": "Sire",
     "calf": "Calf",
-    "noBreeding": "No breeding records yet."
+    "noBreeding": "No breeding records yet.",
+    "editTitle": "Edit animal"
   },
   "Fields": {
     "title": "Fields",
@@ -293,7 +303,8 @@
     "income": "Income",
     "fieldName": "Field name",
     "areaShort": "Area",
-    "areaValue": "{area} decares"
+    "areaValue": "{area} decares",
+    "editTitle": "Edit field"
   },
   "Crops": {
     "name": "Crop Name",
@@ -307,7 +318,8 @@
     "added": "Crop record added.",
     "updated": "Crop record updated.",
     "submitAdd": "Add Crop Record",
-    "submitUpdate": "Update"
+    "submitUpdate": "Update",
+    "editTitle": "Edit planting record"
   },
   "Inventory": {
     "title": "Stock & Inventory",
@@ -328,7 +340,8 @@
     "unit": "Unit",
     "unitPlaceholder": "kg, unit, liter...",
     "criticalLevel": "Critical Level",
-    "notes": "Notes"
+    "notes": "Notes",
+    "editTitle": "Edit stock item"
   },
   "Feed": {
     "title": "Feed Management",
@@ -347,7 +360,10 @@
     "dateRequired": "Date *",
     "quantityRequired": "Quantity *",
     "addCta": "Log consumption",
-    "saved": "Consumption logged, stock updated."
+    "saved": "Consumption logged, stock updated.",
+    "dailyConsumption": "Daily consumption:",
+    "estimatedRunout": "Estimated to run out:",
+    "noData": "No data"
   },
   "Finance": {
     "title": "Finance",
@@ -372,7 +388,9 @@
     "breakdown": "Category Breakdown",
     "noRecords": "No records.",
     "incomeBreakdownTitle": "Income by Category",
-    "expenseBreakdownTitle": "Expenses by Category"
+    "expenseBreakdownTitle": "Expenses by Category",
+    "editTitle": "Edit transaction",
+    "descriptionPlaceholder": "Milk sale, feed purchase..."
   },
   "Sales": {
     "title": "Sales",
@@ -395,7 +413,8 @@
     "amountLabel": "Amount (TRY) *",
     "dateLabel": "Date *",
     "unitPlaceholder": "kg, litre, piece...",
-    "autoIncomeHint": "A saved sale is automatically posted to finance as income (category \"Sale\")."
+    "autoIncomeHint": "A saved sale is automatically posted to finance as income (category \"Sale\").",
+    "editTitle": "Edit sale"
   },
   "Customers": {
     "title": "Customers",
@@ -418,7 +437,8 @@
     "noSales": "This customer has no sales yet.",
     "soldItem": "Item",
     "nameTitle": "Name / Company",
-    "nameRequired": "Name / Company *"
+    "nameRequired": "Name / Company *",
+    "editTitle": "Edit customer"
   },
   "Products": {
     "title": "Store Products",
@@ -439,7 +459,10 @@
     "nameLabel": "Product name *",
     "priceLabel": "Price (TRY) *",
     "unitPlaceholder": "kg, litre, piece...",
-    "showInCatalog": "Show in the catalogue (on sale)"
+    "showInCatalog": "Show in the catalogue (on sale)",
+    "totalWithStore": "{count} products · public",
+    "storeLink": "store",
+    "editTitle": "Edit product"
   },
   "Orders": {
     "title": "Orders",
@@ -455,7 +478,13 @@
     "paymentRef": "Payment Reference",
     "date": "Order Date",
     "details": "Order Details",
-    "items": "Products"
+    "items": "Products",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "itemLabel": "order",
+    "kindLabel": "Order",
+    "statusUpdated": "Status updated.",
+    "actionFailed": "Something went wrong."
   },
   "Tasks": {
     "title": "Tasks",
@@ -507,10 +536,11 @@
     "searchPlaceholder": "Search username or action...",
     "actorName": "User",
     "action": "Action",
-    "entity": "Entity Type",
+    "entity": "Entity",
     "entityId": "Entity ID",
     "summary": "Summary",
-    "createdAt": "Date/Time"
+    "createdAt": "Date/Time",
+    "empty": "No records yet."
   },
   "Structures": {
     "title": "Structures",
@@ -532,7 +562,8 @@
     "typeRequired": "Type *",
     "positionHint": "Position is set on the map; new structures are placed automatically.",
     "defaultName": "{type} {n}",
-    "namePlaceholder": "Barn no. 1"
+    "namePlaceholder": "Barn no. 1",
+    "editTitle": "Edit structure"
   },
   "Map": {
     "title": "Farm Map",
@@ -548,7 +579,13 @@
     "errorSave": "Failed to save some locations. You may not have permission.",
     "errorGeneric": "An error occurred during save.",
     "field": "Field",
-    "structure": "Structure"
+    "structure": "Structure",
+    "farmMap": "Farm map",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "reset": "Reset",
+    "partialSaveFailed": "Some positions could not be saved. You may not have permission.",
+    "saveError": "Something went wrong while saving."
   },
   "Calendar": {
     "title": "Calendar",
@@ -791,5 +828,16 @@
     "weightRequired": "Weight (kg) *",
     "addCta": "Add weight record",
     "saved": "Weight record added."
+  },
+  "Notifications": {
+    "title": "Notifications",
+    "empty": "You have no active notifications."
+  },
+  "Errors": {
+    "pageTitle": "Something went wrong",
+    "pageBody": "An unexpected error occurred while loading this page.",
+    "retry": "Try again",
+    "notFound": "The page you are looking for was not found.",
+    "backToPanel": "Back to the dashboard"
   }
 }

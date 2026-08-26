@@ -89,7 +89,7 @@ export function CommandPalette({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Komut paleti"
+        aria-label={t("aria")}
         className="relative z-10 w-full max-w-lg overflow-hidden rounded-xl border border-border bg-card shadow-2xl"
         onKeyDown={onKeyDown}
       >

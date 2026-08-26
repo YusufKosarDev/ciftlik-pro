@@ -1,12 +1,14 @@
 import { redirect } from "next/navigation";
+import { getLocale, getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { withTenant } from "@/lib/tenant-prisma";
 import { Badge } from "@/components/ui/badge";
-import { auditActionLabels } from "@/lib/labels";
+import { getLabels } from "@/lib/get-labels";
 import type { AuditAction } from "@prisma/client";
 
-function formatDateTime(date: Date): string {
-  return new Date(date).toLocaleString("tr-TR");
+// Denetim kaydi tarih + saat gosterir; bicim aktif dile gore secilir.
+function formatDateTime(date: Date, locale: string): string {
+  return new Date(date).toLocaleString(locale === "tr" ? "tr-TR" : "en-US");
 }
 
 const actionTone: Record<AuditAction, "green" | "blue" | "red" | "yellow"> = {
@@ -17,7 +19,13 @@ const actionTone: Record<AuditAction, "green" | "blue" | "red" | "yellow"> = {
 };
 
 export default async function DenetimPage() {
-  const session = await auth();
+  const [session, t, tc, locale, { auditActionLabels }] = await Promise.all([
+    auth(),
+    getTranslations("Audit"),
+    getTranslations("Common"),
+    getLocale(),
+    getLabels(),
+  ]);
   // Yalnizca ADMIN denetim gunlugunu gorebilir.
   if (session?.user.role !== "ADMIN") {
     redirect("/panel");
@@ -34,32 +42,32 @@ export default async function DenetimPage() {
     <div className="space-y-6">
       <div>
         <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
-          <span>🧾</span> Denetim Günlüğü
+          <span>🧾</span> {t("title")}
         </h1>
         <p className="text-sm text-muted-foreground">Son {logs.length} işlem (en yeni 100)</p>
       </div>
 
       {logs.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border bg-card p-12 text-center text-muted-foreground">
-          Henuz kayit yok.
+          {t("empty")}
         </p>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-border bg-card">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-border bg-muted text-muted-foreground">
               <tr>
-                <th className="px-4 py-3 font-medium">Tarih</th>
-                <th className="px-4 py-3 font-medium">Kullanıcı</th>
-                <th className="px-4 py-3 font-medium">İşlem</th>
-                <th className="px-4 py-3 font-medium">Varlık</th>
-                <th className="px-4 py-3 font-medium">Özet</th>
+                <th className="px-4 py-3 font-medium">{tc("date")}</th>
+                <th className="px-4 py-3 font-medium">{t("actorName")}</th>
+                <th className="px-4 py-3 font-medium">{t("action")}</th>
+                <th className="px-4 py-3 font-medium">{t("entity")}</th>
+                <th className="px-4 py-3 font-medium">{t("summary")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {logs.map((l) => (
                 <tr key={l.id} className="hover:bg-muted">
                   <td className="px-4 py-3 whitespace-nowrap text-muted-foreground">
-                    {formatDateTime(l.createdAt)}
+                    {formatDateTime(l.createdAt, locale)}
                   </td>
                   <td className="px-4 py-3 text-foreground">{l.actorName}</td>
                   <td className="px-4 py-3">

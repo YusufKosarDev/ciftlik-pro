@@ -71,7 +71,7 @@ export default async function PersonelPage({
     <div className="space-y-6">
       <div>
         <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
-          <span>👷</span> Personel
+          <span>👷</span> {t("title")}
         </h1>
         <p className="text-sm text-muted-foreground">Toplam {total} kullanici</p>
       </div>

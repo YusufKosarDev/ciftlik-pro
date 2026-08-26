@@ -31,6 +31,7 @@ export function Topbar({
 }) {
   const pathname = usePathname();
   const tc = useTranslations("Common");
+  const tn = useTranslations("Nav");
   const title = titleFor(pathname, navItems);
 
   return (
@@ -38,7 +39,7 @@ export function Topbar({
       <button
         onClick={onMenu}
         className="rounded-lg p-2 text-muted-foreground transition hover:bg-muted lg:hidden"
-        aria-label="Menüyü aç"
+        aria-label={tn("openMenu")}
       >
         <Menu className="h-5 w-5" />
       </button>
@@ -47,7 +48,7 @@ export function Topbar({
         <button
           onClick={onOpenCommand}
           className="flex items-center gap-2 rounded-lg border border-border px-2.5 py-1.5 text-xs text-muted-foreground transition hover:bg-muted"
-          aria-label="Komut paletini aç"
+          aria-label={tn("openCommandPalette")}
         >
           <Search className="h-3.5 w-3.5" />
           <span className="hidden sm:inline">{tc("search")}</span>
