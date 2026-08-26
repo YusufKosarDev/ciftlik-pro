@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit, logAuditMany } from "@/lib/audit";
@@ -6,6 +7,7 @@ import { inventorySchema } from "@/lib/validations/inventory";
 
 // POST /api/inventory -> yeni stok kalemi olusturur
 export async function POST(request: Request) {
+  const te = await getTranslations("Errors");
   try {
     const authz = await authorizeWrite("inventory");
     if ("error" in authz) return authz.error;
@@ -14,7 +16,7 @@ export async function POST(request: Request) {
     const parsed = inventorySchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Gecersiz veri", details: parsed.error.flatten().fieldErrors },
+        { error: te("invalidData"), details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
@@ -40,7 +42,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Stok ekleme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }
@@ -48,6 +50,7 @@ export async function POST(request: Request) {
 
 // DELETE /api/inventory -> toplu stok kalemi siler
 export async function DELETE(request: Request) {
+  const te = await getTranslations("Errors");
   try {
     const authz = await authorizeWrite("inventory");
     if ("error" in authz) return authz.error;
@@ -55,7 +58,7 @@ export async function DELETE(request: Request) {
     const body = await request.json();
     const { ids } = body;
     if (!Array.isArray(ids) || ids.length === 0) {
-      return NextResponse.json({ error: "Gecersiz kimlikler" }, { status: 400 });
+      return NextResponse.json({ error: te("invalidIds") }, { status: 400 });
     }
 
     const result = await withTenant(authz.session.user.tenantId, async (db) => {
@@ -88,7 +91,7 @@ export async function DELETE(request: Request) {
   } catch (error) {
     console.error("Toplu stok silme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }

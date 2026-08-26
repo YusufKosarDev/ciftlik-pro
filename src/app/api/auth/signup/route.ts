@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { signupSchema, slugify } from "@/lib/validations/auth";
@@ -15,12 +16,13 @@ import { logAudit } from "@/lib/audit";
 // ayni transaction'da app.tenant_id ayarlanir, ardindan ADMIN yazilir. Boylece
 // uretimde non-superuser rolle de calisir.
 export async function POST(request: Request) {
+  const te = await getTranslations("Errors");
   try {
     // Kotuye kullanim/bot kaydina karsi: IP basina 5 dakikada en fazla 5 kayit.
     const rl = await rateLimit(`signup:${clientIp(request)}`, 5, 5 * 60 * 1000);
     if (!rl.success) {
       return NextResponse.json(
-        { error: "Cok fazla istek. Lutfen biraz sonra tekrar deneyin." },
+        { error: te("rateLimited") },
         { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } }
       );
     }
@@ -29,7 +31,7 @@ export async function POST(request: Request) {
     const parsed = signupSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Gecersiz veri", details: parsed.error.flatten().fieldErrors },
+        { error: te("invalidData"), details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
@@ -60,7 +62,7 @@ export async function POST(request: Request) {
       // E-posta global benzersizdir: baska bir tenant'ta zaten kayitliysa P2002.
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
         return NextResponse.json(
-          { error: "Bu e-posta adresi zaten kayitli" },
+          { error: te("emailTaken") },
           { status: 409 }
         );
       }
@@ -79,7 +81,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Kayit (signup) hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }

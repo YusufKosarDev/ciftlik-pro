@@ -2,16 +2,19 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { userRoles } from "@/lib/validations/auth";
-import { roleLabels } from "@/lib/labels";
+import { useLabels } from "@/lib/use-labels";
 
 // ADMIN personel daveti olusturma formu. Basariliysa kabul baglantisini gosterir
 // (e-posta yapilandirilmamis olsa bile admin linki paylasabilsin).
 export function InviteForm({ isDemo = false }: { isDemo?: boolean }) {
+  const t = useTranslations("Invite");
+  const { roleLabels } = useLabels();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<string>("WORKER");
@@ -36,7 +39,7 @@ export function InviteForm({ isDemo = false }: { isDemo?: boolean }) {
     setLoading(false);
     const j = (await res.json().catch(() => ({}))) as { error?: string; acceptUrl?: string };
     if (!res.ok) {
-      setError(j.error ?? "Davet oluşturulamadı.");
+      setError(j.error ?? t("createFailed"));
       return;
     }
     setAcceptUrl(j.acceptUrl ?? null);
@@ -53,21 +56,21 @@ export function InviteForm({ isDemo = false }: { isDemo?: boolean }) {
 
   return (
     <div className="rounded-xl border border-border bg-card p-5">
-      <h3 className="mb-3 font-semibold text-foreground">Personel davet et</h3>
+      <h3 className="mb-3 font-semibold text-foreground">{t("formTitle")}</h3>
       <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3">
         <div className="min-w-56 flex-1">
-          <Label htmlFor="invite-email">E-posta</Label>
+          <Label htmlFor="invite-email">{t("email")}</Label>
           <Input
             id="invite-email"
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="personel@ciftlik.com"
+            placeholder={t("emailPlaceholder")}
           />
         </div>
         <div>
-          <Label htmlFor="invite-role">Rol</Label>
+          <Label htmlFor="invite-role">{t("role")}</Label>
           <select
             id="invite-role"
             value={role}
@@ -83,10 +86,10 @@ export function InviteForm({ isDemo = false }: { isDemo?: boolean }) {
         </div>
         <div>
           <Button type="submit" loading={loading} size="sm" disabled={isDemo}>
-            Davet gönder
+            {t("submit")}
           </Button>
           {isDemo && (
-            <p className="mt-1 text-xs text-muted-foreground">Demo modunda devre dışı</p>
+            <p className="mt-1 text-xs text-muted-foreground">{t("demoDisabled")}</p>
           )}
         </div>
       </form>
@@ -96,7 +99,7 @@ export function InviteForm({ isDemo = false }: { isDemo?: boolean }) {
       {acceptUrl && (
         <div className="mt-3 rounded-lg bg-green-50 dark:bg-green-500/10 p-3">
           <p className="text-sm text-green-800 dark:text-green-300">
-            Davet oluşturuldu. Bağlantıyı paylaşın (e-posta yapılandırıldıysa otomatik gönderildi):
+            {t("created")}
           </p>
           <div className="mt-2 flex items-center gap-2">
             <code className="min-w-0 flex-1 truncate rounded bg-background px-2 py-1 text-xs text-foreground">
@@ -104,7 +107,7 @@ export function InviteForm({ isDemo = false }: { isDemo?: boolean }) {
             </code>
             <Button type="button" variant="outline" size="sm" onClick={copyLink}>
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-              {copied ? "Kopyalandı" : "Kopyala"}
+              {copied ? t("copied") : t("copy")}
             </Button>
           </div>
         </div>

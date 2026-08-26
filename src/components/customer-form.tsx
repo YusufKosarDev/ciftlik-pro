@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,8 @@ const inputClass =
 const labelClass = "mb-1 block text-sm font-medium text-foreground";
 
 export function CustomerForm({ customer }: { customer?: Customer }) {
+  const t = useTranslations("Customers");
+  const tc = useTranslations("Common");
   const router = useRouter();
   const isEdit = Boolean(customer);
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +50,7 @@ export function CustomerForm({ customer }: { customer?: Customer }) {
       return;
     }
 
-    toast.success("Müşteri kaydedildi.");
+    toast.success(t("saved"));
     router.push("/panel/musteriler");
     router.refresh();
   }
@@ -60,7 +63,7 @@ export function CustomerForm({ customer }: { customer?: Customer }) {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
           <label htmlFor="name" className={labelClass}>
-            Ad / Unvan *
+            {t("nameRequired")}
           </label>
           <input
             id="name"
@@ -74,7 +77,7 @@ export function CustomerForm({ customer }: { customer?: Customer }) {
 
         <div>
           <label htmlFor="phone" className={labelClass}>
-            Telefon
+            {t("phone")}
           </label>
           <input
             id="phone"
@@ -87,7 +90,7 @@ export function CustomerForm({ customer }: { customer?: Customer }) {
 
         <div>
           <label htmlFor="email" className={labelClass}>
-            E-posta
+            {t("email")}
           </label>
           <input
             id="email"
@@ -101,7 +104,7 @@ export function CustomerForm({ customer }: { customer?: Customer }) {
 
       <div>
         <label htmlFor="notes" className={labelClass}>
-          Not
+          {tc("note")}
         </label>
         <textarea
           id="notes"
@@ -123,10 +126,10 @@ export function CustomerForm({ customer }: { customer?: Customer }) {
           href="/panel/musteriler"
           className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
         >
-          İptal
+          {tc("cancel")}
         </Link>
         <Button type="submit" loading={loading}>
-          Kaydet
+          {tc("save")}
         </Button>
       </div>
     </form>

@@ -1,19 +1,22 @@
 import { getRequestConfig } from "next-intl/server";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { resolveLocale } from "@/i18n/resolve-locale";
 
-// i18n routing KULLANMIYORUZ (URL'de /tr, /en yok). Locale bir cookie'den
-// (NEXT_LOCALE) okunur; yoksa varsayilan Turkce. Boylece mevcut rotalar ve
-// canli demo varsayilani degismez.
-export const locales = ["tr", "en"] as const;
-export const defaultLocale = "tr";
-export type Locale = (typeof locales)[number];
+// i18n routing KULLANMIYORUZ (URL'de /tr, /en yok). Dil once NEXT_LOCALE
+// cookie'sinden, o yoksa tarayicinin Accept-Language basligindan, hicbiri
+// bilgi vermiyorsa varsayilandan (tr) secilir. Secim mantigi saf ve birim
+// testli: src/i18n/resolve-locale.ts
+//
+// Sayfalar zaten cookies() okundugu icin dinamik; baslik eklemek onbellek
+// davranisini degistirmez.
+export { locales, defaultLocale, type Locale } from "@/i18n/resolve-locale";
 
 export default getRequestConfig(async () => {
-  const store = await cookies();
-  const cookieLocale = store.get("NEXT_LOCALE")?.value;
-  const locale: Locale = locales.includes(cookieLocale as Locale)
-    ? (cookieLocale as Locale)
-    : defaultLocale;
+  const [store, headerList] = await Promise.all([cookies(), headers()]);
+  const locale = resolveLocale(
+    store.get("NEXT_LOCALE")?.value,
+    headerList.get("accept-language")
+  );
 
   return {
     locale,

@@ -88,7 +88,7 @@ export default function GirisPage() {
                 type="email"
                 required
                 autoComplete="email"
-                placeholder="ornek@ciftlik.com"
+                placeholder={t("emailPlaceholder")}
                 className="pl-9"
               />
             </div>

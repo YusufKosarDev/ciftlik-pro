@@ -82,15 +82,15 @@ export default async function YemPage() {
               {/* Tüketim Analizi Bilgileri */}
               <div className="mt-4 pt-3 border-t border-border space-y-2">
                 <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Günlük Tüketim:</span>
+                  <span>{t("dailyConsumption")}</span>
                   <span className="font-semibold text-foreground">
-                    {dailyRate > 0 ? `${dailyRate.toFixed(1)} ${i.unit}/gün` : "-"}
+                    {dailyRate > 0 ? t("perDay", { rate: dailyRate.toFixed(1), unit: i.unit }) : "-"}
                   </span>
                 </div>
                 <div className="flex justify-between text-xs text-muted-foreground items-center">
-                  <span>Tahmini Tükenme:</span>
+                  <span>{t("estimatedRunout")}</span>
                   {remainingDays === null ? (
-                    <span className="text-muted-foreground">Veri yok</span>
+                    <span className="text-muted-foreground">{t("noData")}</span>
                   ) : remainingDays <= 7 ? (
                     <span className="rounded bg-red-50 dark:bg-red-500/10 px-2 py-0.5 font-bold text-red-600 dark:text-red-400 animate-pulse text-[11px]">
                       🚨 {remainingDays} gün kaldı!

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { isDemoUser } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
@@ -9,17 +10,18 @@ import { logAudit } from "@/lib/audit";
 // Yalnızca DEMO modunda (gerçek Stripe yapılandırılmamışken) geçerlidir; gerçek
 // abonelikte iptal, Stripe müşteri portalından yapılır (kapsam dışı).
 export async function POST() {
+  const te = await getTranslations("Errors");
   const session = await auth();
   if (!session?.user) {
-    return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+    return NextResponse.json({ error: te("unauthorized") }, { status: 401 });
   }
   if (session.user.role !== "ADMIN") {
-    return NextResponse.json({ error: "Yalnızca yönetici planı değiştirebilir" }, { status: 403 });
+    return NextResponse.json({ error: te("adminOnlyChangePlan") }, { status: 403 });
   }
   // Demo hesabi salt-okunurdur: vitrin ADMIN olsa da gercek plan degisikligi yaptiramaz.
   if (isDemoUser(session.user.email)) {
     return NextResponse.json(
-      { error: "Demo modunda plan değiştirilemez." },
+      { error: te("demoPlanLocked") },
       { status: 403 }
     );
   }
@@ -27,7 +29,7 @@ export async function POST() {
   const stripeEnabled = Boolean(getStripe() && process.env.STRIPE_PRO_PRICE_ID);
   if (stripeEnabled) {
     return NextResponse.json(
-      { error: "Aboneliğinizi Stripe müşteri portalından yönetin" },
+      { error: te("manageInStripePortal") },
       { status: 400 }
     );
   }

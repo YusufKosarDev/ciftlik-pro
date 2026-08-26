@@ -3,9 +3,16 @@
 // abonelik, personel dahil) + public /magaza cekilebilir.
 // Calistir: node scripts/shots.mjs
 import { chromium } from "@playwright/test";
+import { createRequire } from "node:module";
 
 const BASE = process.env.SHOT_BASE ?? "https://ciftlik-pro.vercel.app";
-const DIR = "docs/screenshots";
+// Dil: NEXT_LOCALE cookie'si + tarayici locale'i. Varsayilan tr (mevcut davranis).
+// EN kosusu: SHOT_LOCALE=en node scripts/shots.mjs
+const LOCALE = process.env.SHOT_LOCALE === "en" ? "en" : "tr";
+const DIR = LOCALE === "en" ? "docs/screenshots/en" : "docs/screenshots";
+// Metne dayali seciciler ceviri katalogundan okunur: uygulamayla TEK KAYNAK,
+// boylece dil degistiginde script sessizce kirilmaz.
+const msg = createRequire(import.meta.url)(`../messages/${LOCALE}.json`);
 const DIALOG = '[role="dialog"][aria-labelledby="onboarding-title"]';
 
 async function waitReady(page) {
@@ -26,7 +33,7 @@ async function waitCharts(page) {
 async function dismiss(page) {
   const dialog = page.locator(DIALOG);
   if ((await dialog.count()) && (await dialog.isVisible().catch(() => false))) {
-    await page.locator('[aria-label="Turu kapat"]').click().catch(() => {});
+    await page.locator('[data-testid="onboarding-close"]').click().catch(() => {});
     await page.waitForSelector(DIALOG, { state: "detached", timeout: 8000 }).catch(() => {});
     await page.waitForTimeout(400);
   }
@@ -48,14 +55,17 @@ async function run() {
   const ctx = await browser.newContext({
     viewport: { width: 1440, height: 900 },
     deviceScaleFactor: 2,
+    locale: LOCALE === "en" ? "en-US" : "tr-TR",
   });
+  // Uygulama dili cookie'den okur; baslik yalniz cookie yokken devreye girer.
+  await ctx.addCookies([{ name: "NEXT_LOCALE", value: LOCALE, url: BASE }]);
   const page = await ctx.newPage();
   page.setDefaultTimeout(25000);
 
   // 1) Giris -> demo
   await page.goto(`${BASE}/giris`, { waitUntil: "domcontentloaded" });
   await waitReady(page);
-  await page.getByRole("button", { name: /Demo olarak gez/i }).click();
+  await page.getByRole("button", { name: msg.Login.demo }).click();
   await page.waitForURL(/\/panel$/);
   await waitReady(page);
 
@@ -70,7 +80,9 @@ async function run() {
   await shot(page, "dashboard.png");
 
   // 4) Dashboard (koyu tema)
-  const toggle = page.getByRole("button", { name: /temaya geç/i });
+  const toggle = page.getByRole("button", {
+    name: new RegExp(`${msg.Common.toDarkTheme}|${msg.Common.toLightTheme}`, "i"),
+  });
   if (await toggle.count()) {
     await toggle.first().click();
     await page.waitForTimeout(700);

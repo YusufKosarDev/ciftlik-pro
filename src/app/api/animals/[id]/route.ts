@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { withTenant } from "@/lib/tenant-prisma";
@@ -10,6 +11,7 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const te = await getTranslations("Errors");
   try {
     const authz = await authorizeWrite("animals");
     if ("error" in authz) return authz.error;
@@ -20,7 +22,7 @@ export async function PUT(
     const parsed = animalSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Gecersiz veri", details: parsed.error.flatten().fieldErrors },
+        { error: te("invalidData"), details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
@@ -30,17 +32,17 @@ export async function PUT(
     const outcome = await withTenant(authz.session.user.tenantId, async (db) => {
       const existing = await db.animal.findFirst({ where: { id } });
       if (!existing) {
-        return { error: "Hayvan bulunamadi", status: 404 } as const;
+        return { error: te("animalNotFound"), status: 404 } as const;
       }
 
       // Kulak numarasi bu tenant'ta baska bir hayvanda kullaniliyor mu?
       const tagOwner = await db.animal.findFirst({ where: { tagNumber: data.tagNumber } });
       if (tagOwner && tagOwner.id !== id) {
-        return { error: "Bu kulak numarasi baska bir hayvanda kayitli", status: 409 } as const;
+        return { error: te("tagUsedByAnother"), status: 409 } as const;
       }
 
       if (data.motherId && data.motherId === id) {
-        return { error: "Bir hayvan kendi annesi olarak secilemez", status: 400 } as const;
+        return { error: te("animalCannotBeOwnMother"), status: 400 } as const;
       }
 
       // Dongu engelle: secilen anne, bu hayvanin soyundan biri olamaz.
@@ -50,7 +52,7 @@ export async function PUT(
         while (cursor && !seen.has(cursor)) {
           if (cursor === id) {
             return {
-              error: "Secilen anne bu hayvanin soyundan; bu ataama dongu olusturur",
+              error: te("motherCycle"),
               status: 400,
             } as const;
           }
@@ -67,13 +69,13 @@ export async function PUT(
           select: { gender: true, species: true },
         });
         if (!mother) {
-          return { error: "Secilen anne hayvan bulunamadi", status: 404 } as const;
+          return { error: te("motherNotFound"), status: 404 } as const;
         }
         if (mother.gender !== "FEMALE") {
-          return { error: "Anne olarak yalnizca disi hayvan secilebilir", status: 400 } as const;
+          return { error: te("motherMustBeFemale"), status: 400 } as const;
         }
         if (mother.species !== data.species) {
-          return { error: "Anne ve yavru ayni turden olmalidir", status: 400 } as const;
+          return { error: te("motherSpeciesMismatch"), status: 400 } as const;
         }
       }
 
@@ -84,7 +86,7 @@ export async function PUT(
         });
         if (mismatchedOffspring > 0) {
           return {
-            error: "Bu hayvanin yavrulari farkli turden; tur degistirilemez",
+            error: te("offspringSpeciesMismatch"),
             status: 400,
           } as const;
         }
@@ -124,7 +126,7 @@ export async function PUT(
   } catch (error) {
     console.error("Hayvan guncelleme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }
@@ -135,6 +137,7 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const te = await getTranslations("Errors");
   try {
     const authz = await authorizeWrite("animals");
     if ("error" in authz) return authz.error;
@@ -149,7 +152,7 @@ export async function DELETE(
     });
 
     if (!deleted) {
-      return NextResponse.json({ error: "Hayvan bulunamadi" }, { status: 404 });
+      return NextResponse.json({ error: te("animalNotFound") }, { status: 404 });
     }
 
     await logAudit(authz.session.user, "DELETE", "Animal", id, deleted.tagNumber);
@@ -158,7 +161,7 @@ export async function DELETE(
   } catch (error) {
     console.error("Hayvan silme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }

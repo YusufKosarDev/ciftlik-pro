@@ -60,14 +60,9 @@ export function shiftMonth(year: number, month: number, delta: number): string {
   return monthParam(d.getFullYear(), d.getMonth());
 }
 
-// Turkce ay adi.
-const MONTH_NAMES = [
-  "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
-  "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık",
-];
-export function monthTitle(year: number, month: number): string {
-  return `${MONTH_NAMES[month]} ${year}`;
-}
+// NOT: Ay basligi burada URETILMEZ. Takvim sayfasi Intl ile aktif dile gore
+// bicimlendirir (src/app/panel/takvim/page.tsx); burada sabit bir Turkce ay
+// dizisi tutmak, dil degistiginde sessizce Turkce metin sizdirirdi.
 
 // Pazartesi baslangicli 6x7 grid (her zaman 42 gun).
 export function monthGrid(

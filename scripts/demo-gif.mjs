@@ -10,6 +10,7 @@
 // sharp ile RGBA'ya cozulup gifenc (saf JS) ile kodlanir; ek ikili bagimlilik
 // gerekmez.
 import { chromium } from "@playwright/test";
+import { createRequire } from "node:module";
 // gifenc CommonJS yayinlar; ESM'de adlandirilmis import calismaz.
 import gifenc from "gifenc";
 const { GIFEncoder, quantize, applyPalette } = gifenc;
@@ -17,7 +18,11 @@ import sharp from "sharp";
 import { writeFile } from "node:fs/promises";
 
 const BASE = process.env.SHOT_BASE ?? "https://ciftlik-pro.vercel.app";
-const OUT = "docs/demo.gif";
+// Dil: NEXT_LOCALE cookie'si + tarayici locale'i (bkz. scripts/shots.mjs).
+const LOCALE = process.env.SHOT_LOCALE === "en" ? "en" : "tr";
+const OUT = LOCALE === "en" ? "docs/demo.en.gif" : "docs/demo.gif";
+// Metne dayali seciciler ceviri katalogundan (bkz. scripts/shots.mjs).
+const msg = createRequire(import.meta.url)(`../messages/${LOCALE}.json`);
 const DIALOG = '[role="dialog"][aria-labelledby="onboarding-title"]';
 
 // GIF boyutu ile akicilik dengesi: 1200x750 yakala, 900px'e kucult.
@@ -61,7 +66,7 @@ async function settle(page) {
 async function dismissOnboarding(page) {
   const dialog = page.locator(DIALOG);
   if ((await dialog.count()) && (await dialog.isVisible().catch(() => false))) {
-    await page.locator('[aria-label="Turu kapat"]').click().catch(() => {});
+    await page.locator('[data-testid="onboarding-close"]').click().catch(() => {});
     await page.waitForSelector(DIALOG, { state: "detached", timeout: 8000 }).catch(() => {});
     await page.waitForTimeout(300);
   }
@@ -75,7 +80,14 @@ async function goto(page, path) {
 
 async function run() {
   const browser = await chromium.launch();
-  const ctx = await browser.newContext({ viewport: VIEWPORT, deviceScaleFactor: 1 });
+  const ctx = await browser.newContext({
+    viewport: VIEWPORT,
+    deviceScaleFactor: 1,
+    locale: LOCALE === "en" ? "en-US" : "tr-TR",
+  });
+  await ctx.addCookies([
+    { name: "NEXT_LOCALE", value: LOCALE, url: BASE },
+  ]);
   const page = await ctx.newPage();
   page.setDefaultTimeout(25000);
 
@@ -84,7 +96,7 @@ async function run() {
   // 1) Giris ekrani -> "Demo olarak gez"
   await goto(page, "/giris");
   await scene(page, "Giris ekrani", 3);
-  await page.getByRole("button", { name: /Demo olarak gez/i }).click();
+  await page.getByRole("button", { name: msg.Login.demo }).click();
   await page.waitForURL(/\/panel$/, { timeout: 30000 });
   await settle(page);
   await dismissOnboarding(page);
@@ -131,7 +143,9 @@ async function run() {
   await scene(page, "Finans", 4);
 
   // 7) Koyu tema
-  const toggle = page.getByRole("button", { name: /temaya geç/i });
+  const toggle = page.getByRole("button", {
+    name: new RegExp(`${msg.Common.toDarkTheme}|${msg.Common.toLightTheme}`, "i"),
+  });
   if (await toggle.count()) {
     await toggle.first().click();
     await page.waitForTimeout(800);

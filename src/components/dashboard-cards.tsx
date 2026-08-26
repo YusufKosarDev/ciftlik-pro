@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { PawPrint, Wheat, Wallet, ListChecks, TrendingUp, TrendingDown, Minus, Settings2 } from "lucide-react";
 import { cn } from "@/lib/cn";
 
@@ -118,6 +119,7 @@ export function DashboardCards({
     openTasks: string;
   };
 }) {
+  const td = useTranslations("Dashboard");
   const [visibleWidgets, setVisibleWidgets] = useState<Record<string, boolean>>({
     animals: true,
     fields: true,
@@ -156,14 +158,14 @@ export function DashboardCards({
           onClick={() => setShowConfig(!showConfig)}
           className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted cursor-pointer transition shadow-sm"
         >
-          <Settings2 className="h-3.5 w-3.5" /> Görünümü Özelleştir
+          <Settings2 className="h-3.5 w-3.5" /> {td("customizeView")}
         </button>
 
         {showConfig && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => setShowConfig(false)} />
             <div className="absolute right-0 top-full z-50 mt-1 w-48 rounded-lg border border-border bg-card p-2 shadow-lg animate-in fade-in slide-in-from-top-1 duration-150">
-              <p className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-1">Görünür Kartlar</p>
+              <p className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-1">{td("visibleCards")}</p>
               <div className="space-y-1 mt-1.5">
                 {[
                   { key: "animals", label: labels.activeAnimals },

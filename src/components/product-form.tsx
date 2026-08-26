@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,8 @@ const inputClass =
 const labelClass = "mb-1 block text-sm font-medium text-foreground";
 
 export function ProductForm({ product }: { product?: Product }) {
+  const t = useTranslations("Products");
+  const tc = useTranslations("Common");
   const router = useRouter();
   const isEdit = Boolean(product);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +51,7 @@ export function ProductForm({ product }: { product?: Product }) {
       return;
     }
 
-    toast.success("Ürün kaydedildi.");
+    toast.success(t("saved"));
     router.push("/panel/urunler");
     router.refresh();
   }
@@ -61,7 +64,7 @@ export function ProductForm({ product }: { product?: Product }) {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
           <label htmlFor="name" className={labelClass}>
-            Ürün adı *
+            {t("nameLabel")}
           </label>
           <input
             id="name"
@@ -75,7 +78,7 @@ export function ProductForm({ product }: { product?: Product }) {
 
         <div>
           <label htmlFor="price" className={labelClass}>
-            Fiyat (TL) *
+            {t("priceLabel")}
           </label>
           <input
             id="price"
@@ -91,13 +94,13 @@ export function ProductForm({ product }: { product?: Product }) {
 
         <div>
           <label htmlFor="unit" className={labelClass}>
-            Birim
+            {t("unit")}
           </label>
           <input
             id="unit"
             name="unit"
             type="text"
-            placeholder="kg, litre, adet..."
+            placeholder={t("unitPlaceholder")}
             defaultValue={product?.unit ?? ""}
             className={inputClass}
           />
@@ -106,7 +109,7 @@ export function ProductForm({ product }: { product?: Product }) {
 
       <div>
         <label htmlFor="description" className={labelClass}>
-          Açıklama
+          {t("description")}
         </label>
         <textarea
           id="description"
@@ -124,7 +127,7 @@ export function ProductForm({ product }: { product?: Product }) {
           defaultChecked={product?.active ?? true}
           className="h-4 w-4 rounded border-border accent-green-600"
         />
-        Katalogda göster (satışta)
+        {t("showInCatalog")}
       </label>
 
       {error && (
@@ -138,10 +141,10 @@ export function ProductForm({ product }: { product?: Product }) {
           href="/panel/urunler"
           className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
         >
-          İptal
+          {tc("cancel")}
         </Link>
         <Button type="submit" loading={loading}>
-          Kaydet
+          {tc("save")}
         </Button>
       </div>
     </form>

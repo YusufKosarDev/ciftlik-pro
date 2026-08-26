@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
@@ -9,6 +10,7 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string; cropId: string }> }
 ) {
+  const te = await getTranslations("Errors");
   try {
     const authz = await authorizeWrite("fields");
     if ("error" in authz) return authz.error;
@@ -19,7 +21,7 @@ export async function PUT(
     const parsed = cropSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Gecersiz veri", details: parsed.error.flatten().fieldErrors },
+        { error: te("invalidData"), details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
@@ -47,10 +49,10 @@ export async function PUT(
     });
 
     if ("notFound" in result) {
-      return NextResponse.json({ error: "Ekim kaydi bulunamadi" }, { status: 404 });
+      return NextResponse.json({ error: te("cropNotFound") }, { status: 404 });
     }
     if ("wrongField" in result) {
-      return NextResponse.json({ error: "Ekim kaydi bu tarlaya ait degil" }, { status: 400 });
+      return NextResponse.json({ error: te("cropNotInField") }, { status: 400 });
     }
     const { crop } = result;
 
@@ -60,7 +62,7 @@ export async function PUT(
   } catch (error) {
     console.error("Ekim kaydi guncelleme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }
@@ -71,6 +73,7 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string; cropId: string }> }
 ) {
+  const te = await getTranslations("Errors");
   try {
     const authz = await authorizeWrite("fields");
     if ("error" in authz) return authz.error;
@@ -86,10 +89,10 @@ export async function DELETE(
     });
 
     if ("notFound" in result) {
-      return NextResponse.json({ error: "Ekim kaydi bulunamadi" }, { status: 404 });
+      return NextResponse.json({ error: te("cropNotFound") }, { status: 404 });
     }
     if ("wrongField" in result) {
-      return NextResponse.json({ error: "Ekim kaydi bu tarlaya ait degil" }, { status: 400 });
+      return NextResponse.json({ error: te("cropNotInField") }, { status: 400 });
     }
     await logAudit(authz.session.user, "DELETE", "Crop", cropId, result.existing.name);
 
@@ -97,7 +100,7 @@ export async function DELETE(
   } catch (error) {
     console.error("Ekim kaydi silme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }

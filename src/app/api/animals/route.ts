@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit, logAuditMany } from "@/lib/audit";
 import { withTenant } from "@/lib/tenant-prisma";
@@ -7,6 +8,7 @@ import { animalSchema } from "@/lib/validations/animal";
 
 // POST /api/animals -> yeni hayvan olusturur
 export async function POST(request: Request) {
+  const te = await getTranslations("Errors");
   try {
     // 1) Yetki kontrolu: sadece ADMIN/WORKER hayvan ekleyebilir
     const authz = await authorizeWrite("animals");
@@ -18,7 +20,7 @@ export async function POST(request: Request) {
     const parsed = animalSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Gecersiz veri", details: parsed.error.flatten().fieldErrors },
+        { error: te("invalidData"), details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
@@ -30,7 +32,7 @@ export async function POST(request: Request) {
     if (!limit.allowed) {
       return NextResponse.json(
         {
-          error: `FREE planda en fazla ${limit.limit} aktif hayvan ekleyebilirsiniz. Daha fazlası için PRO'ya yükseltin.`,
+          error: te("planLimitAnimals", { limit: limit.limit }),
           code: "PLAN_LIMIT",
         },
         { status: 403 }
@@ -43,7 +45,7 @@ export async function POST(request: Request) {
       // Kulak numarasi bu tenant'ta zaten kayitli mi? (findFirst: forTenant enjekte eder)
       const existing = await db.animal.findFirst({ where: { tagNumber: data.tagNumber } });
       if (existing) {
-        return { error: "Bu kulak numarasi zaten kayitli", status: 409 } as const;
+        return { error: te("tagTaken"), status: 409 } as const;
       }
 
       // Anne dogrulamasi: mevcut mu, disi mi, ayni turden mi?
@@ -53,13 +55,13 @@ export async function POST(request: Request) {
           select: { gender: true, species: true },
         });
         if (!mother) {
-          return { error: "Secilen anne hayvan bulunamadi", status: 404 } as const;
+          return { error: te("motherNotFound"), status: 404 } as const;
         }
         if (mother.gender !== "FEMALE") {
-          return { error: "Anne olarak yalnizca disi hayvan secilebilir", status: 400 } as const;
+          return { error: te("motherMustBeFemale"), status: 400 } as const;
         }
         if (mother.species !== data.species) {
-          return { error: "Anne ve yavru ayni turden olmalidir", status: 400 } as const;
+          return { error: te("motherSpeciesMismatch"), status: 400 } as const;
         }
       }
 
@@ -97,7 +99,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Hayvan ekleme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }
@@ -105,6 +107,7 @@ export async function POST(request: Request) {
 
 // DELETE /api/animals -> toplu hayvan siler
 export async function DELETE(request: Request) {
+  const te = await getTranslations("Errors");
   try {
     const authz = await authorizeWrite("animals");
     if ("error" in authz) return authz.error;
@@ -112,7 +115,7 @@ export async function DELETE(request: Request) {
     const body = await request.json();
     const { ids } = body;
     if (!Array.isArray(ids) || ids.length === 0) {
-      return NextResponse.json({ error: "Gecersiz kimlikler" }, { status: 400 });
+      return NextResponse.json({ error: te("invalidIds") }, { status: 400 });
     }
 
     const result = await withTenant(authz.session.user.tenantId, async (db) => {
@@ -145,7 +148,7 @@ export async function DELETE(request: Request) {
   } catch (error) {
     console.error("Toplu hayvan silme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }

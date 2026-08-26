@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant-prisma";
 import { collectAlerts, renderAlertsHtml, VACCINATION_WINDOW_DAYS } from "@/lib/notifications";
@@ -12,6 +13,7 @@ import { pruneRateLimits } from "@/lib/rate-limit";
 // Guvenlik: CRON_SECRET tanimliysa "Authorization: Bearer <CRON_SECRET>" baslik
 // dogrulanir. (Vercel Cron, CRON_SECRET tanimliysa bu basligi otomatik ekler.)
 export async function GET(request: Request) {
+  const te = await getTranslations("Errors");
   const secret = process.env.CRON_SECRET;
 
   // CRON_SECRET tanimli degilse endpoint'i hicbir zaman acik birakmayiz.
@@ -21,14 +23,14 @@ export async function GET(request: Request) {
   if (!secret) {
     console.error("CRON_SECRET ortam degiskeni tanimli degil. Endpoint devre disi.");
     return NextResponse.json(
-      { error: "Sunucu yapilandirmasi eksik: CRON_SECRET ayarlanmamis" },
+      { error: te("cronSecretMissing") },
       { status: 503 }
     );
   }
 
   const authHeader = request.headers.get("authorization");
   if (authHeader !== `Bearer ${secret}`) {
-    return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+    return NextResponse.json({ error: te("unauthorized") }, { status: 401 });
   }
 
   try {
@@ -111,6 +113,6 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error("Cron uyari hatasi:", error);
-    return NextResponse.json({ error: "Sunucu hatasi" }, { status: 500 });
+    return NextResponse.json({ error: te("serverError") }, { status: 500 });
   }
 }

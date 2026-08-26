@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
@@ -6,6 +7,7 @@ import { fieldSchema } from "@/lib/validations/field";
 
 // POST /api/fields -> yeni tarla olusturur
 export async function POST(request: Request) {
+  const te = await getTranslations("Errors");
   try {
     const authz = await authorizeWrite("fields");
     if ("error" in authz) return authz.error;
@@ -14,7 +16,7 @@ export async function POST(request: Request) {
     const parsed = fieldSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Gecersiz veri", details: parsed.error.flatten().fieldErrors },
+        { error: te("invalidData"), details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
@@ -38,7 +40,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Tarla ekleme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }

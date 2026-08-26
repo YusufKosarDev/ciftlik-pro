@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { getLocale, getTranslations } from "next-intl/server";
+import { formatMoney } from "@/lib/format";
 import { withTenant } from "@/lib/tenant-prisma";
 import { resolveStorefront } from "@/lib/storefront";
 import { AddToCartButton } from "@/components/store/add-to-cart-button";
@@ -10,15 +12,11 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const tenant = await resolveStorefront(slug);
+  const [tenant, t] = await Promise.all([resolveStorefront(slug), getTranslations("Store")]);
   return {
-    title: tenant ? `${tenant.name} · Mağaza` : "Mağaza",
-    description: "Çiftlikten taze ürünler — sipariş verin.",
+    title: tenant ? t("metaTitle", { farm: tenant.name }) : t("metaTitleFallback"),
+    description: t("metaDescription"),
   };
-}
-
-function formatMoney(a: number): string {
-  return a.toLocaleString("tr-TR", { minimumFractionDigits: 2 }) + " TL";
 }
 
 // Per-tenant katalog. Herkese acik; yalnizca bu tenant'in aktif urunleri listelenir
@@ -29,7 +27,11 @@ export default async function StorefrontPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const tenant = await resolveStorefront(slug);
+  const [tenant, t, locale] = await Promise.all([
+    resolveStorefront(slug),
+    getTranslations("Store"),
+    getLocale(),
+  ]);
   if (!tenant) {
     notFound();
   }
@@ -42,14 +44,12 @@ export default async function StorefrontPage({
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">{tenant.name}</h1>
-        <p className="text-sm text-muted-foreground">
-          Beğendiğiniz ürünleri sepete ekleyip sipariş bırakın — ödeme teslimatta.
-        </p>
+        <p className="text-sm text-muted-foreground">{t("catalogSubtitle")}</p>
       </div>
 
       {products.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border bg-card p-12 text-center text-muted-foreground">
-          Şu anda satışta ürün yok.
+          {t("catalogEmpty")}
         </p>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -65,7 +65,7 @@ export default async function StorefrontPage({
                 )}
               </div>
               <p className="text-lg font-bold text-green-600 dark:text-green-400">
-                {formatMoney(p.price)}
+                {formatMoney(p.price, locale)}
                 {p.unit ? <span className="text-sm font-normal text-muted-foreground"> / {p.unit}</span> : null}
               </p>
               <div className="mt-auto">

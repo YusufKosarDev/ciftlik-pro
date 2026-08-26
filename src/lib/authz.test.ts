@@ -19,6 +19,12 @@ vi.mock("next/navigation", () => ({
     throw new Error("REDIRECT:" + url);
   },
 }));
+// authorizeWrite hata mesajlarini Errors namespace'inden ceviriyor; getTranslations
+// gercek bir istek baglami ister. Testler mesaj METNINI degil durum kodunu
+// dogruladigi icin cevirmen anahtari aynen dondurur.
+vi.mock("next-intl/server", () => ({
+  getTranslations: async () => (key: string) => key,
+}));
 
 import {
   canWrite,

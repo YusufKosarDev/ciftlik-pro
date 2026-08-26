@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { isDemoUser } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
@@ -9,18 +10,19 @@ import { logAudit } from "@/lib/audit";
 // Env-gated: Stripe + STRIPE_PRO_PRICE_ID varsa gerçek abonelik Checkout'u açar
 // (plan webhook ile güncellenir). Yoksa (demo) planı doğrudan PRO yapar.
 export async function POST(request: Request) {
+  const te = await getTranslations("Errors");
   const session = await auth();
   if (!session?.user) {
-    return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+    return NextResponse.json({ error: te("unauthorized") }, { status: 401 });
   }
   if (session.user.role !== "ADMIN") {
-    return NextResponse.json({ error: "Yalnızca yönetici planı yükseltebilir" }, { status: 403 });
+    return NextResponse.json({ error: te("adminOnlyUpgradePlan") }, { status: 403 });
   }
   // Demo hesabi salt-okunurdur: vitrin ADMIN olsa da gercek plan degisikligi
   // (demo modunda dogrudan DB yazimi) yaptiramaz.
   if (isDemoUser(session.user.email)) {
     return NextResponse.json(
-      { error: "Demo modunda plan değiştirilemez." },
+      { error: te("demoPlanLocked") },
       { status: 403 }
     );
   }

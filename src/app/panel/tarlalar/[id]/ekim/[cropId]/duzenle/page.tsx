@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { withTenant } from "@/lib/tenant-prisma";
 import { CropForm } from "@/components/crop-form";
@@ -9,6 +10,7 @@ export default async function EkimDuzenlePage({
 }: {
   params: Promise<{ id: string; cropId: string }>;
 }) {
+  const t = await getTranslations("Crops");
   const session = await requirePageWrite("fields");
 
   const { id, cropId } = await params;
@@ -28,11 +30,11 @@ export default async function EkimDuzenlePage({
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Ekim Kaydını Düzenle</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t("editTitle")}</h1>
           <p className="text-sm text-muted-foreground">{field.name}</p>
         </div>
         <Link href={`/panel/tarlalar/${id}`} className="text-sm text-muted-foreground hover:underline">
-          &larr; Tarlaya dön
+          {t("backToField")}
         </Link>
       </div>
 

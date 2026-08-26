@@ -11,7 +11,8 @@
     "errorInvalid": "E-posta veya parola hatalı",
     "errorDemo": "Demo girişi şu an kullanılamıyor",
     "noAccount": "Hesabın yok mu?",
-    "signupLink": "Çiftliğini oluştur"
+    "signupLink": "Çiftliğini oluştur",
+    "emailPlaceholder": "ornek@ciftlik.com"
   },
   "Signup": {
     "title": "Çiftliğini oluştur",
@@ -24,7 +25,10 @@
     "haveAccount": "Zaten hesabın var mı?",
     "loginLink": "Giriş yap",
     "errorGeneric": "Kayıt başarısız. Lütfen tekrar deneyin.",
-    "errorConflict": "Bu e-posta adresi zaten kayıtlı"
+    "errorConflict": "Bu e-posta adresi zaten kayıtlı",
+    "farmPlaceholder": "Yeşil Vadi Çiftliği",
+    "namePlaceholder": "Ad Soyad",
+    "emailPlaceholder": "ornek@ciftlik.com"
   },
   "Language": {
     "aria": "Dil seçimi",
@@ -50,7 +54,9 @@
     "audit": "Denetim",
     "sectionGeneral": "Genel",
     "sectionOperations": "Operasyon",
-    "sectionManagement": "Yönetim"
+    "sectionManagement": "Yönetim",
+    "openMenu": "Menüyü aç",
+    "openCommandPalette": "Komut paletini aç"
   },
   "Common": {
     "search": "Ara...",
@@ -67,14 +73,35 @@
     "loading": "Yükleniyor...",
     "saveFailed": "Kayıt başarısız, lütfen tekrar deneyin",
     "none": "-",
-    "required": "*"
+    "required": "*",
+    "date": "Tarih",
+    "status": "Durum",
+    "note": "Not",
+    "notes": "Notlar",
+    "total": "Toplam",
+    "action": "İşlem",
+    "type": "Tür",
+    "description": "Açıklama",
+    "quantity": "Miktar",
+    "amount": "Tutar",
+    "toLightTheme": "Açık temaya geç",
+    "toDarkTheme": "Koyu temaya geç",
+    "lightTheme": "Açık tema",
+    "darkTheme": "Koyu tema",
+    "backToListArrow": "← Listeye dön"
   },
   "Table": {
     "noMatch": "“{q}” ile eşleşen kayıt bulunamadı.",
     "noRecords": "Kayıt bulunamadı.",
     "records": "{count} kayıt",
     "prevPage": "Önceki sayfa",
-    "nextPage": "Sonraki sayfa"
+    "nextPage": "Sonraki sayfa",
+    "downloadCsv": "CSV İndir",
+    "columns": "Sütunlar",
+    "bulkDeleteConfirm": "Seçilen {count} kaydı kalıcı olarak silmek istediğinize emin misiniz?",
+    "bulkDeleteFailed": "Toplu silme işlemi sırasında bir hata oluştu.",
+    "bulkDelete": "Seçilenleri Sil",
+    "deleting": "Siliniyor..."
   },
   "Delete": {
     "trigger": "Sil",
@@ -99,7 +126,8 @@
     "newCustomer": "Yeni Müşteri",
     "newProduct": "Yeni Ürün",
     "newTask": "Yeni Görev",
-    "newStructure": "Yeni Yapı"
+    "newStructure": "Yeni Yapı",
+    "aria": "Komut paleti"
   },
   "Dashboard": {
     "title": "Panel",
@@ -121,7 +149,9 @@
     "zeroThisMonth": "Bu ay işlem yok",
     "netThisMonth": "Bu ay net {amount}",
     "noOverdue": "Geciken yok",
-    "overdueCount": "{count} geciken"
+    "overdueCount": "{count} geciken",
+    "customizeView": "Görünümü Özelleştir",
+    "visibleCards": "Görünür Kartlar"
   },
   "Labels": {
     "species": {
@@ -209,7 +239,7 @@
     "gender": "Cinsiyet",
     "birthDate": "Doğum Tarihi",
     "status": "Durum",
-    "mother": "Anne (soy)",
+    "mother": "Anne",
     "motherNone": "— Anne seçilmedi —",
     "imageUrl": "Görsel URL",
     "notes": "Notlar",
@@ -217,7 +247,48 @@
     "weightChartTitle": "Ağırlık Değişimi",
     "milkUnit": "Litre",
     "weightSeries": "Ağırlık",
-    "milkChartLabel": "Günlük Süt Verimi"
+    "milkChartLabel": "Günlük Süt Verimi",
+    "weightTracking": "Ağırlık Takibi",
+    "lastWeighing": "Son tartım",
+    "firstWeighing": "İlk tartım",
+    "weightChange": "Değişim",
+    "weightKg": "Ağırlık (kg)",
+    "action": "İşlem",
+    "breedingRecords": "Üreme Kayıtları",
+    "expectedBirth": "Tahmini Doğum",
+    "weightRecordKind": "Ağırlık kaydı",
+    "breedingRecordKind": "Üreme kaydı",
+    "weighingOn": "{date} tartım",
+    "breedingOn": "{date} üreme kaydı",
+    "age": "Yaş",
+    "lineage": "Soy",
+    "offspring": "Yavrular",
+    "healthRecords": "Sağlık Kayıtları",
+    "noHealthRecords": "Henüz sağlık kaydı yok.",
+    "diagnosis": "Teşhis",
+    "treatment": "Tedavi",
+    "vaccinationSchedule": "Aşı Takvimi",
+    "noVaccinations": "Henüz aşı kaydı yok.",
+    "vaccine": "Aşı",
+    "givenOn": "Yapılış",
+    "nextDate": "Sonraki",
+    "milkYield": "Süt Verimi",
+    "avgPerRecord": "Kayıt başına ortalama",
+    "avgLast7": "Son 7 gün ortalama",
+    "noMilk": "Henüz süt verimi kaydı yok.",
+    "milkAmount": "Miktar (L)",
+    "noWeight": "Henüz ağırlık kaydı yok.",
+    "insemination": "Tohumlama",
+    "father": "Baba",
+    "calf": "Yavru",
+    "noBreeding": "Henüz üreme kaydı yok.",
+    "editTitle": "Hayvanı Düzenle",
+    "ageMonths": "{months} ay",
+    "ageYears": "{years} yaş",
+    "ageYearsMonths": "{years} yaş {months} ay",
+    "tagNumberInline": "Kulak No: {tag}",
+    "vaccineOverdue": "{date} (geçti)",
+    "vaccineDaysLeft": "{date} ({days} gün kaldı)"
   },
   "Fields": {
     "title": "Tarlalar",
@@ -232,7 +303,25 @@
     "area": "Alan (dönüm)",
     "location": "Konum",
     "locationLabel": "Konum / Mevki",
-    "notes": "Notlar"
+    "notes": "Notlar",
+    "yieldPerDecare": "Dönüm Başına Verim",
+    "crop": "Ürün",
+    "action": "İşlem",
+    "edit": "Düzenle",
+    "cropRecordKind": "Ekim kaydı",
+    "totalExpense": "Toplam Gider",
+    "totalIncome": "Toplam Gelir",
+    "netProfit": "Net Kâr",
+    "cropRecords": "Ekim Kayıtları",
+    "noCrops": "Henüz ekim kaydı yok.",
+    "planted": "Ekim",
+    "harvest": "Hasat",
+    "expense": "Gider",
+    "income": "Gelir",
+    "fieldName": "Tarla Adı",
+    "areaShort": "Alan",
+    "areaValue": "{area} dönüm",
+    "editTitle": "Tarlayı Düzenle"
   },
   "Crops": {
     "name": "Ürün Adı",
@@ -246,7 +335,9 @@
     "added": "Ekim kaydı eklendi.",
     "updated": "Ekim kaydı güncellendi.",
     "submitAdd": "Ekim Kaydı Ekle",
-    "submitUpdate": "Güncelle"
+    "submitUpdate": "Güncelle",
+    "editTitle": "Ekim Kaydını Düzenle",
+    "backToField": "← Tarlaya dön"
   },
   "Inventory": {
     "title": "Stok & Envanter",
@@ -267,7 +358,8 @@
     "unit": "Birim",
     "unitPlaceholder": "kg, adet, litre...",
     "criticalLevel": "Kritik Seviye",
-    "notes": "Notlar"
+    "notes": "Notlar",
+    "editTitle": "Stok Kalemini Düzenle"
   },
   "Feed": {
     "title": "Yem Yönetimi",
@@ -281,7 +373,16 @@
     "item": "Yem",
     "quantity": "Miktar",
     "note": "Not",
-    "deleteKind": "Tüketim kaydı"
+    "deleteKind": "Tüketim kaydı",
+    "itemRequired": "Yem Kalemi *",
+    "dateRequired": "Tarih *",
+    "quantityRequired": "Miktar *",
+    "addCta": "Tüketim Ekle",
+    "saved": "Tüketim kaydedildi, stok güncellendi.",
+    "dailyConsumption": "Günlük Tüketim:",
+    "estimatedRunout": "Tahmini Tükenme:",
+    "noData": "Veri yok",
+    "perDay": "{rate} {unit}/gün"
   },
   "Finance": {
     "title": "Finans",
@@ -306,7 +407,9 @@
     "breakdown": "Kategori Dağılımı",
     "noRecords": "Kayıt yok.",
     "incomeBreakdownTitle": "Gelir Kategori Dağılımı",
-    "expenseBreakdownTitle": "Gider Kategori Dağılımı"
+    "expenseBreakdownTitle": "Gider Kategori Dağılımı",
+    "editTitle": "İşlemi Düzenle",
+    "descriptionPlaceholder": "Süt satışı, yem alımı..."
   },
   "Sales": {
     "title": "Satışlar",
@@ -323,7 +426,14 @@
     "quantity": "Miktar",
     "unit": "Birim",
     "customer": "Müşteri",
-    "notes": "Notlar"
+    "notes": "Notlar",
+    "itemLabel": "Satılan (ürün/hayvan) *",
+    "itemPlaceholder": "Süt 100L, İnek TR-001...",
+    "amountLabel": "Tutar (TL) *",
+    "dateLabel": "Tarih *",
+    "unitPlaceholder": "kg, litre, adet...",
+    "autoIncomeHint": "Kaydedilen satış otomatik olarak gelir olarak finansa (\"Satış\" kategorisi) işlenir.",
+    "editTitle": "Satışı Düzenle"
   },
   "Customers": {
     "title": "Müşteriler",
@@ -339,7 +449,16 @@
     "notes": "Notlar",
     "totalSales": "Toplam Satış",
     "salesHistory": "Satış Geçmişi",
-    "salesCount": "{count} Satış"
+    "salesCount": "{count} Satış",
+    "backToList": "← Listeye dön",
+    "edit": "Düzenle",
+    "sales": "Satışlar",
+    "noSales": "Bu müşteriye ait satış kaydı yok.",
+    "soldItem": "Satılan",
+    "nameTitle": "Ad / Unvan",
+    "nameRequired": "Ad / Unvan *",
+    "editTitle": "Müşteriyi Düzenle",
+    "totalCount": "Toplam {count} müşteri"
   },
   "Products": {
     "title": "Mağaza Ürünleri",
@@ -356,7 +475,14 @@
     "active": "Aktif (Katalogda Göster)",
     "activeBadge": "Satışta",
     "inactiveBadge": "Pasif",
-    "description": "Açıklama"
+    "description": "Açıklama",
+    "nameLabel": "Ürün adı *",
+    "priceLabel": "Fiyat (TL) *",
+    "unitPlaceholder": "kg, litre, adet...",
+    "showInCatalog": "Katalogda göster (satışta)",
+    "totalWithStore": "Toplam {count} ürün · herkese açık",
+    "storeLink": "mağaza",
+    "editTitle": "Ürünü Düzenle"
   },
   "Orders": {
     "title": "Siparişler",
@@ -372,7 +498,14 @@
     "paymentRef": "Ödeme Referansı",
     "date": "Sipariş Tarihi",
     "details": "Sipariş Detayı",
-    "items": "Ürünler"
+    "items": "Ürünler",
+    "confirm": "Onayla",
+    "cancel": "İptal",
+    "itemLabel": "sipariş",
+    "kindLabel": "Sipariş",
+    "statusUpdated": "Durum güncellendi.",
+    "actionFailed": "İşlem başarısız.",
+    "totalCount": "Toplam {count} sipariş"
   },
   "Tasks": {
     "title": "Görevler",
@@ -387,7 +520,9 @@
     "assignedTo": "Atanan Personel",
     "status": "Durum",
     "dueDate": "Son Tarih",
-    "overdue": "Gecikmiş"
+    "overdue": "Gecikmiş",
+    "titleRequired": "Başlık *",
+    "unassigned": "Atanmadı"
   },
   "Staff": {
     "title": "Personel",
@@ -406,17 +541,28 @@
     "expiresAt": "Son Geçerlilik",
     "sendInvite": "Davet Gönder",
     "noInvitations": "Bekleyen davet yok.",
-    "inviteSent": "Davet gönderildi."
+    "inviteSent": "Davet gönderildi.",
+    "pendingInvitations": "Bekleyen davetler ({count})",
+    "expiresOn": "son geçerlilik {date}",
+    "addTitle": "Yeni Personel Ekle",
+    "nameRequired": "Ad Soyad *",
+    "emailRequired": "E-posta *",
+    "passwordRequired": "Parola *",
+    "roleRequired": "Rol *",
+    "addCta": "Personel Ekle",
+    "added": "Personel eklendi.",
+    "totalCount": "Toplam {count} kullanıcı"
   },
   "Audit": {
     "title": "Denetim Günlüğü",
     "searchPlaceholder": "Kullanıcı adı veya işlem ara...",
     "actorName": "Kullanıcı",
     "action": "Eylem",
-    "entity": "Varlık Türü",
+    "entity": "Varlık",
     "entityId": "Varlık ID",
     "summary": "Özet Açıklama",
-    "createdAt": "Tarih/Saat"
+    "createdAt": "Tarih/Saat",
+    "empty": "Henüz kayıt yok."
   },
   "Structures": {
     "title": "Yapılar",
@@ -433,7 +579,13 @@
     "posY": "Konum Y",
     "width": "Genişlik",
     "height": "Yükseklik",
-    "notes": "Notlar"
+    "notes": "Notlar",
+    "nameRequired": "Yapı Adı *",
+    "typeRequired": "Tür *",
+    "positionHint": "Konum haritadan ayarlanır; yeni yapılar otomatik yerleşir.",
+    "defaultName": "{type} {n}",
+    "namePlaceholder": "1 No’lu Ahır",
+    "editTitle": "Yapıyı Düzenle"
   },
   "Map": {
     "title": "Çiftlik Haritası",
@@ -449,7 +601,13 @@
     "errorSave": "Bazı konumlar kaydedilemedi. Yetkiniz olmayabilir.",
     "errorGeneric": "Kayıt sırasında hata oluştu.",
     "field": "Tarla",
-    "structure": "Yapı"
+    "structure": "Yapı",
+    "farmMap": "Çiftlik haritası",
+    "zoomIn": "Yakınlaştır",
+    "zoomOut": "Uzaklaştır",
+    "reset": "Sıfırla",
+    "partialSaveFailed": "Bazı konumlar kaydedilemedi. Yetkiniz olmayabilir.",
+    "saveError": "Kayıt sırasında hata oluştu."
   },
   "Calendar": {
     "title": "Takvim",
@@ -460,7 +618,26 @@
     "task": "Görev",
     "harvest": "Hasat",
     "birth": "Doğum",
-    "birthLabel": "🐄 {name} doğum"
+    "birthLabel": "🐄 {name} doğum",
+    "taskModalTitle": "✅ Görev",
+    "vaccinationModalTitle": "💉 Aşı Planı",
+    "taskTitleLabel": "Görev Başlığı *",
+    "assignee": "Atanan Kişi",
+    "unassigned": "Atanmadı",
+    "description": "Açıklama",
+    "animalLabel": "Hayvan Seçin *",
+    "animalPlaceholder": "-- Hayvan Seçin --",
+    "vaccineName": "Aşı Adı *",
+    "vaccinationDate": "Aşı Planı Tarihi",
+    "saveFailed": "Kayıt işlemi başarısız.",
+    "taskAdded": "Görev eklendi.",
+    "vaccinationAdded": "Aşı takvimi eklendi.",
+    "genericError": "Bir hata oluştu.",
+    "close": "kapat ✕",
+    "dueDate": "Son Tarih",
+    "extraNotes": "Ek Notlar",
+    "quickAdd": "➕ Hızlı Kayıt Ekle ({date})",
+    "cellAdd": "＋ Ekle"
   },
   "Profile": {
     "title": "Profil",
@@ -494,7 +671,9 @@
     "deleteFailed": "Çiftlik silinemedi.",
     "cannotDeleteDemo": "Demo çiftliği silinemez.",
     "deleteFarm": "Çiftliği Kalıcı Olarak Sil",
-    "deleteDesc": "Çiftliğinizi ve ilişkili tüm verileri (hayvanlar, finans, personel vb.) kalıcı olarak siler. Bu işlem geri alınamaz."
+    "deleteDesc": "Çiftliğinizi ve ilişkili tüm verileri (hayvanlar, finans, personel vb.) kalıcı olarak siler. Bu işlem geri alınamaz.",
+    "language": "Dil",
+    "languageDesc": "Arayüz dilini seçin. Tercihiniz bu tarayıcıda hatırlanır."
   },
   "Billing": {
     "title": "Abonelik ve Kullanım",
@@ -505,7 +684,23 @@
     "upgrade": "PRO Plana Yükselt",
     "downgrade": "FREE Plana Düşür",
     "stripePortal": "Stripe ile Yönet",
-    "unlimited": "Sınırsız"
+    "unlimited": "Sınırsız",
+    "heading": "Abonelik",
+    "currentPlan": "Mevcut plan",
+    "planUnlimited": "Sınırsız",
+    "planFree": "Ücretsiz",
+    "usageAnimals": "Aktif hayvan",
+    "usageStaff": "Personel",
+    "freeHint": "PRO planı hayvan ve personel sınırlarını kaldırır.",
+    "freeHintDemo": " (Demo: yükseltme anında uygulanır, ödeme alınmaz.)",
+    "upgradeCta": "PRO’ya yükselt",
+    "changePlan": "Planı değiştir",
+    "demoDisabled": "Demo modunda devre dışı",
+    "actionFailed": "İşlem başarısız",
+    "upgraded": "PRO’ya yükseltildi",
+    "downgraded": "FREE planına dönüldü",
+    "stripePortalHint": "Aboneliğinizi Stripe müşteri portalından yönetebilirsiniz.",
+    "demoDowngrade": "Demo: FREE planına dön"
   },
   "Onboarding": {
     "step": "Adım {step} / {total}",
@@ -560,5 +755,180 @@
     "readyTitle": "Hazırsın! 🎉",
     "readyDesc1": "Artık başlamaya hazırsın. Panelden istediğin modüle geçebilir, üst menüden hızlıca gezinebilirsin.",
     "readyDesc2": "Bu turu istediğin zaman Profil sayfasından yeniden başlatabilirsin."
+  },
+  "Store": {
+    "directoryMetaTitle": "Mağazalar",
+    "directoryMetaDescription": "Çiftlik Pro üzerindeki çiftliklerin vitrinleri.",
+    "directoryTitle": "Çiftlik mağazaları",
+    "directorySubtitle": "Bir çiftlik seçin, taze ürünlerini görün ve sipariş bırakın.",
+    "directoryEmpty": "Henüz mağaza yok.",
+    "metaTitle": "{farm} · Mağaza",
+    "metaTitleFallback": "Mağaza",
+    "metaDescription": "Çiftlikten taze ürünler — sipariş verin.",
+    "catalogSubtitle": "Beğendiğiniz ürünleri sepete ekleyip sipariş bırakın — ödeme teslimatta.",
+    "catalogEmpty": "Şu anda satışta ürün yok.",
+    "addToCart": "Sepete ekle",
+    "added": "Eklendi",
+    "cart": "Sepet",
+    "cartTitle": "Sepetiniz",
+    "cartEmpty": "Sepetiniz boş.",
+    "browseProducts": "← Ürünlere göz at",
+    "backToStore": "← Mağazaya dön",
+    "decrease": "Azalt",
+    "increase": "Artır",
+    "remove": "Kaldır",
+    "total": "Toplam",
+    "namePlaceholder": "Adınız *",
+    "nameAria": "Adınız",
+    "phonePlaceholder": "Telefon (opsiyonel)",
+    "phoneAria": "Telefon",
+    "notePlaceholder": "Not (opsiyonel)",
+    "noteAria": "Not",
+    "submitOrder": "Siparişi tamamla",
+    "payOnDelivery": "Ödeme teslimatta",
+    "orderFailed": "Sipariş alınamadı, lütfen tekrar deneyin",
+    "orderToast": "Siparişiniz alındı!",
+    "orderPlacedTitle": "✓ Siparişiniz alındı",
+    "orderPlacedBody": "En kısa sürede sizinle iletişime geçilecek.",
+    "doneMetaTitle": "Sipariş tamamlandı",
+    "doneTitle": "Siparişiniz alındı",
+    "doneBody": "Teşekkürler! Ödemeniz onaylandığında siparişiniz hazırlanmaya başlanacak.",
+    "adminLogin": "Yönetim girişi →"
+  },
+  "Invite": {
+    "formTitle": "Personel davet et",
+    "email": "E-posta",
+    "emailPlaceholder": "personel@ciftlik.com",
+    "role": "Rol",
+    "submit": "Davet gönder",
+    "demoDisabled": "Demo modunda devre dışı",
+    "createFailed": "Davet oluşturulamadı.",
+    "created": "Davet oluşturuldu. Bağlantıyı paylaşın (e-posta yapılandırıldıysa otomatik gönderildi):",
+    "copy": "Kopyala",
+    "copied": "Kopyalandı",
+    "joinTitle": "Ekibe katıl",
+    "joinSubtitle": "{farm} ekibine {role} olarak davet edildiniz.",
+    "unknownFarm": "Bir çiftlik",
+    "invalidTitle": "Davet geçersiz",
+    "invalidBody": "Bu davet bağlantısı geçersiz, süresi dolmuş veya zaten kullanılmış.",
+    "backToLogin": "Giriş sayfasına dön",
+    "name": "Ad Soyad",
+    "namePlaceholder": "Ad Soyad",
+    "password": "Parola",
+    "joinCta": "Katıl ve giriş yap",
+    "joinFailed": "Katılım başarısız. Lütfen tekrar deneyin.",
+    "kind": "Davet",
+    "emailSubject": "Çiftlik Pro — ekibe davet edildiniz",
+    "emailIntro": "Bir çiftlik ekibine davet edildiniz. Katılmak için:",
+    "emailExpiry": "Bu bağlantı {days} gün geçerlidir."
+  },
+  "Breeding": {
+    "breedingDate": "Tohumlama Tarihi *",
+    "fatherTag": "Baba Kulak No",
+    "expectedBirthDate": "Tahmini Doğum Tarihi",
+    "actualBirthDate": "Gerçek Doğum Tarihi",
+    "offspringCount": "Yavru Sayısı",
+    "add": "Üreme Kaydı Ekle",
+    "saved": "Üreme kaydı eklendi."
+  },
+  "Health": {
+    "dateRequired": "Tarih *",
+    "diagnosisRequired": "Teşhis *",
+    "treatment": "Tedavi",
+    "addCta": "Sağlık Kaydı Ekle",
+    "saved": "Sağlık kaydı eklendi."
+  },
+  "Vaccination": {
+    "nameRequired": "Aşı Adı *",
+    "dateRequired": "Yapılış Tarihi *",
+    "nextDate": "Sonraki Aşı Tarihi",
+    "addCta": "Aşı Kaydı Ekle",
+    "saved": "Aşı kaydı eklendi."
+  },
+  "Milk": {
+    "dateRequired": "Tarih *",
+    "amountRequired": "Miktar (litre) *",
+    "addCta": "Süt Verimi Ekle",
+    "saved": "Süt verimi eklendi."
+  },
+  "Weight": {
+    "dateRequired": "Tarih *",
+    "weightRequired": "Ağırlık (kg) *",
+    "addCta": "Ağırlık Kaydı Ekle",
+    "saved": "Ağırlık kaydı eklendi."
+  },
+  "Notifications": {
+    "title": "Bildirimler",
+    "empty": "Aktif bildiriminiz bulunmuyor."
+  },
+  "Errors": {
+    "pageTitle": "Bir şeyler ters gitti",
+    "pageBody": "Bu sayfa yüklenirken beklenmeyen bir hata oluştu.",
+    "retry": "Tekrar dene",
+    "notFound": "Aradığınız sayfa bulunamadı.",
+    "backToPanel": "Panele dön",
+    "manageInStripePortal": "Aboneliğinizi Stripe müşteri portalından yönetin",
+    "motherMustBeFemale": "Anne olarak yalnizca disi hayvan secilebilir",
+    "motherSpeciesMismatch": "Anne ve yavru ayni turden olmalidir",
+    "animalCannotBeOwnMother": "Bir hayvan kendi annesi olarak secilemez",
+    "emailTaken": "Bu e-posta adresi zaten kayitli",
+    "emailTakenSignIn": "Bu e-posta adresi zaten kayitli. Lutfen giris yapin.",
+    "emailAlreadyInTeam": "Bu e-posta zaten ekibinizde kayitli",
+    "offspringSpeciesMismatch": "Bu hayvanin yavrulari farkli turden; tur degistirilemez",
+    "forbidden": "Bu islem icin yetkiniz yok",
+    "tagUsedByAnother": "Bu kulak numarasi baska bir hayvanda kayitli",
+    "tagTaken": "Bu kulak numarasi zaten kayitli",
+    "staffLimitReached": "Çiftlik personel limitine ulaşıldı. Lütfen yöneticiyle iletişime geçin.",
+    "rateLimited": "Cok fazla istek. Lutfen biraz sonra tekrar deneyin.",
+    "invitationNotFound": "Davet bulunamadi",
+    "invitationInvalid": "Davet gecersiz veya suresi dolmus",
+    "demoFarmProtected": "Demo çiftliği silinemez",
+    "demoReadOnly": "Demo hesabı salt-okunurdur; değişiklik yapılamaz.",
+    "demoReadOnlyPassword": "Demo hesabı salt-okunurdur; parola değiştirilemez.",
+    "demoPlanLocked": "Demo modunda plan değiştirilemez.",
+    "cropNotInField": "Ekim kaydi bu tarlaya ait degil",
+    "cropNotFound": "Ekim kaydi bulunamadi",
+    "invalidStatus": "Gecersiz durum",
+    "invalidSignature": "Gecersiz imza",
+    "invalidIds": "Gecersiz kimlikler",
+    "invalidPosition": "Gecersiz konum",
+    "invalidData": "Gecersiz veri",
+    "taskNotFound": "Gorev bulunamadi",
+    "animalNotFound": "Hayvan bulunamadi",
+    "signatureMissing": "Imza yok",
+    "transactionNotFound": "Islem bulunamadi",
+    "itemNotFound": "Kalem bulunamadi",
+    "recordNotFound": "Kayit bulunamadi",
+    "userNotFound": "Kullanici bulunamadi",
+    "storeNotFound": "Magaza bulunamadi",
+    "currentPasswordWrong": "Mevcut parola hatali",
+    "customerNotFound": "Musteri bulunamadi",
+    "paymentsNotConfigured": "Odeme yapilandirilmamis",
+    "confirmMismatch": "Onay metni çiftlik adıyla eşleşmiyor",
+    "saleNotFound": "Satis bulunamadi",
+    "motherCycle": "Secilen anne bu hayvanin soyundan; bu ataama dongu olusturur",
+    "motherNotFound": "Secilen anne hayvan bulunamadi",
+    "selectedCustomerNotFound": "Secilen musteri bulunamadi",
+    "cartHasUnavailableProduct": "Sepette satista olmayan bir urun var",
+    "orderNotFound": "Siparis bulunamadi",
+    "serverError": "Sunucu hatasi",
+    "serverErrorRetry": "Sunucu hatasi, lutfen tekrar deneyin",
+    "cronSecretMissing": "Sunucu yapilandirmasi eksik: CRON_SECRET ayarlanmamis",
+    "fieldNotFound": "Tarla bulunamadi",
+    "tenantNotFound": "Tenant bulunamadi",
+    "productNotFound": "Urun bulunamadi",
+    "onlyFeedItems": "Yalnizca yem (FEED) kalemleri tuketilebilir",
+    "adminOnlyDeleteFarm": "Yalnizca yonetici çiftliği silebilir",
+    "adminOnlyExport": "Yalnizca yonetici dışa aktarabilir",
+    "adminOnlyChangePlan": "Yalnızca yönetici planı değiştirebilir",
+    "adminOnlyUpgradePlan": "Yalnızca yönetici planı yükseltebilir",
+    "structureNotFound": "Yapi bulunamadi",
+    "feedItemNotFound": "Yem kalemi bulunamadi",
+    "unauthorized": "Yetkisiz",
+    "unauthorizedAccess": "Yetkisiz erişim",
+    "planLimitAnimals": "FREE planda en fazla {limit} aktif hayvan ekleyebilirsiniz. Daha fazlası için PRO’ya yükseltin.",
+    "planLimitStaff": "FREE planda en fazla {limit} personel ekleyebilirsiniz. Daha fazlası için PRO’ya yükseltin.",
+    "planLimitInvite": "FREE planda en fazla {limit} personel olabilir. Davet için PRO’ya yükseltin.",
+    "insufficientStock": "Yetersiz stok: mevcut {quantity} {unit}"
   }
 }

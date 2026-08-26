@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,8 @@ export function SaleForm({
   sale?: Sale;
   customers: { id: string; name: string }[];
 }) {
+  const t = useTranslations("Sales");
+  const tc = useTranslations("Common");
   const router = useRouter();
   const isEdit = Boolean(sale);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +57,7 @@ export function SaleForm({
       return;
     }
 
-    toast.success("Satış kaydedildi.");
+    toast.success(t("saved"));
     router.push("/panel/satis");
     router.refresh();
   }
@@ -67,14 +70,14 @@ export function SaleForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
           <label htmlFor="item" className={labelClass}>
-            Satılan (ürün/hayvan) *
+            {t("itemLabel")}
           </label>
           <input
             id="item"
             name="item"
             type="text"
             required
-            placeholder="Süt 100L, İnek TR-001..."
+            placeholder={t("itemPlaceholder")}
             defaultValue={sale?.item ?? ""}
             className={inputClass}
           />
@@ -82,7 +85,7 @@ export function SaleForm({
 
         <div>
           <label htmlFor="customerId" className={labelClass}>
-            Müşteri
+            {t("customer")}
           </label>
           <select
             id="customerId"
@@ -101,7 +104,7 @@ export function SaleForm({
 
         <div>
           <label htmlFor="amount" className={labelClass}>
-            Tutar (TL) *
+            {t("amountLabel")}
           </label>
           <input
             id="amount"
@@ -117,7 +120,7 @@ export function SaleForm({
 
         <div>
           <label htmlFor="quantity" className={labelClass}>
-            Miktar
+            {tc("quantity")}
           </label>
           <input
             id="quantity"
@@ -132,13 +135,13 @@ export function SaleForm({
 
         <div>
           <label htmlFor="unit" className={labelClass}>
-            Birim
+            {t("unit")}
           </label>
           <input
             id="unit"
             name="unit"
             type="text"
-            placeholder="kg, litre, adet..."
+            placeholder={t("unitPlaceholder")}
             defaultValue={sale?.unit ?? ""}
             className={inputClass}
           />
@@ -146,7 +149,7 @@ export function SaleForm({
 
         <div>
           <label htmlFor="date" className={labelClass}>
-            Tarih *
+            {t("dateLabel")}
           </label>
           <input
             id="date"
@@ -161,7 +164,7 @@ export function SaleForm({
 
       <div>
         <label htmlFor="notes" className={labelClass}>
-          Not
+          {tc("note")}
         </label>
         <textarea
           id="notes"
@@ -173,8 +176,7 @@ export function SaleForm({
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Kaydedilen satış otomatik olarak <strong>gelir</strong> olarak finansa
-        (&quot;Satış&quot; kategorisi) işlenir.
+        {t("autoIncomeHint")}
       </p>
 
       {error && (
@@ -188,10 +190,10 @@ export function SaleForm({
           href="/panel/satis"
           className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
         >
-          İptal
+          {tc("cancel")}
         </Link>
         <Button type="submit" loading={loading}>
-          Kaydet
+          {tc("save")}
         </Button>
       </div>
     </form>

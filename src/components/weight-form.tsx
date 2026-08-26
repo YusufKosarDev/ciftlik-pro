@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
@@ -9,6 +10,8 @@ const inputClass =
   "w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500";
 
 export function WeightForm({ animalId }: { animalId: string }) {
+  const t = useTranslations("Weight");
+  const tc = useTranslations("Common");
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -40,7 +43,7 @@ export function WeightForm({ animalId }: { animalId: string }) {
       return;
     }
 
-    toast.success("Ağırlık kaydı eklendi.");
+    toast.success(t("saved"));
     form.reset();
     router.refresh();
   }
@@ -50,13 +53,13 @@ export function WeightForm({ animalId }: { animalId: string }) {
       <div className="grid gap-3 sm:grid-cols-3">
         <div>
           <label htmlFor="wdate" className="mb-1 block text-xs font-medium text-muted-foreground">
-            Tarih *
+            {t("dateRequired")}
           </label>
           <input id="wdate" name="date" type="date" required className={inputClass} />
         </div>
         <div>
           <label htmlFor="wkg" className="mb-1 block text-xs font-medium text-muted-foreground">
-            Ağırlık (kg) *
+            {t("weightRequired")}
           </label>
           <input
             id="wkg"
@@ -70,7 +73,7 @@ export function WeightForm({ animalId }: { animalId: string }) {
         </div>
         <div>
           <label htmlFor="wnotes" className="mb-1 block text-xs font-medium text-muted-foreground">
-            Not
+            {tc("note")}
           </label>
           <input id="wnotes" name="notes" type="text" className={inputClass} />
         </div>
@@ -81,7 +84,7 @@ export function WeightForm({ animalId }: { animalId: string }) {
       )}
 
       <Button type="submit" loading={loading}>
-        Ağırlık Kaydı Ekle
+        {t("addCta")}
       </Button>
     </form>
   );

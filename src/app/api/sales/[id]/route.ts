@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
@@ -10,6 +11,7 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const te = await getTranslations("Errors");
   try {
     const authz = await authorizeWrite("sales");
     if ("error" in authz) return authz.error;
@@ -19,7 +21,7 @@ export async function PUT(
     const parsed = saleSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Gecersiz veri", details: parsed.error.flatten().fieldErrors },
+        { error: te("invalidData"), details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
@@ -36,7 +38,7 @@ export async function PUT(
           where: { id: data.customerId },
           select: { name: true },
         });
-        if (!customer) return { error: "Secilen musteri bulunamadi" } as const;
+        if (!customer) return { error: te("selectedCustomerNotFound") } as const;
         customerName = customer.name;
       }
 
@@ -74,7 +76,7 @@ export async function PUT(
     });
 
     if ("notFound" in result) {
-      return NextResponse.json({ error: "Satis bulunamadi" }, { status: 404 });
+      return NextResponse.json({ error: te("saleNotFound") }, { status: 404 });
     }
     if ("error" in result) {
       return NextResponse.json({ error: result.error }, { status: 400 });
@@ -87,7 +89,7 @@ export async function PUT(
   } catch (error) {
     console.error("Satis guncelleme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }
@@ -98,6 +100,7 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const te = await getTranslations("Errors");
   try {
     const authz = await authorizeWrite("sales");
     if ("error" in authz) return authz.error;
@@ -115,7 +118,7 @@ export async function DELETE(
     });
 
     if (!existing) {
-      return NextResponse.json({ error: "Satis bulunamadi" }, { status: 404 });
+      return NextResponse.json({ error: te("saleNotFound") }, { status: 404 });
     }
     await logAudit(authz.session.user, "DELETE", "Sale", id, `${existing.item} (${existing.amount})`);
 
@@ -123,7 +126,7 @@ export async function DELETE(
   } catch (error) {
     console.error("Satis silme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }

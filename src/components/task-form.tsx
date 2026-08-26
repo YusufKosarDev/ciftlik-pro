@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { taskStatusLabels } from "@/lib/labels";
+import { useLabels } from "@/lib/use-labels";
 import { toDateInputValue } from "@/lib/date";
 import type { Task } from "@prisma/client";
 
@@ -22,6 +23,9 @@ export function TaskForm({
   task?: Task;
   users: UserOption[];
 }) {
+  const t = useTranslations("Tasks");
+  const tc = useTranslations("Common");
+  const { taskStatusLabels } = useLabels();
   const router = useRouter();
   const isEdit = Boolean(task);
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +59,7 @@ export function TaskForm({
       return;
     }
 
-    toast.success("Görev kaydedildi.");
+    toast.success(t("saved"));
     router.push("/panel/gorevler");
     router.refresh();
   }
@@ -67,7 +71,7 @@ export function TaskForm({
     >
       <div>
         <label htmlFor="title" className={labelClass}>
-          Baslik *
+          {t("titleRequired")}
         </label>
         <input
           id="title"
@@ -82,7 +86,7 @@ export function TaskForm({
       <div className="grid gap-4 sm:grid-cols-3">
         <div>
           <label htmlFor="assignedToId" className={labelClass}>
-            Atanan Kisi
+            {t("assignedTo")}
           </label>
           <select
             id="assignedToId"
@@ -90,7 +94,7 @@ export function TaskForm({
             defaultValue={task?.assignedToId ?? ""}
             className={inputClass}
           >
-            <option value="">Atanmadi</option>
+            <option value="">{t("unassigned")}</option>
             {users.map((u) => (
               <option key={u.id} value={u.id}>
                 {u.name}
@@ -101,7 +105,7 @@ export function TaskForm({
 
         <div>
           <label htmlFor="status" className={labelClass}>
-            Durum
+            {tc("status")}
           </label>
           <select
             id="status"
@@ -119,7 +123,7 @@ export function TaskForm({
 
         <div>
           <label htmlFor="dueDate" className={labelClass}>
-            Son Tarih
+            {t("dueDate")}
           </label>
           <input
             id="dueDate"
@@ -133,7 +137,7 @@ export function TaskForm({
 
       <div>
         <label htmlFor="description" className={labelClass}>
-          Aciklama
+          {t("description")}
         </label>
         <textarea
           id="description"
@@ -153,10 +157,10 @@ export function TaskForm({
           href="/panel/gorevler"
           className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
         >
-          Iptal
+          {tc("cancel")}
         </Link>
         <Button type="submit" loading={loading}>
-          Kaydet
+          {tc("save")}
         </Button>
       </div>
     </form>

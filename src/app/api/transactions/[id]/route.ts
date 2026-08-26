@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
@@ -9,6 +10,7 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const te = await getTranslations("Errors");
   try {
     const authz = await authorizeWrite("transactions");
     if ("error" in authz) return authz.error;
@@ -19,7 +21,7 @@ export async function PUT(
     const parsed = transactionSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Gecersiz veri", details: parsed.error.flatten().fieldErrors },
+        { error: te("invalidData"), details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
@@ -41,7 +43,7 @@ export async function PUT(
     });
 
     if (!transaction) {
-      return NextResponse.json({ error: "Islem bulunamadi" }, { status: 404 });
+      return NextResponse.json({ error: te("transactionNotFound") }, { status: 404 });
     }
 
     await logAudit(
@@ -56,7 +58,7 @@ export async function PUT(
   } catch (error) {
     console.error("Islem guncelleme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }
@@ -67,6 +69,7 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const te = await getTranslations("Errors");
   try {
     const authz = await authorizeWrite("transactions");
     if ("error" in authz) return authz.error;
@@ -80,7 +83,7 @@ export async function DELETE(
     });
 
     if (!existing) {
-      return NextResponse.json({ error: "Islem bulunamadi" }, { status: 404 });
+      return NextResponse.json({ error: te("transactionNotFound") }, { status: 404 });
     }
     await logAudit(
       authz.session.user,
@@ -93,7 +96,7 @@ export async function DELETE(
   } catch (error) {
     console.error("Islem silme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }

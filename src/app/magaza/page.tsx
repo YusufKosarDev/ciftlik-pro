@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { Store, ArrowRight } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 
-export const metadata: Metadata = {
-  title: "Mağazalar",
-  description: "Çiftlik Pro üzerindeki çiftliklerin vitrinleri.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Store");
+  return {
+    title: t("directoryMetaTitle"),
+    description: t("directoryMetaDescription"),
+  };
+}
 
 // Magaza dizini: her ciftligin (tenant) kendi vitrini /magaza/[slug] altindadir.
 // Tenant tablosu RLS disidir; dizin herkese acik okunur.
@@ -20,6 +24,7 @@ export const metadata: Metadata = {
 // bu yuzden once satistaki urunlerin tenant'lari toplanir, sonra o tenant'lar
 // okunur. Iki sorgu; ikisi de indeksli (Product.tenantId, Tenant.id).
 export default async function MagazaDizinPage() {
+  const t = await getTranslations("Store");
   const active = await prisma.product.findMany({
     where: { active: true },
     select: { tenantId: true },
@@ -39,15 +44,13 @@ export default async function MagazaDizinPage() {
         <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400">
           <Store className="h-7 w-7" />
         </div>
-        <h1 className="text-2xl font-bold text-foreground">Çiftlik mağazaları</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Bir çiftlik seçin, taze ürünlerini görün ve sipariş bırakın.
-        </p>
+        <h1 className="text-2xl font-bold text-foreground">{t("directoryTitle")}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t("directorySubtitle")}</p>
       </div>
 
       {farms.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border bg-card p-12 text-center text-muted-foreground">
-          Henüz mağaza yok.
+          {t("directoryEmpty")}
         </p>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">

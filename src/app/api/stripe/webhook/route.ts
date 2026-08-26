@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import type Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
@@ -12,15 +13,16 @@ const STRIPE_ACTOR = "Stripe (webhook)";
 // ile dogrulanir. checkout.session.completed gelince ilgili siparis PAID + CONFIRMED
 // olarak isaretlenir. Ham govde imza dogrulamasi icin text() ile okunur.
 export async function POST(request: Request) {
+  const te = await getTranslations("Errors");
   const stripe = getStripe();
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!stripe || !secret) {
-    return NextResponse.json({ error: "Odeme yapilandirilmamis" }, { status: 503 });
+    return NextResponse.json({ error: te("paymentsNotConfigured") }, { status: 503 });
   }
 
   const signature = request.headers.get("stripe-signature");
   if (!signature) {
-    return NextResponse.json({ error: "Imza yok" }, { status: 400 });
+    return NextResponse.json({ error: te("signatureMissing") }, { status: 400 });
   }
 
   const raw = await request.text();
@@ -29,7 +31,7 @@ export async function POST(request: Request) {
     event = stripe.webhooks.constructEvent(raw, signature, secret);
   } catch (err) {
     console.error("Stripe webhook imza dogrulamasi basarisiz:", err);
-    return NextResponse.json({ error: "Gecersiz imza" }, { status: 400 });
+    return NextResponse.json({ error: te("invalidSignature") }, { status: 400 });
   }
 
   if (event.type === "checkout.session.completed") {

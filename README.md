@@ -13,12 +13,14 @@ role-based dashboard.
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Tests](https://img.shields.io/badge/tests-293%20unit%20%2B%2018%20e2e-success)](#testing--quality)
+[![Tests](https://img.shields.io/badge/tests-303%20unit%20%2B%2018%20e2e-success)](#testing--quality)
 [![Multi-tenant](https://img.shields.io/badge/multi--tenant-Postgres%20RLS-4169E1)](#multi-tenancy)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 🔗 **Live demo: [ciftlik-pro.vercel.app](https://ciftlik-pro.vercel.app)** &nbsp;·&nbsp;
-click **"Demo olarak gez"** (Browse as demo) — or `demo@ciftlik.com` / `demo1234`
+click **"Browse as demo"** — or sign in with `demo@ciftlik.com` / `demo1234`
+
+<sub>The demo opens in your browser's language; use the TR/EN switch in the header to change it.</sub>
 
 🇹🇷 **[Türkçe README](README.tr.md)**
 
@@ -31,7 +33,7 @@ click **"Demo olarak gez"** (Browse as demo) — or `demo@ciftlik.com` / `demo12
 Sign in → dashboard → animal list (server-side search) → animal detail (milk and
 weight charts) → 2D farm map → calendar → finance → dark mode → farm storefront:
 
-![Çiftlik Pro demo tour](docs/demo.gif)
+![Çiftlik Pro demo tour](docs/demo.en.gif)
 
 ---
 
@@ -81,23 +83,23 @@ a user by email at sign-in, and opening an invitation link by token — go throu
 **Dashboard** — sidebar layout, summary cards with real month-over-month deltas,
 and a monthly income/expense chart:
 
-![Dashboard](docs/screenshots/dashboard.png)
+![Dashboard](docs/screenshots/en/dashboard.png)
 
 | 🌙 Dark mode | 🛒 Farm storefront (`/magaza/[slug]`) |
 | ------------ | ------------------------------------- |
-| ![Dark mode](docs/screenshots/dashboard-dark.png) | ![Storefront](docs/screenshots/store.png) |
+| ![Dark mode](docs/screenshots/en/dashboard-dark.png) | ![Storefront](docs/screenshots/en/store.png) |
 
 | 💳 Billing — plan & usage limits | 👥 Staff — invitations & roles |
 | -------------------------------- | ------------------------------ |
-| ![Billing](docs/screenshots/billing.png) | ![Staff](docs/screenshots/staff.png) |
+| ![Billing](docs/screenshots/en/billing.png) | ![Staff](docs/screenshots/en/staff.png) |
 
 | Animals (server-side searchable table) | Animal detail (milk / weight charts) |
 | -------------------------------------- | ------------------------------------ |
-| ![Animals](docs/screenshots/animals.png) | ![Animal detail](docs/screenshots/animal-detail.png) |
+| ![Animals](docs/screenshots/en/animals.png) | ![Animal detail](docs/screenshots/en/animal-detail.png) |
 
 | 2D farm map | Calendar (vaccinations / tasks / harvest / births) |
 | ----------- | -------------------------------------------------- |
-| ![Map](docs/screenshots/map.png) | ![Calendar](docs/screenshots/calendar.png) |
+| ![Map](docs/screenshots/en/map.png) | ![Calendar](docs/screenshots/en/calendar.png) |
 
 ---
 
@@ -134,13 +136,15 @@ and a monthly income/expense chart:
   palette, and a `cva`-based design system.
 - **Onboarding tour** — a role-specific, multi-step welcome modal on the first
   visit to the dashboard; restartable at any time from the profile page.
-- **Bilingual (TR/EN)** — next-intl with a cookie-selected locale (Turkish by
-  default): **all 466 translation keys** exist in both locales, including
-  localized date and currency formatting. Coverage is the dashboard and the panel
-  modules — navigation, lists, forms, calendar labels, summary cards. The newer
-  surfaces (public storefront, billing, invitation screens) and server-side API
-  error messages are still Turkish-only; the plumbing is in place, they simply
-  have not been moved to the catalogue yet.
+- **Bilingual (TR/EN), end to end** — every screen and every API error message,
+  in **all 818 translation keys** across both catalogues: the panel, the public
+  storefront and cart, billing, invitations, the 404 and error boundaries, and
+  the responses a write endpoint returns. Dates, currency and chart month labels
+  follow the active locale too. A first-time visitor gets their **browser's
+  language** (`Accept-Language`); the switcher in the header — or on the profile
+  page — pins a choice in a cookie from then on. The two exceptions are
+  deliberate: farm data belongs to the tenant who typed it, and the daily digest
+  email has no viewer whose language to read.
 - **Email alerts** — a daily cron emails each tenant's admins a digest of critical
   stock, overdue tasks and upcoming vaccinations (Resend).
 
@@ -347,7 +351,7 @@ npm run dev              # http://localhost:3000
 
 ## Testing & quality
 
-- **293 unit/component tests** (Vitest + Testing Library) covering validation
+- **303 unit/component tests** (Vitest + Testing Library) covering validation
   schemas, RBAC, rate limiting, list query parsing, plan limits, finance/map/date/
   calendar helpers and UI primitives — **~90% line coverage on business logic** (the shared, database-backed paths are covered by integration tests instead).
 - **Tenant isolation integration tests** (`*.int.test.ts`) against a real

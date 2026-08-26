@@ -11,7 +11,8 @@
     "errorInvalid": "Invalid email or password",
     "errorDemo": "Demo sign-in is currently unavailable",
     "noAccount": "Don't have an account?",
-    "signupLink": "Create your farm"
+    "signupLink": "Create your farm",
+    "emailPlaceholder": "you@farm.com"
   },
   "Signup": {
     "title": "Create your farm",
@@ -24,7 +25,10 @@
     "haveAccount": "Already have an account?",
     "loginLink": "Sign in",
     "errorGeneric": "Sign-up failed. Please try again.",
-    "errorConflict": "This email is already registered"
+    "errorConflict": "This email is already registered",
+    "farmPlaceholder": "Green Valley Farm",
+    "namePlaceholder": "Full name",
+    "emailPlaceholder": "you@farm.com"
   },
   "Language": {
     "aria": "Language selection",
@@ -50,7 +54,9 @@
     "audit": "Audit log",
     "sectionGeneral": "General",
     "sectionOperations": "Operations",
-    "sectionManagement": "Management"
+    "sectionManagement": "Management",
+    "openMenu": "Open menu",
+    "openCommandPalette": "Open command palette"
   },
   "Common": {
     "search": "Search...",
@@ -67,14 +73,35 @@
     "loading": "Loading...",
     "saveFailed": "Save failed, please try again",
     "none": "-",
-    "required": "*"
+    "required": "*",
+    "date": "Date",
+    "status": "Status",
+    "note": "Note",
+    "notes": "Notes",
+    "total": "Total",
+    "action": "Action",
+    "type": "Type",
+    "description": "Description",
+    "quantity": "Quantity",
+    "amount": "Amount",
+    "toLightTheme": "Switch to light theme",
+    "toDarkTheme": "Switch to dark theme",
+    "lightTheme": "Light theme",
+    "darkTheme": "Dark theme",
+    "backToListArrow": "← Back to list"
   },
   "Table": {
     "noMatch": "No records match “{q}”.",
     "noRecords": "No records found.",
     "records": "{count} record(s)",
     "prevPage": "Previous page",
-    "nextPage": "Next page"
+    "nextPage": "Next page",
+    "downloadCsv": "Download CSV",
+    "columns": "Columns",
+    "bulkDeleteConfirm": "Permanently delete the {count} selected record(s)?",
+    "bulkDeleteFailed": "Something went wrong while deleting the selection.",
+    "bulkDelete": "Delete selected",
+    "deleting": "Deleting..."
   },
   "Delete": {
     "trigger": "Delete",
@@ -99,7 +126,8 @@
     "newCustomer": "New Customer",
     "newProduct": "New Product",
     "newTask": "New Task",
-    "newStructure": "New Structure"
+    "newStructure": "New Structure",
+    "aria": "Command palette"
   },
   "Dashboard": {
     "title": "Dashboard",
@@ -121,7 +149,9 @@
     "zeroThisMonth": "No transactions this month",
     "netThisMonth": "Net {amount} this month",
     "noOverdue": "No overdue",
-    "overdueCount": "{count} overdue"
+    "overdueCount": "{count} overdue",
+    "customizeView": "Customise view",
+    "visibleCards": "Visible cards"
   },
   "Labels": {
     "species": {
@@ -209,7 +239,7 @@
     "gender": "Gender",
     "birthDate": "Birth Date",
     "status": "Status",
-    "mother": "Mother (lineage)",
+    "mother": "Mother",
     "motherNone": "— No mother selected —",
     "imageUrl": "Image URL",
     "notes": "Notes",
@@ -217,7 +247,48 @@
     "weightChartTitle": "Weight Change",
     "milkUnit": "Litres",
     "weightSeries": "Weight",
-    "milkChartLabel": "Daily Milk Yield"
+    "milkChartLabel": "Daily Milk Yield",
+    "weightTracking": "Weight tracking",
+    "lastWeighing": "Last weighing",
+    "firstWeighing": "First weighing",
+    "weightChange": "Change",
+    "weightKg": "Weight (kg)",
+    "action": "Action",
+    "breedingRecords": "Breeding records",
+    "expectedBirth": "Expected birth",
+    "weightRecordKind": "Weight record",
+    "breedingRecordKind": "Breeding record",
+    "weighingOn": "weighing on {date}",
+    "breedingOn": "breeding record of {date}",
+    "age": "Age",
+    "lineage": "Lineage",
+    "offspring": "Offspring",
+    "healthRecords": "Health records",
+    "noHealthRecords": "No health records yet.",
+    "diagnosis": "Diagnosis",
+    "treatment": "Treatment",
+    "vaccinationSchedule": "Vaccination schedule",
+    "noVaccinations": "No vaccinations yet.",
+    "vaccine": "Vaccine",
+    "givenOn": "Given",
+    "nextDate": "Next",
+    "milkYield": "Milk yield",
+    "avgPerRecord": "Average per record",
+    "avgLast7": "7-day average",
+    "noMilk": "No milk records yet.",
+    "milkAmount": "Amount (L)",
+    "noWeight": "No weight records yet.",
+    "insemination": "Insemination",
+    "father": "Sire",
+    "calf": "Calf",
+    "noBreeding": "No breeding records yet.",
+    "editTitle": "Edit animal",
+    "ageMonths": "{months} mo",
+    "ageYears": "{years} yr",
+    "ageYearsMonths": "{years} yr {months} mo",
+    "tagNumberInline": "Ear tag: {tag}",
+    "vaccineOverdue": "{date} (overdue)",
+    "vaccineDaysLeft": "{date} ({days} days left)"
   },
   "Fields": {
     "title": "Fields",
@@ -232,7 +303,25 @@
     "area": "Area (decare)",
     "location": "Location",
     "locationLabel": "Location / Area",
-    "notes": "Notes"
+    "notes": "Notes",
+    "yieldPerDecare": "Yield per decare",
+    "crop": "Crop",
+    "action": "Action",
+    "edit": "Edit",
+    "cropRecordKind": "Planting record",
+    "totalExpense": "Total expense",
+    "totalIncome": "Total income",
+    "netProfit": "Net profit",
+    "cropRecords": "Planting records",
+    "noCrops": "No planting records yet.",
+    "planted": "Planted",
+    "harvest": "Harvest",
+    "expense": "Expense",
+    "income": "Income",
+    "fieldName": "Field name",
+    "areaShort": "Area",
+    "areaValue": "{area} decares",
+    "editTitle": "Edit field"
   },
   "Crops": {
     "name": "Crop Name",
@@ -246,7 +335,9 @@
     "added": "Crop record added.",
     "updated": "Crop record updated.",
     "submitAdd": "Add Crop Record",
-    "submitUpdate": "Update"
+    "submitUpdate": "Update",
+    "editTitle": "Edit planting record",
+    "backToField": "← Back to the field"
   },
   "Inventory": {
     "title": "Stock & Inventory",
@@ -267,7 +358,8 @@
     "unit": "Unit",
     "unitPlaceholder": "kg, unit, liter...",
     "criticalLevel": "Critical Level",
-    "notes": "Notes"
+    "notes": "Notes",
+    "editTitle": "Edit stock item"
   },
   "Feed": {
     "title": "Feed Management",
@@ -281,7 +373,16 @@
     "item": "Feed",
     "quantity": "Quantity",
     "note": "Notes",
-    "deleteKind": "Consumption record"
+    "deleteKind": "Consumption record",
+    "itemRequired": "Feed item *",
+    "dateRequired": "Date *",
+    "quantityRequired": "Quantity *",
+    "addCta": "Log consumption",
+    "saved": "Consumption logged, stock updated.",
+    "dailyConsumption": "Daily consumption:",
+    "estimatedRunout": "Estimated to run out:",
+    "noData": "No data",
+    "perDay": "{rate} {unit}/day"
   },
   "Finance": {
     "title": "Finance",
@@ -306,7 +407,9 @@
     "breakdown": "Category Breakdown",
     "noRecords": "No records.",
     "incomeBreakdownTitle": "Income by Category",
-    "expenseBreakdownTitle": "Expenses by Category"
+    "expenseBreakdownTitle": "Expenses by Category",
+    "editTitle": "Edit transaction",
+    "descriptionPlaceholder": "Milk sale, feed purchase..."
   },
   "Sales": {
     "title": "Sales",
@@ -323,7 +426,14 @@
     "quantity": "Quantity",
     "unit": "Unit",
     "customer": "Customer",
-    "notes": "Notes"
+    "notes": "Notes",
+    "itemLabel": "Item sold (product/animal) *",
+    "itemPlaceholder": "100L milk, cow TR-001...",
+    "amountLabel": "Amount (TRY) *",
+    "dateLabel": "Date *",
+    "unitPlaceholder": "kg, litre, piece...",
+    "autoIncomeHint": "A saved sale is automatically posted to finance as income (category \"Sale\").",
+    "editTitle": "Edit sale"
   },
   "Customers": {
     "title": "Customers",
@@ -339,7 +449,16 @@
     "notes": "Notes",
     "totalSales": "Total Sales",
     "salesHistory": "Sales History",
-    "salesCount": "{count} Sale(s)"
+    "salesCount": "{count} Sale(s)",
+    "backToList": "← Back to list",
+    "edit": "Edit",
+    "sales": "Sales",
+    "noSales": "This customer has no sales yet.",
+    "soldItem": "Item",
+    "nameTitle": "Name / Company",
+    "nameRequired": "Name / Company *",
+    "editTitle": "Edit customer",
+    "totalCount": "{count} customers in total"
   },
   "Products": {
     "title": "Store Products",
@@ -356,7 +475,14 @@
     "active": "Active (Show in Catalog)",
     "activeBadge": "Active",
     "inactiveBadge": "Inactive",
-    "description": "Description"
+    "description": "Description",
+    "nameLabel": "Product name *",
+    "priceLabel": "Price (TRY) *",
+    "unitPlaceholder": "kg, litre, piece...",
+    "showInCatalog": "Show in the catalogue (on sale)",
+    "totalWithStore": "{count} products · public",
+    "storeLink": "store",
+    "editTitle": "Edit product"
   },
   "Orders": {
     "title": "Orders",
@@ -372,7 +498,14 @@
     "paymentRef": "Payment Reference",
     "date": "Order Date",
     "details": "Order Details",
-    "items": "Products"
+    "items": "Products",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "itemLabel": "order",
+    "kindLabel": "Order",
+    "statusUpdated": "Status updated.",
+    "actionFailed": "Something went wrong.",
+    "totalCount": "{count} orders in total"
   },
   "Tasks": {
     "title": "Tasks",
@@ -387,7 +520,9 @@
     "assignedTo": "Assigned Staff",
     "status": "Status",
     "dueDate": "Due Date",
-    "overdue": "Overdue"
+    "overdue": "Overdue",
+    "titleRequired": "Title *",
+    "unassigned": "Unassigned"
   },
   "Staff": {
     "title": "Staff",
@@ -406,17 +541,28 @@
     "expiresAt": "Expires At",
     "sendInvite": "Send Invitation",
     "noInvitations": "No pending invitations.",
-    "inviteSent": "Invitation sent."
+    "inviteSent": "Invitation sent.",
+    "pendingInvitations": "Pending invitations ({count})",
+    "expiresOn": "expires {date}",
+    "addTitle": "Add a staff member",
+    "nameRequired": "Full name *",
+    "emailRequired": "Email *",
+    "passwordRequired": "Password *",
+    "roleRequired": "Role *",
+    "addCta": "Add staff",
+    "added": "Staff member added.",
+    "totalCount": "{count} users in total"
   },
   "Audit": {
     "title": "Audit Log",
     "searchPlaceholder": "Search username or action...",
     "actorName": "User",
     "action": "Action",
-    "entity": "Entity Type",
+    "entity": "Entity",
     "entityId": "Entity ID",
     "summary": "Summary",
-    "createdAt": "Date/Time"
+    "createdAt": "Date/Time",
+    "empty": "No records yet."
   },
   "Structures": {
     "title": "Structures",
@@ -433,7 +579,13 @@
     "posY": "Position Y",
     "width": "Width",
     "height": "Height",
-    "notes": "Notes"
+    "notes": "Notes",
+    "nameRequired": "Structure name *",
+    "typeRequired": "Type *",
+    "positionHint": "Position is set on the map; new structures are placed automatically.",
+    "defaultName": "{type} {n}",
+    "namePlaceholder": "Barn no. 1",
+    "editTitle": "Edit structure"
   },
   "Map": {
     "title": "Farm Map",
@@ -449,7 +601,13 @@
     "errorSave": "Failed to save some locations. You may not have permission.",
     "errorGeneric": "An error occurred during save.",
     "field": "Field",
-    "structure": "Structure"
+    "structure": "Structure",
+    "farmMap": "Farm map",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "reset": "Reset",
+    "partialSaveFailed": "Some positions could not be saved. You may not have permission.",
+    "saveError": "Something went wrong while saving."
   },
   "Calendar": {
     "title": "Calendar",
@@ -460,7 +618,26 @@
     "task": "Task",
     "harvest": "Harvest",
     "birth": "Birth",
-    "birthLabel": "🐄 {name} birth"
+    "birthLabel": "🐄 {name} birth",
+    "taskModalTitle": "✅ Task",
+    "vaccinationModalTitle": "💉 Vaccination plan",
+    "taskTitleLabel": "Task title *",
+    "assignee": "Assignee",
+    "unassigned": "Unassigned",
+    "description": "Description",
+    "animalLabel": "Select an animal *",
+    "animalPlaceholder": "-- Select an animal --",
+    "vaccineName": "Vaccine name *",
+    "vaccinationDate": "Vaccination date",
+    "saveFailed": "Could not save.",
+    "taskAdded": "Task added.",
+    "vaccinationAdded": "Vaccination scheduled.",
+    "genericError": "Something went wrong.",
+    "close": "close ✕",
+    "dueDate": "Due date",
+    "extraNotes": "Additional notes",
+    "quickAdd": "➕ Quick add ({date})",
+    "cellAdd": "＋ Add"
   },
   "Profile": {
     "title": "Profile",
@@ -494,7 +671,9 @@
     "deleteFailed": "Failed to delete farm.",
     "cannotDeleteDemo": "Demo farm cannot be deleted.",
     "deleteFarm": "Permanently Delete Farm",
-    "deleteDesc": "Permanently deletes your farm and all associated data (animals, finance, staff, etc.). This action cannot be undone."
+    "deleteDesc": "Permanently deletes your farm and all associated data (animals, finance, staff, etc.). This action cannot be undone.",
+    "language": "Language",
+    "languageDesc": "Choose the interface language. Your choice is remembered in this browser."
   },
   "Billing": {
     "title": "Subscription & Usage",
@@ -505,7 +684,23 @@
     "upgrade": "Upgrade to PRO",
     "downgrade": "Downgrade to FREE",
     "stripePortal": "Manage via Stripe",
-    "unlimited": "Unlimited"
+    "unlimited": "Unlimited",
+    "heading": "Billing",
+    "currentPlan": "Current plan",
+    "planUnlimited": "Unlimited",
+    "planFree": "Free",
+    "usageAnimals": "Active animals",
+    "usageStaff": "Staff",
+    "freeHint": "The PRO plan removes the animal and staff limits.",
+    "freeHintDemo": " (Demo: the upgrade applies instantly and nothing is charged.)",
+    "upgradeCta": "Upgrade to PRO",
+    "changePlan": "Change plan",
+    "demoDisabled": "Disabled in demo mode",
+    "actionFailed": "Something went wrong",
+    "upgraded": "Upgraded to PRO",
+    "downgraded": "Back on the FREE plan",
+    "stripePortalHint": "You can manage your subscription from the Stripe customer portal.",
+    "demoDowngrade": "Demo: back to FREE"
   },
   "Onboarding": {
     "step": "Step {step} / {total}",
@@ -560,5 +755,180 @@
     "readyTitle": "You are ready! 🎉",
     "readyDesc1": "You are now ready to start. You can navigate to any module from the panel or top menu.",
     "readyDesc2": "You can restart this tour at any time from your Profile page."
+  },
+  "Store": {
+    "directoryMetaTitle": "Stores",
+    "directoryMetaDescription": "Storefronts of the farms on Çiftlik Pro.",
+    "directoryTitle": "Farm stores",
+    "directorySubtitle": "Pick a farm, browse its fresh produce and place an order.",
+    "directoryEmpty": "No stores yet.",
+    "metaTitle": "{farm} · Store",
+    "metaTitleFallback": "Store",
+    "metaDescription": "Fresh produce straight from the farm — order online.",
+    "catalogSubtitle": "Add what you like to the cart and place your order — pay on delivery.",
+    "catalogEmpty": "Nothing is on sale right now.",
+    "addToCart": "Add to cart",
+    "added": "Added",
+    "cart": "Cart",
+    "cartTitle": "Your cart",
+    "cartEmpty": "Your cart is empty.",
+    "browseProducts": "← Browse products",
+    "backToStore": "← Back to the store",
+    "decrease": "Decrease",
+    "increase": "Increase",
+    "remove": "Remove",
+    "total": "Total",
+    "namePlaceholder": "Your name *",
+    "nameAria": "Your name",
+    "phonePlaceholder": "Phone (optional)",
+    "phoneAria": "Phone",
+    "notePlaceholder": "Note (optional)",
+    "noteAria": "Note",
+    "submitOrder": "Place order",
+    "payOnDelivery": "Pay on delivery",
+    "orderFailed": "We could not place your order, please try again",
+    "orderToast": "Your order has been received!",
+    "orderPlacedTitle": "✓ Your order has been received",
+    "orderPlacedBody": "We will get in touch with you shortly.",
+    "doneMetaTitle": "Order complete",
+    "doneTitle": "Your order has been received",
+    "doneBody": "Thank you! Once your payment is confirmed we will start preparing your order.",
+    "adminLogin": "Admin sign-in →"
+  },
+  "Invite": {
+    "formTitle": "Invite a staff member",
+    "email": "Email",
+    "emailPlaceholder": "staff@farm.com",
+    "role": "Role",
+    "submit": "Send invitation",
+    "demoDisabled": "Disabled in demo mode",
+    "createFailed": "The invitation could not be created.",
+    "created": "Invitation created. Share the link (it was emailed automatically if email is configured):",
+    "copy": "Copy",
+    "copied": "Copied",
+    "joinTitle": "Join the team",
+    "joinSubtitle": "You have been invited to {farm} as {role}.",
+    "unknownFarm": "A farm",
+    "invalidTitle": "Invitation not valid",
+    "invalidBody": "This invitation link is invalid, has expired or has already been used.",
+    "backToLogin": "Back to sign-in",
+    "name": "Full name",
+    "namePlaceholder": "Full name",
+    "password": "Password",
+    "joinCta": "Join and sign in",
+    "joinFailed": "Could not join. Please try again.",
+    "kind": "Invitation",
+    "emailSubject": "Çiftlik Pro — you have been invited to a team",
+    "emailIntro": "You have been invited to join a farm team. To accept:",
+    "emailExpiry": "This link is valid for {days} days."
+  },
+  "Breeding": {
+    "breedingDate": "Insemination date *",
+    "fatherTag": "Sire ear tag",
+    "expectedBirthDate": "Expected birth date",
+    "actualBirthDate": "Actual birth date",
+    "offspringCount": "Number of offspring",
+    "add": "Add breeding record",
+    "saved": "Breeding record added."
+  },
+  "Health": {
+    "dateRequired": "Date *",
+    "diagnosisRequired": "Diagnosis *",
+    "treatment": "Treatment",
+    "addCta": "Add health record",
+    "saved": "Health record added."
+  },
+  "Vaccination": {
+    "nameRequired": "Vaccine name *",
+    "dateRequired": "Date given *",
+    "nextDate": "Next vaccination date",
+    "addCta": "Add vaccination",
+    "saved": "Vaccination added."
+  },
+  "Milk": {
+    "dateRequired": "Date *",
+    "amountRequired": "Amount (litres) *",
+    "addCta": "Add milk yield",
+    "saved": "Milk yield added."
+  },
+  "Weight": {
+    "dateRequired": "Date *",
+    "weightRequired": "Weight (kg) *",
+    "addCta": "Add weight record",
+    "saved": "Weight record added."
+  },
+  "Notifications": {
+    "title": "Notifications",
+    "empty": "You have no active notifications."
+  },
+  "Errors": {
+    "pageTitle": "Something went wrong",
+    "pageBody": "An unexpected error occurred while loading this page.",
+    "retry": "Try again",
+    "notFound": "The page you are looking for was not found.",
+    "backToPanel": "Back to the dashboard",
+    "manageInStripePortal": "Manage your subscription from the Stripe customer portal",
+    "motherMustBeFemale": "Only a female animal can be set as the mother",
+    "motherSpeciesMismatch": "Mother and offspring must be the same species",
+    "animalCannotBeOwnMother": "An animal cannot be its own mother",
+    "emailTaken": "This email address is already registered",
+    "emailTakenSignIn": "This email address is already registered. Please sign in.",
+    "emailAlreadyInTeam": "This email is already part of your team",
+    "offspringSpeciesMismatch": "This animal has offspring of a different species; the species cannot be changed",
+    "forbidden": "You do not have permission for this action",
+    "tagUsedByAnother": "This ear tag belongs to another animal",
+    "tagTaken": "This ear tag is already registered",
+    "staffLimitReached": "The farm has reached its staff limit. Please contact an administrator.",
+    "rateLimited": "Too many requests. Please try again shortly.",
+    "invitationNotFound": "Invitation not found",
+    "invitationInvalid": "The invitation is invalid or has expired",
+    "demoFarmProtected": "The demo farm cannot be deleted",
+    "demoReadOnly": "The demo account is read-only; changes are not allowed.",
+    "demoReadOnlyPassword": "The demo account is read-only; the password cannot be changed.",
+    "demoPlanLocked": "The plan cannot be changed in demo mode.",
+    "cropNotInField": "This planting record does not belong to this field",
+    "cropNotFound": "Planting record not found",
+    "invalidStatus": "Invalid status",
+    "invalidSignature": "Invalid signature",
+    "invalidIds": "Invalid identifiers",
+    "invalidPosition": "Invalid position",
+    "invalidData": "Invalid data",
+    "taskNotFound": "Task not found",
+    "animalNotFound": "Animal not found",
+    "signatureMissing": "Signature missing",
+    "transactionNotFound": "Transaction not found",
+    "itemNotFound": "Item not found",
+    "recordNotFound": "Record not found",
+    "userNotFound": "User not found",
+    "storeNotFound": "Store not found",
+    "currentPasswordWrong": "Your current password is incorrect",
+    "customerNotFound": "Customer not found",
+    "paymentsNotConfigured": "Payments are not configured",
+    "confirmMismatch": "The confirmation text does not match the farm name",
+    "saleNotFound": "Sale not found",
+    "motherCycle": "The selected mother is a descendant of this animal; that would create a cycle",
+    "motherNotFound": "The selected mother animal was not found",
+    "selectedCustomerNotFound": "The selected customer was not found",
+    "cartHasUnavailableProduct": "Your cart contains a product that is not on sale",
+    "orderNotFound": "Order not found",
+    "serverError": "Server error",
+    "serverErrorRetry": "Server error, please try again",
+    "cronSecretMissing": "Server configuration incomplete: CRON_SECRET is not set",
+    "fieldNotFound": "Field not found",
+    "tenantNotFound": "Farm not found",
+    "productNotFound": "Product not found",
+    "onlyFeedItems": "Only feed (FEED) items can be consumed",
+    "adminOnlyDeleteFarm": "Only an administrator can delete the farm",
+    "adminOnlyExport": "Only an administrator can export data",
+    "adminOnlyChangePlan": "Only an administrator can change the plan",
+    "adminOnlyUpgradePlan": "Only an administrator can upgrade the plan",
+    "structureNotFound": "Structure not found",
+    "feedItemNotFound": "Feed item not found",
+    "unauthorized": "Unauthorized",
+    "unauthorizedAccess": "Unauthorized access",
+    "planLimitAnimals": "The FREE plan allows at most {limit} active animals. Upgrade to PRO for more.",
+    "planLimitStaff": "The FREE plan allows at most {limit} staff members. Upgrade to PRO for more.",
+    "planLimitInvite": "The FREE plan allows at most {limit} staff members. Upgrade to PRO to invite more.",
+    "insufficientStock": "Insufficient stock: {quantity} {unit} available"
   }
 }

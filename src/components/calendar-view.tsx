@@ -124,14 +124,14 @@ export function CalendarView({
 
       if (!res.ok) {
         const data = await res.json().catch(() => null);
-        throw new Error(data?.error || "Kayıt işlemi başarısız.");
+        throw new Error(data?.error || t("saveFailed"));
       }
 
-      toast.success(modalType === "task" ? "Görev eklendi." : "Aşı takvimi eklendi.");
+      toast.success(modalType === "task" ? t("taskAdded") : t("vaccinationAdded"));
       setShowModal(false);
       router.refresh();
     } catch (err) {
-      const errMsg = err instanceof Error ? err.message : "Bir hata oluştu.";
+      const errMsg = err instanceof Error ? err.message : t("genericError");
       setError(errMsg);
     } finally {
       setSaving(false);
@@ -221,7 +221,7 @@ export function CalendarView({
               >
                 <div className="flex justify-between items-center mb-1">
                   {/* Hücre Hızlı Ekle İkonu */}
-                  <span className="text-[10px] text-green-600 font-bold opacity-0 group-hover:opacity-100 transition">＋ Ekle</span>
+                  <span className="text-[10px] text-green-600 font-bold opacity-0 group-hover:opacity-100 transition">{t("cellAdd")}</span>
                   <div
                     className={`text-xs ${
                       day.isToday
@@ -263,13 +263,13 @@ export function CalendarView({
           <div className="relative w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-2xl animate-in zoom-in-95 duration-200 z-10 space-y-4">
             <div className="flex justify-between items-center border-b border-border pb-3">
               <h3 className="font-bold text-lg text-foreground flex items-center gap-1.5">
-                <span>➕</span> Hızlı Kayıt Ekle ({selectedDate})
+                {t("quickAdd", { date: selectedDate })}
               </h3>
               <button
                 onClick={() => setShowModal(false)}
                 className="text-muted-foreground hover:text-foreground text-sm font-semibold p-1"
               >
-                kapat ✕
+                {t("close")}
               </button>
             </div>
 
@@ -282,7 +282,7 @@ export function CalendarView({
                   modalType === "task" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                ✅ Görev
+                {t("taskModalTitle")}
               </button>
               <button
                 type="button"
@@ -291,7 +291,7 @@ export function CalendarView({
                   modalType === "vaccination" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                💉 Aşı Planı
+                {t("vaccinationModalTitle")}
               </button>
             </div>
 
@@ -300,17 +300,17 @@ export function CalendarView({
                 <>
                   <div>
                     <label htmlFor="title" className={labelClass}>
-                      Görev Başlığı *
+                      {t("taskTitleLabel")}
                     </label>
                     <input id="title" name="title" type="text" required className={inputClass} />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="assignedToId" className={labelClass}>
-                        Atanan Kişi
+                        {t("assignee")}
                       </label>
                       <select id="assignedToId" name="assignedToId" className={inputClass}>
-                        <option value="">Atanmadı</option>
+                        <option value="">{t("unassigned")}</option>
                         {users.map((u) => (
                           <option key={u.id} value={u.id}>
                             {u.name}
@@ -320,7 +320,7 @@ export function CalendarView({
                     </div>
                     <div>
                       <label htmlFor="dueDate" className={labelClass}>
-                        Son Tarih
+                        {t("dueDate")}
                       </label>
                       <input
                         id="dueDate"
@@ -334,7 +334,7 @@ export function CalendarView({
                   </div>
                   <div>
                     <label htmlFor="description" className={labelClass}>
-                      Açıklama
+                      {t("description")}
                     </label>
                     <textarea id="description" name="description" rows={3} className={inputClass} />
                   </div>
@@ -343,10 +343,10 @@ export function CalendarView({
                 <>
                   <div>
                     <label htmlFor="animalId" className={labelClass}>
-                      Hayvan Seçin *
+                      {t("animalLabel")}
                     </label>
                     <select id="animalId" name="animalId" required className={inputClass}>
-                      <option value="">-- Hayvan Seçin --</option>
+                      <option value="">{t("animalPlaceholder")}</option>
                       {animals.map((a) => (
                         <option key={a.id} value={a.id}>
                           {a.tagNumber} {a.name ? `(${a.name})` : ""}
@@ -356,14 +356,14 @@ export function CalendarView({
                   </div>
                   <div>
                     <label htmlFor="vaccineName" className={labelClass}>
-                      Aşı Adı *
+                      {t("vaccineName")}
                     </label>
                     <input id="vaccineName" name="vaccineName" type="text" required className={inputClass} />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="nextDate" className={labelClass}>
-                        Aşı Planı Tarihi
+                        {t("vaccinationDate")}
                       </label>
                       <input
                         id="nextDate"
@@ -376,7 +376,7 @@ export function CalendarView({
                     </div>
                     <div>
                       <label htmlFor="notes" className={labelClass}>
-                        Ek Notlar
+                        {t("extraNotes")}
                       </label>
                       <input id="notes" name="notes" type="text" className={inputClass} />
                     </div>

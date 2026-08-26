@@ -2,14 +2,18 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { breedingStatusLabels } from "@/lib/labels";
+import { useLabels } from "@/lib/use-labels";
 
 const inputClass =
   "w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500";
 
 export function BreedingForm({ animalId }: { animalId: string }) {
+  const t = useTranslations("Breeding");
+  const tc = useTranslations("Common");
+  const { breedingStatusLabels } = useLabels();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -45,7 +49,7 @@ export function BreedingForm({ animalId }: { animalId: string }) {
       return;
     }
 
-    toast.success("Üreme kaydı eklendi.");
+    toast.success(t("saved"));
     form.reset();
     router.refresh();
   }
@@ -55,31 +59,31 @@ export function BreedingForm({ animalId }: { animalId: string }) {
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label htmlFor="bdate" className="mb-1 block text-xs font-medium text-muted-foreground">
-            Tohumlama Tarihi *
+            {t("breedingDate")}
           </label>
           <input id="bdate" name="breedingDate" type="date" required className={inputClass} />
         </div>
         <div>
           <label htmlFor="bsire" className="mb-1 block text-xs font-medium text-muted-foreground">
-            Baba Kulak No
+            {t("fatherTag")}
           </label>
           <input id="bsire" name="sireTag" type="text" className={inputClass} />
         </div>
         <div>
           <label htmlFor="bexp" className="mb-1 block text-xs font-medium text-muted-foreground">
-            Tahmini Doğum Tarihi
+            {t("expectedBirthDate")}
           </label>
           <input id="bexp" name="expectedBirthDate" type="date" className={inputClass} />
         </div>
         <div>
           <label htmlFor="bact" className="mb-1 block text-xs font-medium text-muted-foreground">
-            Gerçek Doğum Tarihi
+            {t("actualBirthDate")}
           </label>
           <input id="bact" name="actualBirthDate" type="date" className={inputClass} />
         </div>
         <div>
           <label htmlFor="bstatus" className="mb-1 block text-xs font-medium text-muted-foreground">
-            Durum
+            {tc("status")}
           </label>
           <select id="bstatus" name="status" defaultValue="PLANNED" className={inputClass}>
             {Object.entries(breedingStatusLabels).map(([value, label]) => (
@@ -91,13 +95,13 @@ export function BreedingForm({ animalId }: { animalId: string }) {
         </div>
         <div>
           <label htmlFor="bcount" className="mb-1 block text-xs font-medium text-muted-foreground">
-            Yavru Sayısı
+            {t("offspringCount")}
           </label>
           <input id="bcount" name="offspringCount" type="number" min="0" className={inputClass} />
         </div>
         <div className="sm:col-span-2">
           <label htmlFor="bnotes" className="mb-1 block text-xs font-medium text-muted-foreground">
-            Not
+            {tc("note")}
           </label>
           <input id="bnotes" name="notes" type="text" className={inputClass} />
         </div>
@@ -108,7 +112,7 @@ export function BreedingForm({ animalId }: { animalId: string }) {
       )}
 
       <Button type="submit" loading={loading}>
-        Üreme Kaydı Ekle
+        {t("add")}
       </Button>
     </form>
   );

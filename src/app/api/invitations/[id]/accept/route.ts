@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { canAddRecord } from "@/lib/plan";
@@ -16,11 +17,12 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const te = await getTranslations("Errors");
   try {
     const rl = await rateLimit(`accept:${clientIp(request)}`, 10, 5 * 60 * 1000);
     if (!rl.success) {
       return NextResponse.json(
-        { error: "Cok fazla istek. Lutfen biraz sonra tekrar deneyin." },
+        { error: te("rateLimited") },
         { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } }
       );
     }
@@ -30,7 +32,7 @@ export async function POST(
     const parsed = acceptInviteSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Gecersiz veri", details: parsed.error.flatten().fieldErrors },
+        { error: te("invalidData"), details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
@@ -38,7 +40,7 @@ export async function POST(
     const invitation = await findInvitationByToken(token);
     if (!isInvitationUsable(invitation)) {
       return NextResponse.json(
-        { error: "Davet gecersiz veya suresi dolmus" },
+        { error: te("invitationInvalid") },
         { status: 410 }
       );
     }
@@ -47,7 +49,7 @@ export async function POST(
     const limit = await canAddRecord(invitation.tenantId, "users");
     if (!limit.allowed) {
       return NextResponse.json(
-        { error: "Çiftlik personel limitine ulaşıldı. Lütfen yöneticiyle iletişime geçin." },
+        { error: te("staffLimitReached") },
         { status: 403 }
       );
     }
@@ -79,7 +81,7 @@ export async function POST(
       // E-posta global benzersiz: arada baska yerde kayit olduysa P2002.
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
         return NextResponse.json(
-          { error: "Bu e-posta adresi zaten kayitli. Lutfen giris yapin." },
+          { error: te("emailTakenSignIn") },
           { status: 409 }
         );
       }
@@ -98,7 +100,7 @@ export async function POST(
   } catch (error) {
     console.error("Davet kabul hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }

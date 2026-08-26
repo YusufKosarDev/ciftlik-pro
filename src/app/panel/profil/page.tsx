@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/badge";
 import { PasswordChangeForm } from "@/components/password-change-form";
 import { RestartTourButton } from "@/components/restart-tour-button";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { AccountDangerZone } from "@/components/account-danger-zone";
 import { getTranslations } from "next-intl/server";
 import { getLabels } from "@/lib/get-labels";
@@ -60,6 +61,16 @@ export default async function ProfilPage() {
           <Badge tone={tenant.plan === "PRO" ? "green" : "blue"}>{tenant.plan}</Badge>
         </Link>
       )}
+
+      {/* Dil secimi: baslik cubugundaki degistirici dar ekranlarda gizlidir,
+          bu yuzden kalici yeri burasi. */}
+      <div className="flex items-center justify-between rounded-xl border border-border bg-card p-5">
+        <div>
+          <h2 className="font-semibold text-foreground">{t("language")}</h2>
+          <p className="mt-0.5 text-sm text-muted-foreground">{t("languageDesc")}</p>
+        </div>
+        <LanguageSwitcher />
+      </div>
 
       <PasswordChangeForm />
 

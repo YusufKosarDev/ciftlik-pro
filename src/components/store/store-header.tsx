@@ -1,10 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Wheat, ShoppingCart } from "lucide-react";
 import { useCart } from "@/components/store/cart-provider";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 export function StoreHeader({ slug, farmName }: { slug: string; farmName: string }) {
+  const t = useTranslations("Store");
   const { count } = useCart();
 
   return (
@@ -16,13 +19,15 @@ export function StoreHeader({ slug, farmName }: { slug: string; farmName: string
           </span>
           {farmName}
         </Link>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          {/* Ziyaretci dogrudan magazaya dusebilir; dili buradan da secebilmeli. */}
+          <LanguageSwitcher />
           <Link
             href={`/magaza/${slug}/sepet`}
             className="relative inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-foreground transition hover:bg-muted"
           >
             <ShoppingCart className="h-4 w-4" />
-            Sepet
+            {t("cart")}
             {count > 0 && (
               <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-green-600 px-1 text-xs font-semibold text-white">
                 {count}
@@ -30,7 +35,7 @@ export function StoreHeader({ slug, farmName }: { slug: string; farmName: string
             )}
           </Link>
           <Link href="/giris" className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline">
-            Yönetim girişi →
+            {t("adminLogin")}
           </Link>
         </div>
       </div>

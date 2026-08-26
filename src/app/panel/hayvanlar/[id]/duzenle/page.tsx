@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { withTenant } from "@/lib/tenant-prisma";
 import { AnimalForm } from "@/components/animal-form";
@@ -9,6 +10,8 @@ export default async function HayvanDuzenlePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const t = await getTranslations("Animals");
+  const tc = await getTranslations("Common");
   const session = await requirePageWrite("animals");
 
   const { id } = await params;
@@ -31,9 +34,9 @@ export default async function HayvanDuzenlePage({
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-foreground">Hayvani Duzenle</h1>
+        <h1 className="text-2xl font-bold text-foreground">{t("editTitle")}</h1>
         <Link href="/panel/hayvanlar" className="text-sm text-muted-foreground hover:underline">
-          &larr; Listeye don
+          {tc("backToList")}
         </Link>
       </div>
 

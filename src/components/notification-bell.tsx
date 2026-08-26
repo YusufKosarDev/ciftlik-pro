@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { Bell } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 
 type NotificationItem = {
@@ -19,6 +20,7 @@ type NotificationsData = {
 };
 
 export function NotificationBell() {
+  const t = useTranslations("Notifications");
   const [data, setData] = useState<NotificationsData>({
     criticalStock: [],
     overdueTasks: [],
@@ -60,7 +62,7 @@ export function NotificationBell() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="relative rounded-lg p-2 text-muted-foreground transition hover:bg-muted cursor-pointer"
-        aria-label="Bildirimler"
+        aria-label={t("title")}
       >
         <Bell className="h-5 w-5" />
         {totalCount > 0 && (
@@ -73,12 +75,12 @@ export function NotificationBell() {
       {isOpen && (
         <div className="absolute right-0 mt-2.5 w-80 max-h-[420px] overflow-y-auto rounded-xl border border-border bg-card shadow-2xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="border-b border-border px-3 py-2">
-            <h4 className="font-bold text-sm text-foreground">Bildirimler ({totalCount})</h4>
+            <h4 className="font-bold text-sm text-foreground">{t("title")} ({totalCount})</h4>
           </div>
 
           <div className="divide-y divide-border text-xs">
             {totalCount === 0 ? (
-              <p className="px-3 py-6 text-center text-muted-foreground">Aktif bildiriminiz bulunmuyor.</p>
+              <p className="px-3 py-6 text-center text-muted-foreground">{t("empty")}</p>
             ) : (
               <>
                 {/* Kritik Stoklar */}

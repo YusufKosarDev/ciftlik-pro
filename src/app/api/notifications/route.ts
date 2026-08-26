@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { withTenant } from "@/lib/tenant-prisma";
 
 export async function GET() {
+  const te = await getTranslations("Errors");
   try {
     const session = await auth();
     if (!session?.user?.tenantId) {
-      return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 401 });
+      return NextResponse.json({ error: te("unauthorizedAccess") }, { status: 401 });
     }
 
     const now = new Date();
@@ -73,7 +75,7 @@ export async function GET() {
   } catch (error) {
     console.error("Bildirim listeleme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi" },
+      { error: te("serverError") },
       { status: 500 }
     );
   }

@@ -6,9 +6,7 @@ import { Menu, Search } from "lucide-react";
 import type { NavItem } from "@/components/sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { NotificationBell } from "@/components/notification-bell";
-// NOT: Panel string'lerinin tam cevirisi tamamlanana kadar panel ici dil
-// degistirici gizli (karisik-dil gorunmemesi icin). Giris ekrani iki dilli kalir.
-// Tamamlandiginda asagidaki <LanguageSwitcher /> geri eklenir.
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 // Aktif yola gore sayfa basligini bulur (en uzun eslesen on-ek).
 function titleFor(pathname: string, navItems: NavItem[]): string {
@@ -31,6 +29,7 @@ export function Topbar({
 }) {
   const pathname = usePathname();
   const tc = useTranslations("Common");
+  const tn = useTranslations("Nav");
   const title = titleFor(pathname, navItems);
 
   return (
@@ -38,7 +37,7 @@ export function Topbar({
       <button
         onClick={onMenu}
         className="rounded-lg p-2 text-muted-foreground transition hover:bg-muted lg:hidden"
-        aria-label="Menüyü aç"
+        aria-label={tn("openMenu")}
       >
         <Menu className="h-5 w-5" />
       </button>
@@ -47,7 +46,7 @@ export function Topbar({
         <button
           onClick={onOpenCommand}
           className="flex items-center gap-2 rounded-lg border border-border px-2.5 py-1.5 text-xs text-muted-foreground transition hover:bg-muted"
-          aria-label="Komut paletini aç"
+          aria-label={tn("openCommandPalette")}
         >
           <Search className="h-3.5 w-3.5" />
           <span className="hidden sm:inline">{tc("search")}</span>
@@ -56,6 +55,7 @@ export function Topbar({
           </kbd>
         </button>
         <NotificationBell />
+        <LanguageSwitcher className="hidden sm:inline-flex" />
         <ThemeToggle />
       </div>
     </header>

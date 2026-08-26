@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
@@ -12,6 +13,7 @@ export function saleDescription(item: string, customer?: string | null): string 
 // POST /api/sales -> yeni satis olusturur ve ona bagli bir gelir (INCOME)
 // islemi yaratir (tek transaction'da). Boylece satislar finansa otomatik yansir.
 export async function POST(request: Request) {
+  const te = await getTranslations("Errors");
   try {
     const authz = await authorizeWrite("sales");
     if ("error" in authz) return authz.error;
@@ -20,7 +22,7 @@ export async function POST(request: Request) {
     const parsed = saleSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Gecersiz veri", details: parsed.error.flatten().fieldErrors },
+        { error: te("invalidData"), details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
@@ -35,7 +37,7 @@ export async function POST(request: Request) {
           where: { id: data.customerId },
           select: { name: true },
         });
-        if (!customer) return { error: "Secilen musteri bulunamadi" } as const;
+        if (!customer) return { error: te("selectedCustomerNotFound") } as const;
         customerName = customer.name;
       }
 
@@ -76,7 +78,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Satis ekleme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }
