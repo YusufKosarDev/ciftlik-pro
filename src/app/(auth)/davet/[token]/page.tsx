@@ -2,19 +2,20 @@ import Link from "next/link";
 import { Users, AlertCircle } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { roleLabels } from "@/lib/labels";
+import { findInvitationByToken, isInvitationUsable } from "@/lib/invitations";
 import { AcceptInviteForm } from "@/components/accept-invite-form";
 
-// Public davet kabul sayfasi. Daveti token ile okur (Invitation RLS disi),
-// gecerliyse kabul formunu gosterir; degilse bilgilendirir.
+// Public davet kabul sayfasi. Daveti token ile okur (Invitation RLS altindadir;
+// baglamsiz okuma SECURITY DEFINER fonksiyonuyla yapilir), gecerliyse kabul
+// formunu gosterir; degilse bilgilendirir.
 export default async function DavetPage({
   params,
 }: {
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
-  const invitation = await prisma.invitation.findUnique({ where: { token } });
-  const valid =
-    invitation && !invitation.acceptedAt && invitation.expiresAt > new Date();
+  const invitation = await findInvitationByToken(token);
+  const valid = isInvitationUsable(invitation);
 
   const farm = valid
     ? await prisma.tenant.findUnique({

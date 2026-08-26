@@ -59,6 +59,13 @@ Two **independent** layers:
    row cannot be written into the wrong tenant either. If a query forgets its
    filter, the database returns nothing rather than someone else's data.
 
+   Two reads legitimately happen *before* a tenant context exists: signing in
+   (the user is found by email) and opening an invitation link (the invite is
+   found by token). Both are `SECURITY DEFINER` functions — `auth_user_by_email`
+   and `invitation_by_token` — each filtering on a single equality and returning
+   the minimum. That keeps the tables themselves under RLS with **no exceptions**;
+   the token function does not even return the token.
+
 2. **A Prisma Client Extension** (`forTenant`, [`src/lib/tenant-prisma.ts`](../src/lib/tenant-prisma.ts))
    that injects `tenantId` into the `where` of every list/count/aggregate/
    `updateMany`/`deleteMany` operation. This layer exists for **ergonomics**, not
@@ -72,7 +79,7 @@ would silently reduce the whole design to layer 2 only.
 ### Why `create` is not auto-injected
 
 The extension deliberately does **not** inject `tenantId` on `create`. Callers pass
-it explicitly, the type system requires it (`tenantId` is `NOT NULL` on 19 tables),
+it explicitly, the type system requires it (`tenantId` is `NOT NULL` on 20 tables),
 and RLS `WITH CHECK` rejects a wrong value. One explicit mechanism beats two
 partially-overlapping implicit ones.
 
@@ -90,7 +97,12 @@ tests assert precisely this, including `findUnique` by a known foreign id.
 real PostgreSQL instance **as the non-superuser role** and asserts:
 
 - tenant A cannot see tenant B's rows via `findMany` **or** `findUnique`;
-- with no `app.tenant_id` set, **zero** rows are visible — the system fails closed.
+- with no `app.tenant_id` set, **zero** rows are visible — the system fails closed;
+- `Invitation` is covered too: a known token returns nothing through a direct
+  query, while `invitation_by_token` still serves the public accept flow.
+
+These run in CI on every push and pull request (the `integration` job creates the
+`ciftlik_app` role and points the tests at it), not only on a developer's machine.
 
 ---
 
@@ -287,3 +299,4 @@ Stated plainly, because pretending they do not exist is worse than having them.
 | **One tenant per user** | `User.tenantId` is a single value; a person cannot belong to two farms. | Introduce a `Membership` join table; the session already carries `tenantId`, so the change is mostly in auth and the tenant resolver. |
 | **Tenant resolved from the session, not the URL** | No `acme.ciftlik-pro.app` subdomains yet. | `Tenant.slug` already exists and the storefront already resolves by slug; extending it to the panel is additive. |
 | **Invitation tokens stored in plaintext** | Database read access exposes pending invite tokens. | Store a hash and compare on accept — tokens are already single-use and time-limited. |
+| **Partial i18n coverage** | All 466 keys exist in both locales, but the newer screens (public storefront, billing, invitations) and server-side API error messages are hard-coded Turkish, so an English reader still meets Turkish text there. | next-intl is already wired for the whole app; moving a screen is mechanical — extract its strings into `messages/tr.json` + `messages/en.json` and swap in `useTranslations`. |

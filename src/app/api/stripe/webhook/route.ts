@@ -3,6 +3,10 @@ import type Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant-prisma";
+import { logAudit } from "@/lib/audit";
+
+// Webhook'ta oturum yoktur; denetim kaydinin aktoru otomasyonun kendisidir.
+const STRIPE_ACTOR = "Stripe (webhook)";
 
 // POST /api/stripe/webhook -> Stripe odeme bildirimleri. Imza STRIPE_WEBHOOK_SECRET
 // ile dogrulanir. checkout.session.completed gelince ilgili siparis PAID + CONFIRMED
@@ -35,18 +39,36 @@ export async function POST(request: Request) {
     if (session.mode === "subscription" && tenantId) {
       // Abonelik basladi -> tenant PRO. Tenant RLS disidir.
       await prisma.tenant.update({ where: { id: tenantId }, data: { plan: "PRO" } });
+      await logAudit(
+        { tenantId, name: STRIPE_ACTOR },
+        "UPDATE",
+        "Tenant",
+        tenantId,
+        "abonelik basladi — plan: PRO"
+      );
     } else {
       // Magaza siparisi odemesi.
       const orderId = session.metadata?.orderId;
       if (orderId && tenantId) {
         // Order RLS'e tabidir: siparis, olusturulurken metadata'ya yazilan tenant
         // baglaminda guncellenir. updateMany idempotenttir (bulunmazsa hata yok).
-        await withTenant(tenantId, (db) =>
+        const updated = await withTenant(tenantId, (db) =>
           db.order.updateMany({
             where: { id: orderId },
             data: { paymentStatus: "PAID", status: "CONFIRMED" },
           })
         );
+        // count === 0: siparis bu tenant baglaminda bulunamadi (yanlis/eskimis
+        // metadata). Guncelleme olmadiysa denetim kaydi da yazilmaz.
+        if (updated.count > 0) {
+          await logAudit(
+            { tenantId, name: STRIPE_ACTOR },
+            "UPDATE",
+            "Order",
+            orderId,
+            "odeme alindi — PAID / CONFIRMED"
+          );
+        }
       }
     }
   }
@@ -57,6 +79,13 @@ export async function POST(request: Request) {
     const tenantId = sub.metadata?.tenantId;
     if (tenantId) {
       await prisma.tenant.update({ where: { id: tenantId }, data: { plan: "FREE" } });
+      await logAudit(
+        { tenantId, name: STRIPE_ACTOR },
+        "UPDATE",
+        "Tenant",
+        tenantId,
+        "abonelik sona erdi — plan: FREE"
+      );
     }
   }
 

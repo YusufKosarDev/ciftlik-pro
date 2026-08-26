@@ -10,9 +10,15 @@ authorizeWrite(module)   →   Zod schema.safeParse(body)   →   withTenant(ten
 `authorizeWrite` ([`src/lib/authz.ts`](../src/lib/authz.ts)) is the single source
 of truth for role permissions. It returns `401` when there is no session, `403`
 for the read-only demo account, and `403` when the role is not allowed for that
-module. Every successful write is recorded in `AuditLog`.
+module. Every successful write is recorded in `AuditLog` — including the ones
+that skip `authorizeWrite` because they have no session to check (public
+storefront orders, the Stripe webhook) and farm deletion, whose record is written
+without a tenant so it outlives the data it describes. The single exception is
+`POST`/`DELETE /api/profile/onboarding`: a UI preference, not farm data.
 
-**Reading is open to any signed-in user**; writing is restricted by role.
+**Reading is open to any signed-in user** — except panel sections a role cannot
+see, which the edge proxy blocks with a real `307` before anything renders
+(`canViewPanelPath`). Writing is restricted by role.
 Sensitive *pages* are additionally gated with `requirePageView` / `requirePageWrite`.
 
 ## Role matrix

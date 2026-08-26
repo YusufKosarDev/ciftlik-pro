@@ -12,7 +12,7 @@ Sistemi (ERP) — hayvan, tarla, stok, finans, satış, mağaza ve personel tek 
 [![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![codecov](https://codecov.io/gh/YusufKosarDev/ciftlik-pro/branch/main/graph/badge.svg)](https://codecov.io/gh/YusufKosarDev/ciftlik-pro)
-[![Tests](https://img.shields.io/badge/tests-288%20unit%20%2B%2018%20e2e-success)](#test--kalite)
+[![Tests](https://img.shields.io/badge/tests-293%20unit%20%2B%2018%20e2e-success)](#test--kalite)
 [![Multi-tenant](https://img.shields.io/badge/multi--tenant-Postgres%20RLS-4169E1)](#-çok-kiracılık-multi-tenant-saas)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -101,9 +101,12 @@ göstergeleriyle) ve aylık gelir-gider grafiği:
   stok / geciken görev / yaklaşan aşı uyarıları.
 - **Modern arayüz** — sol sidebar düzeni, dark mode (semantik renk token'ları), `⌘K`
   komut paleti (hızlı gezinme + eylem) ve `cva` tabanlı tasarım sistemi.
-- **Çok dillilik (i18n)** — uygulama **tamamen** Türkçe/İngilizce (next-intl,
-  cookie-locale, varsayılan TR): **466 çeviri anahtarının tamamı** iki dilde de
-  karşılanıyor; tarih ve para biçimlendirmesi de yerelleştirilmiş.
+- **Çok dillilik (i18n)** — next-intl, cookie-locale, varsayılan TR:
+  **466 çeviri anahtarının tamamı** iki dilde de karşılanıyor; tarih ve para
+  biçimlendirmesi de yerelleştirilmiş. Kapsam dashboard ve panel modülleridir —
+  navigasyon, listeler, formlar, takvim etiketleri, özet kartları. Sonradan eklenen
+  ekranlar (herkese açık mağaza, abonelik, davet) ve sunucu tarafı API hata
+  mesajları henüz yalnızca Türkçe; altyapı hazır, bu ekranlar kataloğa taşınmadı.
 - **Hoş geldin turu (onboarding)** — ilk panel girişinde role özel, çok adımlı
   tanıtım modal'ı; Profil'den istenildiğinde yeniden başlatılabilir.
 - **Aranabilir tablolar** — tüm liste modüllerinde **sunucu-tarafı (DB)** arama,
@@ -121,7 +124,7 @@ göstergeleriyle) ve aylık gelir-gider grafiği:
   (API) hem hassas okuma (sayfa) düzeyinde uygulanır.
 - **Uçtan uca tip güvenliği** — Zod şemaları hem istemci hem sunucuda doğrular;
   Prisma ile veritabanı tipleri.
-- **Test & CI/CD** — 288 birim/bileşen testi (Vitest + Testing Library) +
+- **Test & CI/CD** — 293 birim/bileşen testi (Vitest + Testing Library) +
   tenant-izolasyon entegrasyon testleri + 18 uçtan uca test (Playwright),
   GitHub Actions'ta gerçek PostgreSQL servisiyle her PR'da çalışır.
 - **Transactional bütünlük** — yem tüketimi stoğu atomik düşürür (TOCTOU'ya karşı
@@ -191,16 +194,27 @@ Sertleştirme önlemleri:
   sabit zamanlı karşılaştırma (`timingSafeEqual`) ve asenkron hashing ile olay döngüsü kilitlenme korumalıdır. Düz metin asla saklanmaz/dönülmez.
 - **HTTP güvenlik başlıkları** — tüm yanıtlara CSP, HSTS, `X-Frame-Options`,
   `X-Content-Type-Options`, `Referrer-Policy` ve `Permissions-Policy` (`next.config.ts`).
-- **Brute-force koruması** — giriş ve kayıt uçlarında IP / e-posta bazlı hız sınırı
-  (`src/lib/rate-limit.ts`); başarısız giriş denemeleri denetim günlüğüne
-  (`LOGIN_FAILED`) yazılır. Sayaçlar **Postgres'ta** tutulur ve tek bir atomik
-  upsert ile artırılır; böylece limit serverless örnekleri arasında bölünmez.
-  Eşzamanlılık, gerçek veritabanına karşı çalışan bir entegrasyon testiyle
-  doğrulanır (limit 4 iken 10 eşzamanlı istek → tam olarak 4 başarılı).
+- **Brute-force koruması** — giriş hem IP hem IP+e-posta bazında sınırlanır
+  (böylece tek saldırgan ortak bir IP'den tüm hesapları kilitleyemez); kayıt,
+  çiftlik oluşturma, davet kabulü ve herkese açık sipariş uçları IP bazında
+  sınırlanır (`src/lib/rate-limit.ts`). Başarısız giriş denemeleri denetim
+  günlüğüne (`LOGIN_FAILED`) yazılır. Sayaçlar **Postgres'ta** tutulur ve tek bir
+  atomik upsert ile artırılır; böylece limit serverless örnekleri arasında
+  bölünmez. Eşzamanlılık, gerçek veritabanına karşı çalışan bir entegrasyon
+  testiyle doğrulanır (limit 4 iken 10 eşzamanlı istek → tam olarak 4 başarılı).
+  Veritabanına ulaşılamazsa sınırlayıcı **fail-open** davranır ve bellek içi
+  sayaca düşer: hız sınırı bir derinlik katmanıdır, tek başına bir kapı değil —
+  kısa bir veritabanı kesintisinde herkesi uygulamadan kilitlemek, önlediğinden
+  daha fazla zarar verirdi.
 - **Güvenli görsel URL'leri** — hayvan görseli yalnızca `http(s)` URL kabul eder
   (Zod); `javascript:` / `data:` şemaları reddedilir (CSP `img-src` ile uyumlu).
 - **Çift taraflı doğrulama** — Zod şemaları hem istemcide hem her yazma ucunda sunucuda çalışır.
-- **Denetim günlüğü** — her yazma işlemi (kim / ne / ne zaman) `AuditLog`'a kaydedilir.
+- **Denetim günlüğü** — çiftlik verisini, faturalandırmayı veya hesap durumunu
+  değiştiren her yazma (kim / ne / ne zaman) `AuditLog`'a kaydedilir: tüm
+  modüllerdeki CRUD, plan değişiklikleri (Stripe webhook'unun yaptıkları dahil),
+  herkese açık mağaza siparişleri ve çiftlik silme — sonuncusu silmeden **sonra**
+  ve tenant'sız yazılır, böylece kayıt anlattığı hesaptan sağ çıkar. Hoş geldin
+  turu bayrağı bilinçli olarak denetlenmez: iş verisi değil, arayüz tercihidir.
 - **Korumalı cron** — bildirim ucu `CRON_SECRET` ile `Authorization` başlığı doğrular.
 
 ## 🏢 Çok-kiracılık (Multi-tenant SaaS)
@@ -249,7 +263,8 @@ bağımsız katmanda** zorlanır:
 
 ### Gereksinimler
 
-- Node.js 20+
+- Node.js 20.12+ (ya da CI'ın kullandığı 22 LTS — `npm run db:seed`
+  `--env-file-if-exists` bayrağına ihtiyaç duyar)
 - Docker (PostgreSQL için)
 
 ### Adımlar
@@ -276,11 +291,17 @@ bağımsız katmanda** zorlanır:
    cp .env.example .env
    ```
 
-   `AUTH_SECRET` üretmek için:
+   Şablon **boş gelir**; devam etmeden önce şunları doldurun:
 
-   ```bash
-   node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
-   ```
+   | Değişken | Değer |
+   | --- | --- |
+   | `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | İstediğiniz değerler; Docker veritabanını bunlarla oluşturur. Örn. `ciftlik` / `ciftlik` / `ciftlik_pro` |
+   | `DATABASE_URL` **ve** `DIRECT_URL` | Aynı üç değerin URL hâli — **port 5433**: `postgresql://ciftlik:ciftlik@localhost:5433/ciftlik_pro?schema=public` |
+   | `AUTH_SECRET` | `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"` |
+
+   > **Neden 5433?** `docker-compose.yml`, konteynerin 5432 portunu host'ta
+   > **5433**'e yayınlar; böylece makinenizde zaten çalışan bir PostgreSQL ile
+   > çakışmaz. `.env.example`'daki diğer değişkenler opsiyoneldir.
 
 3. PostgreSQL veritabanını Docker ile başlatın:
 
@@ -351,15 +372,20 @@ Seed çalıştırıldıysa:
 - **Birim testleri (Vitest):** doğrulama şemaları, RBAC yetkilendirme, hız sınırı,
   liste sorgu parametreleri, plan limitleri, finans/harita/tarih/takvim yardımcıları
   + UI bileşenleri (Testing Library: Badge/Button/EmptyState/DataTable/OnboardingModal)
-  — `npm test` (288 test). Kapsam raporu için
-  `npm run test:coverage` (iş mantığı `src/lib` için ~%91 satır kapsamı; paylaşılan veritabanı yolları entegrasyon testleriyle kapsanır).
-- **Tenant-izolasyon entegrasyon testleri:** gerçek PostgreSQL + non-superuser rolle
-  `forTenant`/RLS izolasyonu (`*.int.test.ts`); tenant A, tenant B'nin verisine erişemez.
+  — `npm test` (293 test). Kapsam raporu için
+  `npm run test:coverage` (iş mantığı `src/lib` için ~%90 satır kapsamı; paylaşılan veritabanı yolları entegrasyon testleriyle kapsanır).
+- **Tenant-izolasyon entegrasyon testleri:** gerçek PostgreSQL + non-superuser
+  `ciftlik_app` rolüyle `forTenant`/RLS izolasyonu (`*.int.test.ts`) — tenant A
+  tenant B'nin verisine erişemez, bağlamsız sorgu 0 satır döner, `Invitation` da
+  RLS altındadır ve paylaşılan hız sınırı sayacı eşzamanlılık altında doğrulanır.
+  `RUN_DB_TESTS=1` ile gatelenir (böylece `npm test` veritabanı istemez);
+  **CI bu değişkeni açar**, testler her push/PR'da gerçekten koşar.
 - **Uçtan uca testler (Playwright):** kimlik doğrulama, hayvan CRUD, RBAC
   reddi (gerçek 307), satış → otomatik gelir işlemi, mağaza sepeti → sipariş,
   davet → kabul → rol ve demo salt-okunurluğu — `npm run test:e2e` (18 test).
-- **CI (GitHub Actions):** her push/PR'da iki paralel job —
-  `build` (tsc + ESLint + Vitest + üretim derlemesi) ve
+- **CI (GitHub Actions):** her push/PR'da üç paralel job —
+  `build` (tsc + ESLint + Vitest + üretim derlemesi),
+  `integration` (PostgreSQL + `ciftlik_app` rolü + izolasyon testleri) ve
   `e2e` (gerçek PostgreSQL servisi + seed + Playwright).
 - **Lighthouse** (üretim derlemesi, mobil emülasyon): giriş **88** / mağaza **92**
   performans, **95-96** erişilebilirlik, **100** best practices, **100** SEO,
@@ -417,7 +443,10 @@ src/
      ADMIN_EMAIL=... ADMIN_PASSWORD=... npm run db:seed-admin
    ```
 
-   Alternatif: Vercel **Build Command**'i `prisma migrate deploy && next build`
-   yaparak migration'ı her deploy'da otomatik uygulayabilirsiniz.
+   Not: Bu repoda `vercel.json` bunu zaten yapıyor — **üretim** derlemesi sırayla
+   `prisma migrate deploy` → vitrin (demo) seed'i → `next build` çalıştırır.
+   Seed, koddaki veri sürümüyle veritabanındakini karşılaştırır ve yalnızca
+   farklıysa yeniden doldurur. Önizleme (preview) derlemeleri sadece
+   `next build` koşar.
 
 5. `main` dalına push → Vercel otomatik derleyip yayınlar.

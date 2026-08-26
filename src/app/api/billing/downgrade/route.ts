@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { isDemoUser } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
+import { logAudit } from "@/lib/audit";
 
 // POST /api/billing/downgrade -> ADMIN, tenant'ı FREE'ye düşürür.
 // Yalnızca DEMO modunda (gerçek Stripe yapılandırılmamışken) geçerlidir; gerçek
@@ -35,5 +36,12 @@ export async function POST() {
     where: { id: session.user.tenantId },
     data: { plan: "FREE" },
   });
+  await logAudit(
+    session.user,
+    "UPDATE",
+    "Tenant",
+    session.user.tenantId,
+    "plan: PRO → FREE"
+  );
   return NextResponse.json({ ok: true });
 }

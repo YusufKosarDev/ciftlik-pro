@@ -155,8 +155,10 @@ CV-hazır canlı demo korunuyor.
 - ✅ Public **"çiftlik oluştur"** kaydı (`/kayit` + `POST /api/auth/signup`): tek
   transaction'da Tenant + ilk ADMIN; benzersiz slug; RLS-uyumlu (yeni tenant
   bağlamı `set_config` ile ayarlanıp ADMIN yazılır); e-posta çakışması P2002→409.
-- ✅ **Personel davet akışı:** `Invitation` modeli (RLS dışı, token ile public
-  erişim), ADMIN davet oluşturma/iptal (`/api/invitations`), token'lı public
+- ✅ **Personel davet akışı:** `Invitation` modeli (RLS altında; public token
+  okuması `invitation_by_token` SECURITY DEFINER fonksiyonuyla —
+  `20260826120000_invitation_rls`), ADMIN davet oluşturma/iptal
+  (`/api/invitations`), token'lı public
   kabul (`/davet/[token]` + `/api/invitations/[token]/accept`) → davetli adını/
   parolasını belirler, otomatik giriş. Personel sayfasında davet formu + bekleyen
   davetler listesi.

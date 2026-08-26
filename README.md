@@ -13,7 +13,7 @@ role-based dashboard.
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Tests](https://img.shields.io/badge/tests-288%20unit%20%2B%2018%20e2e-success)](#testing--quality)
+[![Tests](https://img.shields.io/badge/tests-293%20unit%20%2B%2018%20e2e-success)](#testing--quality)
 [![Multi-tenant](https://img.shields.io/badge/multi--tenant-Postgres%20RLS-4169E1)](#multi-tenancy)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -60,10 +60,16 @@ transaction** — a session-level `SET` would leak across requests behind a
 connection pooler (pgbouncer), which is exactly the bug the design exists to
 prevent.
 
-This is verified, not asserted: integration tests run against a real PostgreSQL
-instance **as the non-superuser role** and prove that tenant A cannot reach tenant
-B's rows via `findMany` *or* `findUnique`, and that with no context set **zero**
-rows are visible — the system fails closed.
+This is verified, not asserted — and verified **on every push and pull request**,
+not just on a developer's machine: a dedicated CI job creates the non-superuser
+role and runs integration tests against a real PostgreSQL instance as that role,
+proving that tenant A cannot reach tenant B's rows via `findMany` *or*
+`findUnique`, and that with no context set **zero** rows are visible — the system
+fails closed.
+
+The two reads that legitimately happen *before* a tenant context exists — finding
+a user by email at sign-in, and opening an invitation link by token — go through
+`SECURITY DEFINER` functions, so no tenant table needs an exemption from RLS.
 
 > 📐 The full reasoning, the alternatives that were rejected, and the known
 > limitations are in **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
@@ -126,9 +132,15 @@ and a monthly income/expense chart:
   monthly view; task assignment with overdue warnings.
 - **Modern UI** — sidebar layout, dark mode via semantic tokens, a ⌘K command
   palette, and a `cva`-based design system.
-- **Fully bilingual** — Turkish/English across the whole app (next-intl):
-  **all 466 translation keys** exist in both locales, including localized date
-  and currency formatting.
+- **Onboarding tour** — a role-specific, multi-step welcome modal on the first
+  visit to the dashboard; restartable at any time from the profile page.
+- **Bilingual (TR/EN)** — next-intl with a cookie-selected locale (Turkish by
+  default): **all 466 translation keys** exist in both locales, including
+  localized date and currency formatting. Coverage is the dashboard and the panel
+  modules — navigation, lists, forms, calendar labels, summary cards. The newer
+  surfaces (public storefront, billing, invitation screens) and server-side API
+  error messages are still Turkish-only; the plumbing is in place, they simply
+  have not been moved to the catalogue yet.
 - **Email alerts** — a daily cron emails each tenant's admins a digest of critical
   stock, overdue tasks and upcoming vaccinations (Resend).
 
@@ -150,8 +162,9 @@ and a monthly income/expense chart:
   (`where` / `orderBy` / `skip` / `take` + `count`) with indexes on frequently
   filtered date columns, so memory and payload stay constant as tables grow.
 - **Performance-minded loading** — Recharts is lazy-loaded via `next/dynamic`
-  (`ssr: false`), finance summaries are aggregated with `groupBy`, storefronts are
-  cached with `unstable_cache`.
+  (`ssr: false`), finance summaries are aggregated with `groupBy`, and the
+  storefront's slug → tenant lookup is cached for an hour with `unstable_cache`
+  (the product list is read live, so a price edit shows up immediately).
 - **Self-healing demo data** — the showcase dataset is versioned in code and
   re-seeded automatically when the version changes, plus a nightly reset cron.
 - **Graceful degradation** — Stripe, Resend and cron are env-gated; without keys
@@ -186,8 +199,11 @@ flowchart LR
 
 Authorization lives in `src/lib/authz.ts` and is enforced at three levels: the
 edge proxy, sensitive pages (`requirePageView` / `requirePageWrite`), and every
-write endpoint (`authorizeWrite`). Reading is open to any signed-in user; writing
-is role-restricted.
+write endpoint (`authorizeWrite`). Within the sections a role can see, reading is
+open to any signed-in user and writing is role-restricted — a section that is not
+in the role's navigation is blocked at the edge with a real `307` before anything
+renders (`canViewPanelPath`), so an accountant cannot reach the livestock pages by
+typing the URL.
 
 | Role | Can write |
 | --- | --- |
@@ -205,17 +221,26 @@ Hardening:
   hashes. Plaintext is never stored or returned.
 - **Security headers on every response** — CSP, HSTS, `X-Frame-Options`,
   `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`.
-- **Brute-force protection** — per-IP and per-IP+email rate limits on login and
-  registration; failed logins are written to the audit log as `LOGIN_FAILED`.
-  Counters live in Postgres and are incremented with a single atomic upsert, so
-  the limit holds across serverless instances (an in-memory counter would be
-  divided among them). Verified by an integration test that fires ten concurrent
-  requests against a limit of four.
+- **Brute-force protection** — login is limited per IP *and* per IP+email (so one
+  attacker cannot lock every account out from a shared address); sign-up,
+  registration, invitation accept and public orders are limited per IP. Failed
+  logins are written to the audit log as `LOGIN_FAILED`. Counters live in Postgres
+  and are incremented with a single atomic upsert, so the limit holds across
+  serverless instances (an in-memory counter would be divided among them).
+  Verified by an integration test that fires ten concurrent requests against a
+  limit of four. If the database is unreachable the limiter **fails open** onto an
+  in-memory counter — rate limiting is defence in depth, and locking everyone out
+  of the app during a database blip would do more damage than it prevents.
 - **Safe image URLs** — animal images accept `http(s)` only; `javascript:` and
   `data:` are rejected.
 - **Double validation** — the same Zod schemas run on the client and on every
   write endpoint.
-- **Audit log** — every write records who did what and when.
+- **Audit log** — every write that changes farm data, billing or account state
+  records who did what and when: CRUD across all modules, plan changes (including
+  the ones Stripe's webhook makes), public storefront orders, and farm deletion —
+  which is written *after* the wipe and without a tenant, so the record survives
+  the account it describes. The onboarding-tour flag is deliberately not audited:
+  it is a UI preference, not farm data.
 - **Protected cron** — fail-closed; without `CRON_SECRET` the endpoints return
   `503`, with it they require a bearer token.
 - **Read-only demo account** — cannot write anything, so the live demo stays intact.
@@ -257,7 +282,8 @@ where **every owner runs an isolated tenant**. Highlights:
 
 ## Getting started
 
-**Requirements:** Node.js 20+ and Docker.
+**Requirements:** Node.js 20.12+ (or 22 LTS, which CI uses — `npm run db:seed`
+needs `--env-file-if-exists`) and Docker.
 
 ```bash
 # 1. Install dependencies
@@ -268,9 +294,22 @@ npm install
 
 # 2. Environment
 cp .env.example .env
-#    Generate AUTH_SECRET:
-#    node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
 
+`.env` ships empty — fill it in before going further:
+
+| Variable | Value |
+| --- | --- |
+| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | Anything you like; Docker creates the database with them. e.g. `ciftlik` / `ciftlik` / `ciftlik_pro` |
+| `DATABASE_URL` **and** `DIRECT_URL` | The same three values as a URL — **on port 5433**: `postgresql://ciftlik:ciftlik@localhost:5433/ciftlik_pro?schema=public` |
+| `AUTH_SECRET` | `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"` |
+
+> **Why 5433?** `docker-compose.yml` publishes the container's 5432 on host port
+> **5433**, so it never collides with a PostgreSQL you already run locally.
+> Everything else in `.env.example` is optional — see
+> [Deploying to Vercel](#deploying-to-vercel).
+
+```bash
 # 3. Database
 docker compose up -d db
 npx prisma migrate dev
@@ -308,16 +347,20 @@ npm run dev              # http://localhost:3000
 
 ## Testing & quality
 
-- **288 unit/component tests** (Vitest + Testing Library) covering validation
+- **293 unit/component tests** (Vitest + Testing Library) covering validation
   schemas, RBAC, rate limiting, list query parsing, plan limits, finance/map/date/
-  calendar helpers and UI primitives — **~91% line coverage on business logic** (the shared, database-backed paths are covered by integration tests instead).
-- **Tenant isolation integration tests** against a real PostgreSQL instance using
-  the non-superuser role (`*.int.test.ts`).
+  calendar helpers and UI primitives — **~90% line coverage on business logic** (the shared, database-backed paths are covered by integration tests instead).
+- **Tenant isolation integration tests** (`*.int.test.ts`) against a real
+  PostgreSQL instance as the non-superuser `ciftlik_app` role — cross-tenant
+  reads, the fail-closed empty context, `Invitation` under RLS, and the shared
+  rate-limit counter under ten concurrent requests. They are env-gated
+  (`RUN_DB_TESTS=1`) so `npm test` stays database-free, and **CI turns them on**.
 - **18 Playwright e2e tests** — authentication, animal CRUD, RBAC denial (real
   307 at the edge), sale → automatic income transaction, storefront cart → order,
   invitation → accept → role, and demo read-only enforcement.
-- **CI (GitHub Actions)** — two parallel jobs on every push and PR: `build`
-  (tsc + ESLint + Vitest + production build) and `e2e` (real PostgreSQL service +
+- **CI (GitHub Actions)** — three parallel jobs on every push and PR: `build`
+  (tsc + ESLint + Vitest + production build), `integration` (PostgreSQL +
+  `ciftlik_app` role + the isolation tests) and `e2e` (real PostgreSQL service +
   seed + Playwright).
 - **Pre-commit** — husky + lint-staged run `eslint --fix` on staged files.
 - **Lighthouse** (production build, mobile emulation): sign-in **88** / storefront
@@ -350,8 +393,11 @@ messages/          tr.json / en.json translation catalogues
    [Supabase](https://supabase.com) and take two connection strings: the **pooled**
    one for `DATABASE_URL` and the **direct** one for `DIRECT_URL`.
 2. **Import the repo** into Vercel (Next.js is detected automatically).
-   `prisma generate` runs via `postinstall`, and production builds run
-   `prisma migrate deploy` before `next build`.
+   `prisma generate` runs via `postinstall`. A **production** build then runs
+   `prisma migrate deploy`, followed by the demo seed — which compares the
+   dataset version in code against the one in the database and only reseeds when
+   they differ — and finally `next build` (see `vercel.json`). Preview builds
+   run `next build` alone.
 3. **Environment variables:**
 
    | Variable | Description |

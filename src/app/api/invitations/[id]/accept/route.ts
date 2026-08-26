@@ -5,11 +5,13 @@ import { canAddRecord } from "@/lib/plan";
 import { acceptInviteSchema } from "@/lib/validations/auth";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 import { hashPassword } from "@/lib/password-hash";
+import { findInvitationByToken, isInvitationUsable } from "@/lib/invitations";
 import { logAudit } from "@/lib/audit";
 
 // POST /api/invitations/[id]/accept -> HERKESE ACIK davet kabulu.
 // Davetli adini + parolasini belirler; ilgili tenant'a kullanici olarak eklenir.
-// Invitation RLS disidir; token ile (oturum/tenant baglami olmadan) okunur.
+// Invitation RLS altindadir; oturum/tenant baglami olmadigi icin token okumasi
+// SECURITY DEFINER `invitation_by_token` uzerinden yapilir (bkz. src/lib/invitations.ts).
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -33,8 +35,8 @@ export async function POST(
       );
     }
 
-    const invitation = await prisma.invitation.findUnique({ where: { token } });
-    if (!invitation || invitation.acceptedAt || invitation.expiresAt < new Date()) {
+    const invitation = await findInvitationByToken(token);
+    if (!isInvitationUsable(invitation)) {
       return NextResponse.json(
         { error: "Davet gecersiz veya suresi dolmus" },
         { status: 410 }
