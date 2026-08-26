@@ -113,14 +113,14 @@ export function DataTable<T extends { id: string }>({
 
   const handleBulkDelete = async () => {
     if (!onBulkDelete) return;
-    if (!confirm(`Seçilen ${selectedIds.length} kaydı kalıcı olarak silmek istediğinize emin misiniz?`)) return;
+    if (!confirm(t("bulkDeleteConfirm", { count: selectedIds.length }))) return;
     setDeleting(true);
     try {
       await onBulkDelete(selectedIds);
       setSelectedIds([]);
     } catch (err) {
       console.error("Toplu silme hatası:", err);
-      alert("Toplu silme işlemi sırasında bir hata oluştu.");
+      alert(t("bulkDeleteFailed"));
     } finally {
       setDeleting(false);
     }
@@ -196,7 +196,7 @@ export function DataTable<T extends { id: string }>({
               onClick={downloadCSV}
               className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted cursor-pointer transition shadow-sm"
             >
-              📥 CSV İndir
+              📥 {t("downloadCsv")}
             </button>
           )}
 
@@ -205,7 +205,7 @@ export function DataTable<T extends { id: string }>({
               onClick={() => setShowColMenu(!showColMenu)}
               className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted cursor-pointer transition shadow-sm"
             >
-              👁️ Sütunlar
+              👁️ {t("columns")}
             </button>
             {showColMenu && (
               <>
@@ -248,7 +248,7 @@ export function DataTable<T extends { id: string }>({
             disabled={deleting}
             className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-60 transition cursor-pointer"
           >
-            {deleting ? "Siliniyor..." : "Seçilenleri Sil"}
+            {deleting ? t("deleting") : t("bulkDelete")}
           </button>
         </div>
       )}

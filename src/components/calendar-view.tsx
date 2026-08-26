@@ -282,7 +282,7 @@ export function CalendarView({
                   modalType === "task" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                ✅ Görev
+                {t("taskModalTitle")}
               </button>
               <button
                 type="button"
@@ -291,7 +291,7 @@ export function CalendarView({
                   modalType === "vaccination" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                💉 Aşı Planı
+                {t("vaccinationModalTitle")}
               </button>
             </div>
 

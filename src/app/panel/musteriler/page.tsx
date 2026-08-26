@@ -59,7 +59,7 @@ export default async function MusterilerPage({
         </div>
         {canEdit && (
           <Link href="/panel/musteriler/yeni" className={buttonVariants({ size: "sm" })}>
-            + Yeni Müşteri
+            + {t("new")}
           </Link>
         )}
       </div>

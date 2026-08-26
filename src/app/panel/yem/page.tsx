@@ -84,7 +84,7 @@ export default async function YemPage() {
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>{t("dailyConsumption")}</span>
                   <span className="font-semibold text-foreground">
-                    {dailyRate > 0 ? `${dailyRate.toFixed(1)} ${i.unit}/gün` : "-"}
+                    {dailyRate > 0 ? t("perDay", { rate: dailyRate.toFixed(1), unit: i.unit }) : "-"}
                   </span>
                 </div>
                 <div className="flex justify-between text-xs text-muted-foreground items-center">

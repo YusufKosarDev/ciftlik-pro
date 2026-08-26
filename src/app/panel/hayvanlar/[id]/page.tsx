@@ -17,6 +17,9 @@ import { DeleteButton } from "@/components/delete-button";
 import { milkStats, dailyMilkSeries } from "@/lib/milk-stats";
 import { weightStats, weightSeries } from "@/lib/weight-stats";
 
+// getTranslations'in dondurdugu cevirmenin sade tipi (yardimci fonksiyonlara gecer).
+type Translator = (key: string, values?: Record<string, string | number>) => string;
+
 const breedingStatusStyles: Record<string, string> = {
   PLANNED: "bg-muted text-foreground",
   PREGNANT: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400",
@@ -30,8 +33,9 @@ const statusStyles: Record<string, string> = {
   DECEASED: "bg-muted text-muted-foreground",
 };
 
-// Dogum tarihinden yasi hesaplar (yil/ay).
-function calcAge(birthDate: Date | null): string {
+// Dogum tarihinden yasi hesaplar (yil/ay). Metin cevirmenden gelir; bicim
+// ("2 yas 3 ay" / "2 yr 3 mo") katalogda tanimli.
+function calcAge(birthDate: Date | null, t: Translator): string {
   if (!birthDate) return "-";
   const now = new Date();
   const birth = new Date(birthDate);
@@ -42,30 +46,30 @@ function calcAge(birthDate: Date | null): string {
   if (months < 0) return "-";
   const years = Math.floor(months / 12);
   const remMonths = months % 12;
-  if (years === 0) return `${remMonths} ay`;
-  if (remMonths === 0) return `${years} yas`;
-  return `${years} yas ${remMonths} ay`;
+  if (years === 0) return t("ageMonths", { months: remMonths });
+  if (remMonths === 0) return t("ageYears", { years });
+  return t("ageYearsMonths", { years, months: remMonths });
 }
 
 // Sonraki asi tarihine gore uyari rozeti dondurur.
-function nextVaccineBadge(nextDate: Date | null): React.ReactNode {
+function nextVaccineBadge(nextDate: Date | null, t: Translator, locale: string): React.ReactNode {
   if (!nextDate) return "-";
   const next = new Date(nextDate);
   const now = new Date();
   const diffDays = Math.ceil((next.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-  const label = next.toLocaleDateString("tr-TR");
+  const label = formatDate(next, locale);
 
   if (diffDays < 0) {
     return (
       <span className="rounded bg-red-100 dark:bg-red-500/15 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-400">
-        {label} (gecti)
+        {t("vaccineOverdue", { date: label })}
       </span>
     );
   }
   if (diffDays <= 30) {
     return (
       <span className="rounded bg-yellow-100 dark:bg-yellow-500/15 px-2 py-0.5 text-xs font-medium text-yellow-700 dark:text-yellow-400">
-        {label} ({diffDays} gun kaldi)
+        {t("vaccineDaysLeft", { date: label, days: diffDays })}
       </span>
     );
   }
@@ -140,14 +144,14 @@ export default async function HayvanDetayPage({
           <h1 className="text-2xl font-bold text-foreground">
             {animal.name ?? animal.tagNumber}
           </h1>
-          <p className="text-sm text-muted-foreground">Kulak No: {animal.tagNumber}</p>
+          <p className="text-sm text-muted-foreground">{t("tagNumberInline", { tag: animal.tagNumber })}</p>
         </div>
         <div className="flex items-center gap-3">
           <Link
             href="/panel/hayvanlar"
             className="text-sm text-muted-foreground hover:underline"
           >
-            &larr; Listeye don
+            {tc("backToListArrow")}
           </Link>
           {canEditAnimal && (
             <Link
@@ -182,7 +186,7 @@ export default async function HayvanDetayPage({
         <Row label={t("breed")} value={animal.breed ?? "-"} />
         <Row label={t("gender")} value={genderLabels[animal.gender]} />
         <Row label={t("birthDate")} value={formatDate(animal.birthDate, locale)} />
-        <Row label={t("age")} value={calcAge(animal.birthDate)} />
+        <Row label={t("age")} value={calcAge(animal.birthDate, t)} />
         <Row
           label={t("status")}
           value={
@@ -258,7 +262,7 @@ export default async function HayvanDetayPage({
                   <tr key={v.id}>
                     <td className="px-4 py-2 font-medium text-foreground">{v.name}</td>
                     <td className="px-4 py-2 text-foreground">{formatDate(v.date, locale)}</td>
-                    <td className="px-4 py-2">{nextVaccineBadge(v.nextDate)}</td>
+                    <td className="px-4 py-2">{nextVaccineBadge(v.nextDate, t, locale)}</td>
                     <td className="px-4 py-2 text-foreground">{v.notes ?? "-"}</td>
                   </tr>
                 ))}
@@ -392,7 +396,7 @@ export default async function HayvanDetayPage({
                       <td className="px-4 py-2 text-right">
                         <DeleteButton
                           endpoint={`/api/weight/${w.id}`}
-                          itemLabel={`${formatDate(w.date, locale)} tartım`}
+                          itemLabel={t("weighingOn", { date: formatDate(w.date, locale) })}
                           kind={t("weightRecordKind")}
                         />
                       </td>
@@ -450,7 +454,7 @@ export default async function HayvanDetayPage({
                       <td className="px-4 py-2 text-right">
                         <DeleteButton
                           endpoint={`/api/breeding/${b.id}`}
-                          itemLabel={`${formatDate(b.breedingDate, locale)} üreme kaydı`}
+                          itemLabel={t("breedingOn", { date: formatDate(b.breedingDate, locale) })}
                           kind={t("breedingRecordKind")}
                         />
                       </td>

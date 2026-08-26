@@ -69,12 +69,16 @@ export async function POST(request: Request) {
     const acceptUrl = `${origin}/davet/${token}`;
 
     // E-posta yapilandirildiysa daveti gonder (best-effort; yoksa link UI'da gosterilir).
+    // Dil, daveti OLUSTURAN yoneticinin secimidir: davetlinin dilini bilmiyoruz,
+    // ama ayni ekipte calisacaklar. (Gunluk ozet e-postasi farkli: cron'un bir
+    // ziyaretci dili yoktur, o Turkce kalir.)
+    const ti = await getTranslations("Invite");
     await sendEmail(
       [email],
-      "Çiftlik Pro — ekibe davet edildiniz",
-      `<p>Bir çiftlik ekibine davet edildiniz. Katılmak için:</p>
+      ti("emailSubject"),
+      `<p>${ti("emailIntro")}</p>
        <p><a href="${acceptUrl}">${acceptUrl}</a></p>
-       <p>Bu bağlantı ${INVITE_TTL_DAYS} gün geçerlidir.</p>`
+       <p>${ti("emailExpiry", { days: INVITE_TTL_DAYS })}</p>`
     );
 
     await logAudit(authz.session.user, "CREATE", "Invitation", result.invitation.id, email);

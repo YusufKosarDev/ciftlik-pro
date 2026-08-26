@@ -34,7 +34,7 @@ export default async function EkimDuzenlePage({
           <p className="text-sm text-muted-foreground">{field.name}</p>
         </div>
         <Link href={`/panel/tarlalar/${id}`} className="text-sm text-muted-foreground hover:underline">
-          &larr; Tarlaya dön
+          {t("backToField")}
         </Link>
       </div>
 

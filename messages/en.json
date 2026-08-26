@@ -83,14 +83,25 @@
     "type": "Type",
     "description": "Description",
     "quantity": "Quantity",
-    "amount": "Amount"
+    "amount": "Amount",
+    "toLightTheme": "Switch to light theme",
+    "toDarkTheme": "Switch to dark theme",
+    "lightTheme": "Light theme",
+    "darkTheme": "Dark theme",
+    "backToListArrow": "← Back to list"
   },
   "Table": {
     "noMatch": "No records match “{q}”.",
     "noRecords": "No records found.",
     "records": "{count} record(s)",
     "prevPage": "Previous page",
-    "nextPage": "Next page"
+    "nextPage": "Next page",
+    "downloadCsv": "Download CSV",
+    "columns": "Columns",
+    "bulkDeleteConfirm": "Permanently delete the {count} selected record(s)?",
+    "bulkDeleteFailed": "Something went wrong while deleting the selection.",
+    "bulkDelete": "Delete selected",
+    "deleting": "Deleting..."
   },
   "Delete": {
     "trigger": "Delete",
@@ -271,7 +282,13 @@
     "father": "Sire",
     "calf": "Calf",
     "noBreeding": "No breeding records yet.",
-    "editTitle": "Edit animal"
+    "editTitle": "Edit animal",
+    "ageMonths": "{months} mo",
+    "ageYears": "{years} yr",
+    "ageYearsMonths": "{years} yr {months} mo",
+    "tagNumberInline": "Ear tag: {tag}",
+    "vaccineOverdue": "{date} (overdue)",
+    "vaccineDaysLeft": "{date} ({days} days left)"
   },
   "Fields": {
     "title": "Fields",
@@ -319,7 +336,8 @@
     "updated": "Crop record updated.",
     "submitAdd": "Add Crop Record",
     "submitUpdate": "Update",
-    "editTitle": "Edit planting record"
+    "editTitle": "Edit planting record",
+    "backToField": "← Back to the field"
   },
   "Inventory": {
     "title": "Stock & Inventory",
@@ -363,7 +381,8 @@
     "saved": "Consumption logged, stock updated.",
     "dailyConsumption": "Daily consumption:",
     "estimatedRunout": "Estimated to run out:",
-    "noData": "No data"
+    "noData": "No data",
+    "perDay": "{rate} {unit}/day"
   },
   "Finance": {
     "title": "Finance",
@@ -794,7 +813,10 @@
     "password": "Password",
     "joinCta": "Join and sign in",
     "joinFailed": "Could not join. Please try again.",
-    "kind": "Invitation"
+    "kind": "Invitation",
+    "emailSubject": "Çiftlik Pro — you have been invited to a team",
+    "emailIntro": "You have been invited to join a farm team. To accept:",
+    "emailExpiry": "This link is valid for {days} days."
   },
   "Breeding": {
     "breedingDate": "Insemination date *",

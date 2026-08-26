@@ -83,14 +83,25 @@
     "type": "Tür",
     "description": "Açıklama",
     "quantity": "Miktar",
-    "amount": "Tutar"
+    "amount": "Tutar",
+    "toLightTheme": "Açık temaya geç",
+    "toDarkTheme": "Koyu temaya geç",
+    "lightTheme": "Açık tema",
+    "darkTheme": "Koyu tema",
+    "backToListArrow": "← Listeye dön"
   },
   "Table": {
     "noMatch": "“{q}” ile eşleşen kayıt bulunamadı.",
     "noRecords": "Kayıt bulunamadı.",
     "records": "{count} kayıt",
     "prevPage": "Önceki sayfa",
-    "nextPage": "Sonraki sayfa"
+    "nextPage": "Sonraki sayfa",
+    "downloadCsv": "CSV İndir",
+    "columns": "Sütunlar",
+    "bulkDeleteConfirm": "Seçilen {count} kaydı kalıcı olarak silmek istediğinize emin misiniz?",
+    "bulkDeleteFailed": "Toplu silme işlemi sırasında bir hata oluştu.",
+    "bulkDelete": "Seçilenleri Sil",
+    "deleting": "Siliniyor..."
   },
   "Delete": {
     "trigger": "Sil",
@@ -271,7 +282,13 @@
     "father": "Baba",
     "calf": "Yavru",
     "noBreeding": "Henüz üreme kaydı yok.",
-    "editTitle": "Hayvanı Düzenle"
+    "editTitle": "Hayvanı Düzenle",
+    "ageMonths": "{months} ay",
+    "ageYears": "{years} yaş",
+    "ageYearsMonths": "{years} yaş {months} ay",
+    "tagNumberInline": "Kulak No: {tag}",
+    "vaccineOverdue": "{date} (geçti)",
+    "vaccineDaysLeft": "{date} ({days} gün kaldı)"
   },
   "Fields": {
     "title": "Tarlalar",
@@ -319,7 +336,8 @@
     "updated": "Ekim kaydı güncellendi.",
     "submitAdd": "Ekim Kaydı Ekle",
     "submitUpdate": "Güncelle",
-    "editTitle": "Ekim Kaydını Düzenle"
+    "editTitle": "Ekim Kaydını Düzenle",
+    "backToField": "← Tarlaya dön"
   },
   "Inventory": {
     "title": "Stok & Envanter",
@@ -363,7 +381,8 @@
     "saved": "Tüketim kaydedildi, stok güncellendi.",
     "dailyConsumption": "Günlük Tüketim:",
     "estimatedRunout": "Tahmini Tükenme:",
-    "noData": "Veri yok"
+    "noData": "Veri yok",
+    "perDay": "{rate} {unit}/gün"
   },
   "Finance": {
     "title": "Finans",
@@ -794,7 +813,10 @@
     "password": "Parola",
     "joinCta": "Katıl ve giriş yap",
     "joinFailed": "Katılım başarısız. Lütfen tekrar deneyin.",
-    "kind": "Davet"
+    "kind": "Davet",
+    "emailSubject": "Çiftlik Pro — ekibe davet edildiniz",
+    "emailIntro": "Bir çiftlik ekibine davet edildiniz. Katılmak için:",
+    "emailExpiry": "Bu bağlantı {days} gün geçerlidir."
   },
   "Breeding": {
     "breedingDate": "Tohumlama Tarihi *",

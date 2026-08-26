@@ -74,7 +74,7 @@ export default async function UrunlerPage({
         </div>
         {canEdit && (
           <Link href="/panel/urunler/yeni" className={buttonVariants({ size: "sm" })}>
-            + Yeni Ürün
+            + {t("new")}
           </Link>
         )}
       </div>
