@@ -500,10 +500,11 @@ model OrderItem {
 // Personel daveti (tenant-ici). ADMIN bir e-posta + rol icin davet olusturur;
 // davetli, token'li baglantiyla kendi adini/parolasini belirleyip katilir.
 //
-// NOT: Bu tablo RLS DISIDIR — kabul akisi (public) daveti token ile, oturum/tenant
-// baglami OLMADAN okur. Token tahmin edilemez bir sirdir; tenantId yalnizca
-// kabul edildiginde olusturulacak User'i dogru tenant'a baglamak ve ADMIN'in
-// kendi davetlerini listelemesi (app-katmani filtre) icindir.
+// RLS: Bu tablo da diger tenant tablolari gibi ENABLE + FORCE RLS altindadir
+// (20260826120000_invitation_rls). Kabul akisi (public) daveti token ile,
+// oturum/tenant baglami OLMADAN okumak zorunda oldugundan bu tek okuma
+// SECURITY DEFINER `invitation_by_token` fonksiyonuyla yapilir — login'deki
+// `auth_user_by_email` ile ayni desen. Token tahmin edilemez bir sirdir.
 model Invitation {
   id          String    @id @default(cuid())
   tenantId    String // Davet eden tenant
@@ -527,7 +528,7 @@ model Invitation {
 // demo verisi elle mudahale gerektirmeden, kendi kendini onararak guncel kalir.
 //
 // NOT: Bu tablo RLS DISIDIR — tenant'a ait degil, sistem geneli bir kayittir
-// (Tenant ve Invitation ile ayni kategori).
+// (Tenant ve RateLimit ile ayni kategori).
 model SeedState {
   key       String   @id // orn. "demoDataVersion"
   value     String
@@ -543,7 +544,7 @@ model SeedState {
 // UPSERT ile yapilir, boylece es zamanli istekler sayaci kacirmaz.
 //
 // NOT: Tenant'a ait degildir (giris/kayit tenant BILINMEDEN olur), bu yuzden
-// RLS disidir — Tenant, Invitation ve SeedState ile ayni kategori.
+// RLS disidir — Tenant ve SeedState ile ayni kategori.
 model RateLimit {
   key     String   @id // orn. "login:1.2.3.4:mail@x.com"
   count   Int
