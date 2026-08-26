@@ -457,7 +457,8 @@
     "soldItem": "Item",
     "nameTitle": "Name / Company",
     "nameRequired": "Name / Company *",
-    "editTitle": "Edit customer"
+    "editTitle": "Edit customer",
+    "totalCount": "{count} customers in total"
   },
   "Products": {
     "title": "Store Products",
@@ -503,7 +504,8 @@
     "itemLabel": "order",
     "kindLabel": "Order",
     "statusUpdated": "Status updated.",
-    "actionFailed": "Something went wrong."
+    "actionFailed": "Something went wrong.",
+    "totalCount": "{count} orders in total"
   },
   "Tasks": {
     "title": "Tasks",
@@ -548,7 +550,8 @@
     "passwordRequired": "Password *",
     "roleRequired": "Role *",
     "addCta": "Add staff",
-    "added": "Staff member added."
+    "added": "Staff member added.",
+    "totalCount": "{count} users in total"
   },
   "Audit": {
     "title": "Audit Log",
@@ -633,7 +636,8 @@
     "close": "close ✕",
     "dueDate": "Due date",
     "extraNotes": "Additional notes",
-    "quickAdd": "➕ Quick add ({date})"
+    "quickAdd": "➕ Quick add ({date})",
+    "cellAdd": "＋ Add"
   },
   "Profile": {
     "title": "Profile",

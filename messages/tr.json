@@ -457,7 +457,8 @@
     "soldItem": "Satılan",
     "nameTitle": "Ad / Unvan",
     "nameRequired": "Ad / Unvan *",
-    "editTitle": "Müşteriyi Düzenle"
+    "editTitle": "Müşteriyi Düzenle",
+    "totalCount": "Toplam {count} müşteri"
   },
   "Products": {
     "title": "Mağaza Ürünleri",
@@ -503,7 +504,8 @@
     "itemLabel": "sipariş",
     "kindLabel": "Sipariş",
     "statusUpdated": "Durum güncellendi.",
-    "actionFailed": "İşlem başarısız."
+    "actionFailed": "İşlem başarısız.",
+    "totalCount": "Toplam {count} sipariş"
   },
   "Tasks": {
     "title": "Görevler",
@@ -548,7 +550,8 @@
     "passwordRequired": "Parola *",
     "roleRequired": "Rol *",
     "addCta": "Personel Ekle",
-    "added": "Personel eklendi."
+    "added": "Personel eklendi.",
+    "totalCount": "Toplam {count} kullanıcı"
   },
   "Audit": {
     "title": "Denetim Günlüğü",
@@ -633,7 +636,8 @@
     "close": "kapat ✕",
     "dueDate": "Son Tarih",
     "extraNotes": "Ek Notlar",
-    "quickAdd": "➕ Hızlı Kayıt Ekle ({date})"
+    "quickAdd": "➕ Hızlı Kayıt Ekle ({date})",
+    "cellAdd": "＋ Ekle"
   },
   "Profile": {
     "title": "Profil",

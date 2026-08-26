@@ -55,7 +55,7 @@ export default async function MusterilerPage({
           <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
             <span>🧑‍🌾</span> {t("title")}
           </h1>
-          <p className="text-sm text-muted-foreground">Toplam {total} müşteri</p>
+          <p className="text-sm text-muted-foreground">{t("totalCount", { count: total })}</p>
         </div>
         {canEdit && (
           <Link href="/panel/musteriler/yeni" className={buttonVariants({ size: "sm" })}>

@@ -221,7 +221,7 @@ export function CalendarView({
               >
                 <div className="flex justify-between items-center mb-1">
                   {/* Hücre Hızlı Ekle İkonu */}
-                  <span className="text-[10px] text-green-600 font-bold opacity-0 group-hover:opacity-100 transition">＋ Ekle</span>
+                  <span className="text-[10px] text-green-600 font-bold opacity-0 group-hover:opacity-100 transition">{t("cellAdd")}</span>
                   <div
                     className={`text-xs ${
                       day.isToday

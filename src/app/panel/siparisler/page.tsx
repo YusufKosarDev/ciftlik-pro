@@ -53,7 +53,7 @@ export default async function SiparislerPage({
           <span>📋</span> {t("title")}
         </h1>
         <p className="text-sm text-muted-foreground">
-          Toplam {total} sipariş
+          {t("totalCount", { count: total })}
           {pendingCount > 0 && (
             <span className="ml-2 text-yellow-700 dark:text-yellow-400">
               · {pendingCount} bekliyor
