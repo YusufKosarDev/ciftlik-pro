@@ -544,7 +544,7 @@ async function buildDemoTenant(): Promise<void> {
 
 export type SeedDemoResult = {
   seeded: boolean;
-  reason: "reset" | "version-changed" | "empty" | "up-to-date";
+  reason: "reset" | "version-changed" | "empty" | "demo-account-missing" | "up-to-date";
   version: string;
 };
 
@@ -552,7 +552,8 @@ export type SeedDemoResult = {
  * Demo (vitrin) tenant'ini gerektiginde sifirlayip yeniden doldurur.
  *
  * - `reset: true`  -> kosulsuz sifirla ve yeniden kur (gecelik cron).
- * - `reset: false` -> yalnizca surum eskiyse veya tenant bossa kur (build/CLI).
+ * - `reset: false` -> surum eskiyse, tenant bossa VEYA demo hesabi kaybolmussa kur
+ *   (build/CLI).
  */
 export async function seedDemo(
   options: { reset?: boolean } = {}
@@ -571,12 +572,22 @@ export async function seedDemo(
   });
 
   const state = await prisma.seedState.findUnique({ where: { key: SEED_STATE_KEY } });
-  const animalCount = await seedTx((db) => db.animal.count());
+
+  // Kendi kendini onarma sondasi. "Hic hayvan var mi?" TEK BASINA yetmez:
+  // `npm run db:seed` ayni tenant'i paylasir, demo kullanicisini silip yerine
+  // kendi hayvanlarini yazar. O durumda hayvan sayisi > 0 oldugu ve surum de
+  // degismedigi icin demo hesabi (salt-okunur vitrin girisi) kalici olarak
+  // kaybolurdu. Bu yuzden vitrinin kendi isaretini de ariyoruz.
+  const probe = await seedTx(async (db) => ({
+    animals: await db.animal.count(),
+    demoAccounts: await db.user.count({ where: { email: DEMO_EMAIL } }),
+  }));
 
   let reason: SeedDemoResult["reason"];
   if (reset) reason = "reset";
   else if (state?.value !== DEMO_DATA_VERSION) reason = "version-changed";
-  else if (animalCount === 0) reason = "empty";
+  else if (probe.animals === 0) reason = "empty";
+  else if (probe.demoAccounts === 0) reason = "demo-account-missing";
   else {
     return { seeded: false, reason: "up-to-date", version: DEMO_DATA_VERSION };
   }

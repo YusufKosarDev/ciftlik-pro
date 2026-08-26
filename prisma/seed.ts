@@ -3,22 +3,33 @@ import { hashPassword } from "./password-hash.mjs";
 
 const prisma = new PrismaClient();
 
-async function main() {
-  // Mevcut veriyi temizle (yabanci anahtar sirasina dikkat: once cocuklar)
-  await prisma.healthRecord.deleteMany();
-  await prisma.vaccination.deleteMany();
-  await prisma.milkYield.deleteMany();
-  await prisma.crop.deleteMany();
-  await prisma.task.deleteMany();
-  await prisma.transaction.deleteMany();
-  await prisma.inventoryItem.deleteMany();
-  await prisma.animal.deleteMany();
-  await prisma.field.deleteMany();
-  await prisma.user.deleteMany();
+// Cok-kiracilik: tum seed verisi tek bir varsayilan tenant'a baglanir.
+// (Backfill migration ile ayni sabit id; src/lib/demo-data.ts ile AYNI tenant.)
+const TENANT_ID = "default-tenant";
 
-  // Cok-kiracilik: tum seed verisi tek bir varsayilan tenant'a baglanir.
-  // (Backfill migration ile ayni sabit id.)
-  const TENANT_ID = "default-tenant";
+async function main() {
+  // Mevcut veriyi temizle (yabanci anahtar sirasina dikkat: once cocuklar).
+  //
+  // YALNIZCA VARSAYILAN TENANT: bu betik sadece default-tenant'a yazar, bu yuzden
+  // silmesi de oraya kapsanir. Kapsamsiz `deleteMany()` gelistirme veritabaninda
+  // /kayit ile olusturulmus DIGER ciftliklerin kullanicilarini ve verisini de
+  // siliyordu (tenant satiri kalip icerigi gittigi icin yarim, bozuk kayitlar).
+  const scope = { tenantId: TENANT_ID };
+  await prisma.healthRecord.deleteMany({ where: scope });
+  await prisma.vaccination.deleteMany({ where: scope });
+  await prisma.milkYield.deleteMany({ where: scope });
+  await prisma.crop.deleteMany({ where: scope });
+  await prisma.task.deleteMany({ where: scope });
+  await prisma.transaction.deleteMany({ where: scope });
+  await prisma.inventoryItem.deleteMany({ where: scope });
+  await prisma.animal.deleteMany({ where: scope });
+  await prisma.field.deleteMany({ where: scope });
+  await prisma.user.deleteMany({ where: scope });
+
+  // NOT: Bu temizlik, ayni tenant'i paylasan vitrin (demo) hesabini da siler.
+  // seedDemo bunu kendi kendine fark edip yeniden kurar (src/lib/demo-data.ts,
+  // "demo-account-missing"), yani `npm run db:seed && npm run db:seed-demo`
+  // sirasi her veritabani durumunda dogru sonucu verir.
   // Demo/showcase tenant PRO'dur (sinirsiz); boylece ana demo limit'e takilmaz.
   // Yeni kayitlar (public signup) FREE baslar ve limitleri dogal gosterir.
   await prisma.tenant.upsert({
