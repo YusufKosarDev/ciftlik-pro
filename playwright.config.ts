@@ -17,6 +17,12 @@ export default defineConfig({
     baseURL: "http://localhost:3000",
     trace: "on-first-retry",
     navigationTimeout: 15000,
+    // Testler Turkce metin seciciler kullanir ("Giris Yap", "Hayvan Ekle"...).
+    // Uygulama, cookie yoksa dili Accept-Language'den secer; Chromium varsayilani
+    // en-US oldugundan bu sabitleme olmadan tum suite Ingilizceye duser ve
+    // seciciler kirilirdi. Dil kapsamini e2e degil, birim testleri dogrular
+    // (src/i18n/resolve-locale.test.ts).
+    locale: "tr-TR",
   },
   projects: [
     {
