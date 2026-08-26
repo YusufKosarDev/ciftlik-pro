@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { randomBytes } from "crypto";
 import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
@@ -12,6 +13,7 @@ const INVITE_TTL_DAYS = 7;
 // POST /api/invitations -> ADMIN tenant-ici personel daveti olusturur.
 // Davetli, donen token baglantisiyla (/davet/<token>) adini/parolasini belirler.
 export async function POST(request: Request) {
+  const te = await getTranslations("Errors");
   try {
     const authz = await authorizeWrite("users");
     if ("error" in authz) return authz.error;
@@ -20,7 +22,7 @@ export async function POST(request: Request) {
     const parsed = inviteSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Gecersiz veri", details: parsed.error.flatten().fieldErrors },
+        { error: te("invalidData"), details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
@@ -33,7 +35,7 @@ export async function POST(request: Request) {
     if (!limit.allowed) {
       return NextResponse.json(
         {
-          error: `FREE planda en fazla ${limit.limit} personel olabilir. Davet için PRO'ya yükseltin.`,
+          error: te("planLimitInvite", { limit: limit.limit }),
           code: "PLAN_LIMIT",
         },
         { status: 403 }
@@ -58,7 +60,7 @@ export async function POST(request: Request) {
 
     if ("conflict" in result) {
       return NextResponse.json(
-        { error: "Bu e-posta zaten ekibinizde kayitli" },
+        { error: te("emailAlreadyInTeam") },
         { status: 409 }
       );
     }
@@ -81,7 +83,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Davet olusturma hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }

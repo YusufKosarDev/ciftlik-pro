@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
@@ -8,6 +9,7 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const te = await getTranslations("Errors");
   try {
     const authz = await authorizeWrite("breeding");
     if ("error" in authz) return authz.error;
@@ -21,14 +23,14 @@ export async function DELETE(
     });
 
     if (!existing) {
-      return NextResponse.json({ error: "Kayit bulunamadi" }, { status: 404 });
+      return NextResponse.json({ error: te("recordNotFound") }, { status: 404 });
     }
     await logAudit(authz.session.user, "DELETE", "BreedingRecord", id, existing.sireTag ?? "üreme kaydı");
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Ureme kaydi silme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }

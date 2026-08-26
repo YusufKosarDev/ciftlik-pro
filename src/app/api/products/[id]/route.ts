@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
@@ -9,6 +10,7 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const te = await getTranslations("Errors");
   try {
     const authz = await authorizeWrite("products");
     if ("error" in authz) return authz.error;
@@ -18,7 +20,7 @@ export async function PUT(
     const parsed = productSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Gecersiz veri", details: parsed.error.flatten().fieldErrors },
+        { error: te("invalidData"), details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
@@ -40,7 +42,7 @@ export async function PUT(
     });
 
     if (!product) {
-      return NextResponse.json({ error: "Urun bulunamadi" }, { status: 404 });
+      return NextResponse.json({ error: te("productNotFound") }, { status: 404 });
     }
 
     await logAudit(authz.session.user, "UPDATE", "Product", product.id, product.name);
@@ -49,7 +51,7 @@ export async function PUT(
   } catch (error) {
     console.error("Urun guncelleme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }
@@ -61,6 +63,7 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const te = await getTranslations("Errors");
   try {
     const authz = await authorizeWrite("products");
     if ("error" in authz) return authz.error;
@@ -74,7 +77,7 @@ export async function DELETE(
     });
 
     if (!existing) {
-      return NextResponse.json({ error: "Urun bulunamadi" }, { status: 404 });
+      return NextResponse.json({ error: te("productNotFound") }, { status: 404 });
     }
     await logAudit(authz.session.user, "DELETE", "Product", id, existing.name);
 
@@ -82,7 +85,7 @@ export async function DELETE(
   } catch (error) {
     console.error("Urun silme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }

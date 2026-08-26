@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { withTenant } from "@/lib/tenant-prisma";
 import { auth } from "@/lib/auth";
 import { DEMO_EMAIL } from "@/lib/authz";
@@ -11,10 +12,11 @@ import { DEMO_EMAIL } from "@/lib/authz";
 // Demo hesabi salt-okunurdur: DB'ye yazilmaz ama yine de basarili donulur; boylece
 // demo ziyaretci her giriste turu yeniden gorur (vitrin amacli).
 export async function POST() {
+  const te = await getTranslations("Errors");
   try {
     const session = await auth();
     if (!session?.user) {
-      return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+      return NextResponse.json({ error: te("unauthorized") }, { status: 401 });
     }
 
     const isDemo = (session.user.email ?? "").toLowerCase() === DEMO_EMAIL;
@@ -31,7 +33,7 @@ export async function POST() {
   } catch (error) {
     console.error("Onboarding isaretleme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }
@@ -41,10 +43,11 @@ export async function POST() {
 // kullanici hos geldin turunu yeniden gorebilir. Demo hesabi zaten her zaman
 // turu gordugu icin DB'ye yazmaz; yine de basarili donulur.
 export async function DELETE() {
+  const te = await getTranslations("Errors");
   try {
     const session = await auth();
     if (!session?.user) {
-      return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+      return NextResponse.json({ error: te("unauthorized") }, { status: 401 });
     }
 
     const isDemo = (session.user.email ?? "").toLowerCase() === DEMO_EMAIL;
@@ -61,7 +64,7 @@ export async function DELETE() {
   } catch (error) {
     console.error("Onboarding sifirlama hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { withTenant } from "@/lib/tenant-prisma";
 import { auth } from "@/lib/auth";
 import { DEMO_EMAIL } from "@/lib/authz";
@@ -8,17 +9,18 @@ import { hashPassword, verifyPassword } from "@/lib/password-hash";
 
 // PUT /api/profile/password -> giris yapmis kullanicinin kendi parolasini degistirir.
 export async function PUT(request: Request) {
+  const te = await getTranslations("Errors");
   try {
     const session = await auth();
     if (!session?.user) {
-      return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+      return NextResponse.json({ error: te("unauthorized") }, { status: 401 });
     }
 
     // Demo hesabi salt-okunurdur; parolasini degistiremez. Aksi halde bir demo
     // ziyaretcisi parolayi degistirip diger ziyaretcileri demodan kilitleyebilir.
     if ((session.user.email ?? "").toLowerCase() === DEMO_EMAIL) {
       return NextResponse.json(
-        { error: "Demo hesabı salt-okunurdur; parola değiştirilemez." },
+        { error: te("demoReadOnlyPassword") },
         { status: 403 }
       );
     }
@@ -27,7 +29,7 @@ export async function PUT(request: Request) {
     const parsed = passwordChangeSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Gecersiz veri", details: parsed.error.flatten().fieldErrors },
+        { error: te("invalidData"), details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
@@ -37,13 +39,13 @@ export async function PUT(request: Request) {
       db.user.findFirst({ where: { id: session.user.id } })
     );
     if (!user) {
-      return NextResponse.json({ error: "Kullanici bulunamadi" }, { status: 404 });
+      return NextResponse.json({ error: te("userNotFound") }, { status: 404 });
     }
 
     const { currentPassword, newPassword } = parsed.data;
     const valid = await verifyPassword(currentPassword, user.password);
     if (!valid) {
-      return NextResponse.json({ error: "Mevcut parola hatali" }, { status: 400 });
+      return NextResponse.json({ error: te("currentPasswordWrong") }, { status: 400 });
     }
 
     const passwordHash = await hashPassword(newPassword);
@@ -60,7 +62,7 @@ export async function PUT(request: Request) {
   } catch (error) {
     console.error("Parola degistirme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }

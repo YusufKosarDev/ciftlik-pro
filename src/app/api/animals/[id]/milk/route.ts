@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
@@ -9,6 +10,7 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const te = await getTranslations("Errors");
   try {
     const authz = await authorizeWrite("milk");
     if ("error" in authz) return authz.error;
@@ -19,7 +21,7 @@ export async function POST(
     const parsed = milkYieldSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Gecersiz veri", details: parsed.error.flatten().fieldErrors },
+        { error: te("invalidData"), details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
@@ -40,7 +42,7 @@ export async function POST(
     });
 
     if (!yield_) {
-      return NextResponse.json({ error: "Hayvan bulunamadi" }, { status: 404 });
+      return NextResponse.json({ error: te("animalNotFound") }, { status: 404 });
     }
 
     await logAudit(authz.session.user, "CREATE", "MilkYield", yield_.id, `${yield_.amount} L`);
@@ -49,7 +51,7 @@ export async function POST(
   } catch (error) {
     console.error("Sut verimi ekleme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }

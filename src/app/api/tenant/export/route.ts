@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant-prisma";
@@ -6,12 +7,13 @@ import { withTenant } from "@/lib/tenant-prisma";
 // GET /api/tenant/export -> ADMIN, tenant'inin TUM verisini JSON olarak indirir
 // (KVKK/GDPR tasinabilirlik). Parolalar disarida birakilir.
 export async function GET() {
+  const te = await getTranslations("Errors");
   const session = await auth();
   if (!session?.user) {
-    return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+    return NextResponse.json({ error: te("unauthorized") }, { status: 401 });
   }
   if (session.user.role !== "ADMIN") {
-    return NextResponse.json({ error: "Yalnizca yonetici dışa aktarabilir" }, { status: 403 });
+    return NextResponse.json({ error: te("adminOnlyExport") }, { status: 403 });
   }
 
   const tenantId = session.user.tenantId;
@@ -20,7 +22,7 @@ export async function GET() {
     select: { name: true, slug: true, plan: true, createdAt: true },
   });
   if (!tenant) {
-    return NextResponse.json({ error: "Tenant bulunamadi" }, { status: 404 });
+    return NextResponse.json({ error: te("tenantNotFound") }, { status: 404 });
   }
 
   const data = await withTenant(tenantId, async (db) => {

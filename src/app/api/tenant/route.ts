@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant-prisma";
@@ -8,19 +9,20 @@ import { logAudit } from "@/lib/audit";
 // (hesap kapatma / KVKK silme hakki). Onay: govdedeki `confirm` ciftlik adina
 // birebir esit olmali. Demo ciftligi (default-tenant) korunur.
 export async function DELETE(request: Request) {
+  const te = await getTranslations("Errors");
   const session = await auth();
   if (!session?.user) {
-    return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+    return NextResponse.json({ error: te("unauthorized") }, { status: 401 });
   }
   if (session.user.role !== "ADMIN") {
-    return NextResponse.json({ error: "Yalnizca yonetici çiftliği silebilir" }, { status: 403 });
+    return NextResponse.json({ error: te("adminOnlyDeleteFarm") }, { status: 403 });
   }
 
   const tenantId = session.user.tenantId;
   // Vitrin/demo verisini korumak icin varsayilan tenant silinemez.
   if (tenantId === "default-tenant") {
     return NextResponse.json(
-      { error: "Demo çiftliği silinemez" },
+      { error: te("demoFarmProtected") },
       { status: 403 }
     );
   }
@@ -30,13 +32,13 @@ export async function DELETE(request: Request) {
     select: { name: true },
   });
   if (!tenant) {
-    return NextResponse.json({ error: "Tenant bulunamadi" }, { status: 404 });
+    return NextResponse.json({ error: te("tenantNotFound") }, { status: 404 });
   }
 
   const body = await request.json().catch(() => null);
   if (!body || body.confirm !== tenant.name) {
     return NextResponse.json(
-      { error: "Onay metni çiftlik adıyla eşleşmiyor" },
+      { error: te("confirmMismatch") },
       { status: 400 }
     );
   }

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { withTenant } from "@/lib/tenant-prisma";
 import { resolveStorefront } from "@/lib/storefront";
 import { orderSchema } from "@/lib/validations/order";
@@ -10,11 +11,12 @@ import { logAudit } from "@/lib/audit";
 // Kimlik gerektirmez; hiz siniri + dogrulama + urun aktiflik kontrolu uygulanir.
 // Siparis, slug ile cozumlenen tenant'a baglanir; fiyat/ad her kalem icin snapshot.
 export async function POST(request: Request) {
+  const te = await getTranslations("Errors");
   try {
     const rl = await rateLimit(`order:${clientIp(request)}`, 10, 5 * 60 * 1000);
     if (!rl.success) {
       return NextResponse.json(
-        { error: "Cok fazla istek. Lutfen biraz sonra tekrar deneyin." },
+        { error: te("rateLimited") },
         { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } }
       );
     }
@@ -23,7 +25,7 @@ export async function POST(request: Request) {
     const parsed = orderSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Gecersiz veri", details: parsed.error.flatten().fieldErrors },
+        { error: te("invalidData"), details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
@@ -33,7 +35,7 @@ export async function POST(request: Request) {
     // Slug -> tenant. Gecersiz slug = bilinmeyen magaza.
     const tenant = await resolveStorefront(data.slug);
     if (!tenant) {
-      return NextResponse.json({ error: "Magaza bulunamadi" }, { status: 404 });
+      return NextResponse.json({ error: te("storeNotFound") }, { status: 404 });
     }
 
     // Tum islemler bu tenant baglaminda: urun dogrulamasi + siparis olusturma.
@@ -45,7 +47,7 @@ export async function POST(request: Request) {
       });
       const byId = new Map(products.map((p) => [p.id, p]));
       if (data.items.some((i) => !byId.has(i.productId))) {
-        return { error: "Sepette satista olmayan bir urun var" } as const;
+        return { error: te("cartHasUnavailableProduct") } as const;
       }
 
       const itemsData = data.items.map((i) => {
@@ -124,7 +126,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Siparis olusturma hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }

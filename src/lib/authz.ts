@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import type { Role } from "@prisma/client";
 import { auth } from "@/lib/auth";
@@ -63,27 +64,23 @@ export function isDemoUser(email: string | null | undefined): boolean {
 //   if ("error" in authz) return authz.error;
 //   // authz.session.user kullanilabilir
 export async function authorizeWrite(module: WriteModule) {
-  const session = await auth();
+  // Bu uc mesaj ~35 yazma ucunun tamamini kapsar; dil kullanicinin secimine
+  // (cookie) ya da tarayici tercihine gore gelir.
+  const [session, te] = await Promise.all([auth(), getTranslations("Errors")]);
   if (!session?.user) {
     return {
-      error: NextResponse.json({ error: "Yetkisiz" }, { status: 401 }),
+      error: NextResponse.json({ error: te("unauthorized") }, { status: 401 }),
     } as const;
   }
   // Demo hesabi salt-okunurdur.
   if (isDemoUser(session.user.email)) {
     return {
-      error: NextResponse.json(
-        { error: "Demo hesabı salt-okunurdur; değişiklik yapılamaz." },
-        { status: 403 }
-      ),
+      error: NextResponse.json({ error: te("demoReadOnly") }, { status: 403 }),
     } as const;
   }
   if (!canWrite(session.user.role, module)) {
     return {
-      error: NextResponse.json(
-        { error: "Bu islem icin yetkiniz yok" },
-        { status: 403 }
-      ),
+      error: NextResponse.json({ error: te("forbidden") }, { status: 403 }),
     } as const;
   }
   return { session } as const;

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
@@ -9,6 +10,7 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const te = await getTranslations("Errors");
   try {
     const authz = await authorizeWrite("tasks");
     if ("error" in authz) return authz.error;
@@ -19,7 +21,7 @@ export async function PUT(
     const parsed = taskSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Gecersiz veri", details: parsed.error.flatten().fieldErrors },
+        { error: te("invalidData"), details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
@@ -41,7 +43,7 @@ export async function PUT(
     });
 
     if (!task) {
-      return NextResponse.json({ error: "Gorev bulunamadi" }, { status: 404 });
+      return NextResponse.json({ error: te("taskNotFound") }, { status: 404 });
     }
 
     await logAudit(authz.session.user, "UPDATE", "Task", task.id, task.title);
@@ -50,7 +52,7 @@ export async function PUT(
   } catch (error) {
     console.error("Gorev guncelleme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }
@@ -61,6 +63,7 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const te = await getTranslations("Errors");
   try {
     const authz = await authorizeWrite("tasks");
     if ("error" in authz) return authz.error;
@@ -74,14 +77,14 @@ export async function DELETE(
     });
 
     if (!existing) {
-      return NextResponse.json({ error: "Gorev bulunamadi" }, { status: 404 });
+      return NextResponse.json({ error: te("taskNotFound") }, { status: 404 });
     }
     await logAudit(authz.session.user, "DELETE", "Task", id, existing.title);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Gorev silme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
@@ -11,6 +12,7 @@ class InsufficientStockError extends Error {}
 // POST /api/feed -> yem tuketim kaydi olusturur ve stok miktarini dusurur.
 // Kayit olusturma + stok dusumu tek transaction'da yapilir.
 export async function POST(request: Request) {
+  const te = await getTranslations("Errors");
   try {
     const authz = await authorizeWrite("inventory");
     if ("error" in authz) return authz.error;
@@ -19,7 +21,7 @@ export async function POST(request: Request) {
     const parsed = feedSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Gecersiz veri", details: parsed.error.flatten().fieldErrors },
+        { error: te("invalidData"), details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
@@ -31,17 +33,17 @@ export async function POST(request: Request) {
       db.inventoryItem.findFirst({ where: { id: data.inventoryItemId } })
     );
     if (!item) {
-      return NextResponse.json({ error: "Yem kalemi bulunamadi" }, { status: 404 });
+      return NextResponse.json({ error: te("feedItemNotFound") }, { status: 404 });
     }
     if (item.category !== "FEED") {
       return NextResponse.json(
-        { error: "Yalnizca yem (FEED) kalemleri tuketilebilir" },
+        { error: te("onlyFeedItems") },
         { status: 400 }
       );
     }
     if (data.quantity > item.quantity) {
       return NextResponse.json(
-        { error: `Yetersiz stok: mevcut ${item.quantity} ${item.unit}` },
+        { error: te("insufficientStock", { quantity: item.quantity, unit: item.unit }) },
         { status: 400 }
       );
     }
@@ -79,7 +81,7 @@ export async function POST(request: Request) {
           })
         );
         return NextResponse.json(
-          { error: `Yetersiz stok: mevcut ${fresh?.quantity ?? 0} ${fresh?.unit ?? item.unit}` },
+          { error: te("insufficientStock", { quantity: fresh?.quantity ?? 0, unit: fresh?.unit ?? item.unit }) },
           { status: 400 }
         );
       }
@@ -92,7 +94,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Yem tuketim hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }

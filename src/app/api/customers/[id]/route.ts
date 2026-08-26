@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { withTenant } from "@/lib/tenant-prisma";
@@ -9,6 +10,7 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const te = await getTranslations("Errors");
   try {
     const authz = await authorizeWrite("customers");
     if ("error" in authz) return authz.error;
@@ -18,7 +20,7 @@ export async function PUT(
     const parsed = customerSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Gecersiz veri", details: parsed.error.flatten().fieldErrors },
+        { error: te("invalidData"), details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
@@ -38,7 +40,7 @@ export async function PUT(
       });
     });
     if (!customer) {
-      return NextResponse.json({ error: "Musteri bulunamadi" }, { status: 404 });
+      return NextResponse.json({ error: te("customerNotFound") }, { status: 404 });
     }
 
     await logAudit(authz.session.user, "UPDATE", "Customer", customer.id, customer.name);
@@ -47,7 +49,7 @@ export async function PUT(
   } catch (error) {
     console.error("Musteri guncelleme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }
@@ -59,6 +61,7 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const te = await getTranslations("Errors");
   try {
     const authz = await authorizeWrite("customers");
     if ("error" in authz) return authz.error;
@@ -71,7 +74,7 @@ export async function DELETE(
       return existing;
     });
     if (!deleted) {
-      return NextResponse.json({ error: "Musteri bulunamadi" }, { status: 404 });
+      return NextResponse.json({ error: te("customerNotFound") }, { status: 404 });
     }
 
     await logAudit(authz.session.user, "DELETE", "Customer", id, deleted.name);
@@ -80,7 +83,7 @@ export async function DELETE(
   } catch (error) {
     console.error("Musteri silme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { Prisma } from "@prisma/client";
 import { withTenant } from "@/lib/tenant-prisma";
 import { canAddRecord } from "@/lib/plan";
@@ -11,6 +12,7 @@ import { hashPassword } from "@/lib/password-hash";
 // POST /api/auth/register
 // Yeni kullanici kaydi olusturur (sadece ADMIN).
 export async function POST(request: Request) {
+  const te = await getTranslations("Errors");
   try {
     // 0) Sadece ADMIN yeni kullanici olusturabilir
     const authz = await authorizeWrite("users");
@@ -21,7 +23,7 @@ export async function POST(request: Request) {
     const rl = await rateLimit(`register:${clientIp(request)}`, 10, 5 * 60 * 1000);
     if (!rl.success) {
       return NextResponse.json(
-        { error: "Cok fazla istek. Lutfen biraz sonra tekrar deneyin." },
+        { error: te("rateLimited") },
         { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } }
       );
     }
@@ -32,7 +34,7 @@ export async function POST(request: Request) {
     const parsed = registerSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Gecersiz veri", details: parsed.error.flatten().fieldErrors },
+        { error: te("invalidData"), details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
@@ -45,7 +47,7 @@ export async function POST(request: Request) {
     if (!limit.allowed) {
       return NextResponse.json(
         {
-          error: `FREE planda en fazla ${limit.limit} personel ekleyebilirsiniz. Daha fazlası için PRO'ya yükseltin.`,
+          error: te("planLimitStaff", { limit: limit.limit }),
           code: "PLAN_LIMIT",
         },
         { status: 403 }
@@ -58,7 +60,7 @@ export async function POST(request: Request) {
     );
     if (existing) {
       return NextResponse.json(
-        { error: "Bu e-posta adresi zaten kayitli" },
+        { error: te("emailTaken") },
         { status: 409 }
       );
     }
@@ -81,7 +83,7 @@ export async function POST(request: Request) {
       // E-posta global benzersiz: baska bir tenant'ta zaten kayitliysa P2002.
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
         return NextResponse.json(
-          { error: "Bu e-posta adresi zaten kayitli" },
+          { error: te("emailTaken") },
           { status: 409 }
         );
       }
@@ -94,7 +96,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Kayit hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { authorizeWrite } from "@/lib/authz";
@@ -13,6 +14,7 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const te = await getTranslations("Errors");
   try {
     const authz = await authorizeWrite("orders");
     if ("error" in authz) return authz.error;
@@ -21,12 +23,12 @@ export async function PATCH(
     const body = await request.json();
     const parsed = statusSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ error: "Gecersiz durum" }, { status: 400 });
+      return NextResponse.json({ error: te("invalidStatus") }, { status: 400 });
     }
 
     const existing = await prisma.order.findUnique({ where: { id } });
     if (!existing) {
-      return NextResponse.json({ error: "Siparis bulunamadi" }, { status: 404 });
+      return NextResponse.json({ error: te("orderNotFound") }, { status: 404 });
     }
 
     const order = await prisma.order.update({
@@ -46,7 +48,7 @@ export async function PATCH(
   } catch (error) {
     console.error("Siparis guncelleme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }
@@ -57,6 +59,7 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const te = await getTranslations("Errors");
   try {
     const authz = await authorizeWrite("orders");
     if ("error" in authz) return authz.error;
@@ -64,7 +67,7 @@ export async function DELETE(
     const { id } = await params;
     const existing = await prisma.order.findUnique({ where: { id } });
     if (!existing) {
-      return NextResponse.json({ error: "Siparis bulunamadi" }, { status: 404 });
+      return NextResponse.json({ error: te("orderNotFound") }, { status: 404 });
     }
 
     await prisma.order.delete({ where: { id } });
@@ -74,7 +77,7 @@ export async function DELETE(
   } catch (error) {
     console.error("Siparis silme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }

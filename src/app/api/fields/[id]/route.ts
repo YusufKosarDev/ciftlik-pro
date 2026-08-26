@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
@@ -10,6 +11,7 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const te = await getTranslations("Errors");
   try {
     const authz = await authorizeWrite("fields");
     if ("error" in authz) return authz.error;
@@ -20,7 +22,7 @@ export async function PUT(
     const parsed = fieldSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Gecersiz veri", details: parsed.error.flatten().fieldErrors },
+        { error: te("invalidData"), details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
@@ -41,7 +43,7 @@ export async function PUT(
     });
 
     if (!field) {
-      return NextResponse.json({ error: "Tarla bulunamadi" }, { status: 404 });
+      return NextResponse.json({ error: te("fieldNotFound") }, { status: 404 });
     }
 
     await logAudit(authz.session.user, "UPDATE", "Field", field.id, field.name);
@@ -50,7 +52,7 @@ export async function PUT(
   } catch (error) {
     console.error("Tarla guncelleme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }
@@ -61,6 +63,7 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const te = await getTranslations("Errors");
   try {
     const authz = await authorizeWrite("fields");
     if ("error" in authz) return authz.error;
@@ -74,14 +77,14 @@ export async function DELETE(
     });
 
     if (!existing) {
-      return NextResponse.json({ error: "Tarla bulunamadi" }, { status: 404 });
+      return NextResponse.json({ error: te("fieldNotFound") }, { status: 404 });
     }
     await logAudit(authz.session.user, "DELETE", "Field", id, existing.name);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Tarla silme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }
@@ -92,6 +95,7 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const te = await getTranslations("Errors");
   try {
     const authz = await authorizeWrite("fields");
     if ("error" in authz) return authz.error;
@@ -102,7 +106,7 @@ export async function PATCH(
     const parsed = positionSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Gecersiz konum", details: parsed.error.flatten().fieldErrors },
+        { error: te("invalidPosition"), details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
@@ -117,14 +121,14 @@ export async function PATCH(
     });
 
     if (!field) {
-      return NextResponse.json({ error: "Tarla bulunamadi" }, { status: 404 });
+      return NextResponse.json({ error: te("fieldNotFound") }, { status: 404 });
     }
 
     return NextResponse.json({ field });
   } catch (error) {
     console.error("Tarla konum guncelleme hatasi:", error);
     return NextResponse.json(
-      { error: "Sunucu hatasi, lutfen tekrar deneyin" },
+      { error: te("serverErrorRetry") },
       { status: 500 }
     );
   }
