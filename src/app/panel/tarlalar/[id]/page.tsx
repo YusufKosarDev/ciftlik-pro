@@ -1,27 +1,20 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getLocale, getTranslations } from "next-intl/server";
 import { withTenant } from "@/lib/tenant-prisma";
 import { auth } from "@/lib/auth";
 import { canWrite } from "@/lib/authz";
-import { cropStatusLabels } from "@/lib/labels";
+import { getLabels } from "@/lib/get-labels";
+import { formatDate, formatMoney } from "@/lib/format";
 import { CropForm } from "@/components/crop-form";
 import { DeleteButton } from "@/components/delete-button";
 import { fieldEconomics } from "@/lib/field-economics";
-
-function formatMoney(amount: number): string {
-  return amount.toLocaleString("tr-TR", { minimumFractionDigits: 2 }) + " TL";
-}
 
 const cropStatusStyles: Record<string, string> = {
   PLANTED: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400",
   GROWING: "bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400",
   HARVESTED: "bg-muted text-muted-foreground",
 };
-
-function formatDate(date: Date | null): string {
-  if (!date) return "-";
-  return new Date(date).toLocaleDateString("tr-TR");
-}
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -38,7 +31,13 @@ export default async function TarlaDetayPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const session = await auth();
+  const [session, t, tc, locale, { cropStatusLabels }] = await Promise.all([
+    auth(),
+    getTranslations("Fields"),
+    getTranslations("Common"),
+    getLocale(),
+    getLabels(),
+  ]);
   const field = await withTenant(session!.user.tenantId, (db) =>
     db.field.findFirst({
       where: { id },
@@ -72,38 +71,38 @@ export default async function TarlaDetayPage({
               href={`/panel/tarlalar/${field.id}/duzenle`}
               className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700"
             >
-              Duzenle
+              {tc("edit")}
             </Link>
           )}
         </div>
       </div>
 
       <div className="rounded-xl border border-border bg-card p-6">
-        <Row label="Tarla Adi" value={field.name} />
-        <Row label="Alan" value={`${field.area} donum`} />
-        <Row label="Konum" value={field.location ?? "-"} />
-        <Row label="Notlar" value={field.notes ?? "-"} />
+        <Row label={t("fieldName")} value={field.name} />
+        <Row label={t("areaShort")} value={t("areaValue", { area: field.area })} />
+        <Row label={t("location")} value={field.location ?? "-"} />
+        <Row label={tc("notes")} value={field.notes ?? "-"} />
       </div>
 
       {/* Ekonomik ozet */}
       {field.crops.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-xl border border-border bg-card p-4">
-            <p className="text-xs text-muted-foreground">Toplam Gider</p>
-            <p className="mt-1 text-lg font-bold text-red-600">{formatMoney(eco.totalCost)}</p>
+            <p className="text-xs text-muted-foreground">{t("totalExpense")}</p>
+            <p className="mt-1 text-lg font-bold text-red-600">{formatMoney(eco.totalCost, locale)}</p>
           </div>
           <div className="rounded-xl border border-border bg-card p-4">
-            <p className="text-xs text-muted-foreground">Toplam Gelir</p>
-            <p className="mt-1 text-lg font-bold text-green-600">{formatMoney(eco.totalRevenue)}</p>
+            <p className="text-xs text-muted-foreground">{t("totalIncome")}</p>
+            <p className="mt-1 text-lg font-bold text-green-600">{formatMoney(eco.totalRevenue, locale)}</p>
           </div>
           <div className="rounded-xl border border-border bg-card p-4">
-            <p className="text-xs text-muted-foreground">Net Kâr</p>
+            <p className="text-xs text-muted-foreground">{t("netProfit")}</p>
             <p className={`mt-1 text-lg font-bold ${eco.profit >= 0 ? "text-green-600" : "text-red-600"}`}>
-              {formatMoney(eco.profit)}
+              {formatMoney(eco.profit, locale)}
             </p>
           </div>
           <div className="rounded-xl border border-border bg-card p-4">
-            <p className="text-xs text-muted-foreground">Dönüm Başına Verim</p>
+            <p className="text-xs text-muted-foreground">{t("yieldPerDecare")}</p>
             <p className="mt-1 text-lg font-bold text-foreground">
               {eco.yieldPerDonum !== null ? `${eco.yieldPerDonum.toFixed(1)} kg` : "-"}
             </p>
@@ -113,25 +112,25 @@ export default async function TarlaDetayPage({
 
       {/* Ekim Kayitlari */}
       <section className="space-y-4">
-        <h2 className="text-lg font-bold text-foreground">Ekim Kayitlari</h2>
+        <h2 className="text-lg font-bold text-foreground">{t("cropRecords")}</h2>
 
         {canEdit && <CropForm fieldId={field.id} />}
 
         {field.crops.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Henuz ekim kaydi yok.</p>
+          <p className="text-sm text-muted-foreground">{t("noCrops")}</p>
         ) : (
           <div className="overflow-hidden rounded-xl border border-border bg-card">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-border bg-muted text-muted-foreground">
                 <tr>
-                  <th className="px-4 py-2 font-medium">Ürün</th>
-                  <th className="px-4 py-2 font-medium">Ekim</th>
-                  <th className="px-4 py-2 font-medium">Hasat</th>
-                  <th className="px-4 py-2 font-medium">Durum</th>
-                  <th className="px-4 py-2 text-right font-medium">Gider</th>
-                  <th className="px-4 py-2 text-right font-medium">Gelir</th>
+                  <th className="px-4 py-2 font-medium">{t("crop")}</th>
+                  <th className="px-4 py-2 font-medium">{t("planted")}</th>
+                  <th className="px-4 py-2 font-medium">{t("harvest")}</th>
+                  <th className="px-4 py-2 font-medium">{tc("status")}</th>
+                  <th className="px-4 py-2 text-right font-medium">{t("expense")}</th>
+                  <th className="px-4 py-2 text-right font-medium">{t("income")}</th>
                   <th className="px-4 py-2 text-right font-medium">Kâr</th>
-                  {canEdit && <th className="px-4 py-2 text-right font-medium">İşlem</th>}
+                  {canEdit && <th className="px-4 py-2 text-right font-medium">{tc("action")}</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -142,10 +141,10 @@ export default async function TarlaDetayPage({
                   <tr key={crop.id}>
                     <td className="px-4 py-2 font-medium text-foreground">{crop.name}</td>
                     <td className="px-4 py-2 text-foreground">
-                      {formatDate(crop.plantedDate)}
+                      {formatDate(crop.plantedDate, locale)}
                     </td>
                     <td className="px-4 py-2 text-foreground">
-                      {formatDate(crop.harvestDate)}
+                      {formatDate(crop.harvestDate, locale)}
                     </td>
                     <td className="px-4 py-2">
                       <span
@@ -157,17 +156,17 @@ export default async function TarlaDetayPage({
                       </span>
                     </td>
                     <td className="px-4 py-2 text-right text-foreground">
-                      {crop.cost !== null ? formatMoney(crop.cost) : "-"}
+                      {crop.cost !== null ? formatMoney(crop.cost, locale) : "-"}
                     </td>
                     <td className="px-4 py-2 text-right text-foreground">
-                      {crop.revenue !== null ? formatMoney(crop.revenue) : "-"}
+                      {crop.revenue !== null ? formatMoney(crop.revenue, locale) : "-"}
                     </td>
                     <td
                       className={`px-4 py-2 text-right font-medium ${
                         !hasEco ? "text-muted-foreground" : profit >= 0 ? "text-green-600" : "text-red-600"
                       }`}
                     >
-                      {hasEco ? formatMoney(profit) : "-"}
+                      {hasEco ? formatMoney(profit, locale) : "-"}
                     </td>
                     {canEdit && (
                       <td className="px-4 py-2 text-right">
@@ -176,12 +175,12 @@ export default async function TarlaDetayPage({
                             href={`/panel/tarlalar/${field.id}/ekim/${crop.id}/duzenle`}
                             className="text-sm font-medium text-green-600 dark:text-green-400 hover:underline"
                           >
-                            Düzenle
+                            {tc("edit")}
                           </Link>
                           <DeleteButton
                             endpoint={`/api/fields/${field.id}/crops/${crop.id}`}
                             itemLabel={crop.name}
-                            kind="Ekim kaydı"
+                            kind={t("cropRecordKind")}
                           />
                         </div>
                       </td>

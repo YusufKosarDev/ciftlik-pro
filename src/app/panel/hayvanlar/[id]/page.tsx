@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getLocale, getTranslations } from "next-intl/server";
 import { withTenant } from "@/lib/tenant-prisma";
 import { auth } from "@/lib/auth";
 import { canWrite } from "@/lib/authz";
-import { speciesLabels, genderLabels, statusLabels, breedingStatusLabels } from "@/lib/labels";
+import { getLabels } from "@/lib/get-labels";
+import { formatDate } from "@/lib/format";
 import { HealthRecordForm } from "@/components/health-record-form";
 import { VaccinationForm } from "@/components/vaccination-form";
 import { MilkYieldForm } from "@/components/milk-yield-form";
@@ -27,12 +29,6 @@ const statusStyles: Record<string, string> = {
   SOLD: "bg-yellow-100 text-yellow-700 dark:bg-yellow-500/15 dark:text-yellow-400",
   DECEASED: "bg-muted text-muted-foreground",
 };
-
-// Tarihi "10.04.2023" gibi gosterir.
-function formatDate(date: Date | null): string {
-  if (!date) return "-";
-  return new Date(date).toLocaleDateString("tr-TR");
-}
 
 // Dogum tarihinden yasi hesaplar (yil/ay).
 function calcAge(birthDate: Date | null): string {
@@ -91,7 +87,14 @@ export default async function HayvanDetayPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const session = await auth();
+  const [session, t, tc, locale, { speciesLabels, genderLabels, statusLabels, breedingStatusLabels }] =
+    await Promise.all([
+      auth(),
+      getTranslations("Animals"),
+      getTranslations("Common"),
+      getLocale(),
+      getLabels(),
+    ]);
   const animal = await withTenant(session!.user.tenantId, (db) =>
     db.animal.findFirst({
       where: { id },
@@ -151,7 +154,7 @@ export default async function HayvanDetayPage({
               href={`/panel/hayvanlar/${animal.id}/duzenle`}
               className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700"
             >
-              Duzenle
+              {tc("edit")}
             </Link>
           )}
         </div>
@@ -173,15 +176,15 @@ export default async function HayvanDetayPage({
       )}
 
       <div className="rounded-xl border border-border bg-card p-6">
-        <Row label="Kulak No" value={animal.tagNumber} />
-        <Row label="Ad" value={animal.name ?? "-"} />
-        <Row label="Tur" value={speciesLabels[animal.species]} />
-        <Row label="Cins / Irk" value={animal.breed ?? "-"} />
-        <Row label="Cinsiyet" value={genderLabels[animal.gender]} />
-        <Row label="Dogum Tarihi" value={formatDate(animal.birthDate)} />
-        <Row label="Yas" value={calcAge(animal.birthDate)} />
+        <Row label={t("tagNumber")} value={animal.tagNumber} />
+        <Row label={t("name")} value={animal.name ?? "-"} />
+        <Row label={t("species")} value={speciesLabels[animal.species]} />
+        <Row label={t("breed")} value={animal.breed ?? "-"} />
+        <Row label={t("gender")} value={genderLabels[animal.gender]} />
+        <Row label={t("birthDate")} value={formatDate(animal.birthDate, locale)} />
+        <Row label={t("age")} value={calcAge(animal.birthDate)} />
         <Row
-          label="Durum"
+          label={t("status")}
           value={
             <span
               className={`rounded px-2 py-0.5 text-xs font-medium ${
@@ -192,32 +195,32 @@ export default async function HayvanDetayPage({
             </span>
           }
         />
-        <Row label="Notlar" value={animal.notes ?? "-"} />
+        <Row label={t("notes")} value={animal.notes ?? "-"} />
       </div>
 
       {/* Saglik Kayitlari */}
       <section className="space-y-4">
-        <h2 className="text-lg font-bold text-foreground">Saglik Kayitlari</h2>
+        <h2 className="text-lg font-bold text-foreground">{t("healthRecords")}</h2>
 
         {canMedical && <HealthRecordForm animalId={animal.id} />}
 
         {animal.healthRecords.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Henuz saglik kaydi yok.</p>
+          <p className="text-sm text-muted-foreground">{t("noHealthRecords")}</p>
         ) : (
           <div className="overflow-hidden rounded-xl border border-border bg-card">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-border bg-muted text-muted-foreground">
                 <tr>
-                  <th className="px-4 py-2 font-medium">Tarih</th>
-                  <th className="px-4 py-2 font-medium">Teshis</th>
-                  <th className="px-4 py-2 font-medium">Tedavi</th>
-                  <th className="px-4 py-2 font-medium">Not</th>
+                  <th className="px-4 py-2 font-medium">{tc("date")}</th>
+                  <th className="px-4 py-2 font-medium">{t("diagnosis")}</th>
+                  <th className="px-4 py-2 font-medium">{t("treatment")}</th>
+                  <th className="px-4 py-2 font-medium">{tc("note")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {animal.healthRecords.map((r) => (
                   <tr key={r.id}>
-                    <td className="px-4 py-2 text-foreground">{formatDate(r.date)}</td>
+                    <td className="px-4 py-2 text-foreground">{formatDate(r.date, locale)}</td>
                     <td className="px-4 py-2 font-medium text-foreground">
                       {r.diagnosis}
                     </td>
@@ -233,28 +236,28 @@ export default async function HayvanDetayPage({
 
       {/* Asi Takvimi */}
       <section className="space-y-4">
-        <h2 className="text-lg font-bold text-foreground">Asi Takvimi</h2>
+        <h2 className="text-lg font-bold text-foreground">{t("vaccinationSchedule")}</h2>
 
         {canMedical && <VaccinationForm animalId={animal.id} />}
 
         {animal.vaccinations.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Henuz asi kaydi yok.</p>
+          <p className="text-sm text-muted-foreground">{t("noVaccinations")}</p>
         ) : (
           <div className="overflow-hidden rounded-xl border border-border bg-card">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-border bg-muted text-muted-foreground">
                 <tr>
-                  <th className="px-4 py-2 font-medium">Asi</th>
-                  <th className="px-4 py-2 font-medium">Yapilis</th>
-                  <th className="px-4 py-2 font-medium">Sonraki</th>
-                  <th className="px-4 py-2 font-medium">Not</th>
+                  <th className="px-4 py-2 font-medium">{t("vaccine")}</th>
+                  <th className="px-4 py-2 font-medium">{t("givenOn")}</th>
+                  <th className="px-4 py-2 font-medium">{t("nextDate")}</th>
+                  <th className="px-4 py-2 font-medium">{tc("note")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {animal.vaccinations.map((v) => (
                   <tr key={v.id}>
                     <td className="px-4 py-2 font-medium text-foreground">{v.name}</td>
-                    <td className="px-4 py-2 text-foreground">{formatDate(v.date)}</td>
+                    <td className="px-4 py-2 text-foreground">{formatDate(v.date, locale)}</td>
                     <td className="px-4 py-2">{nextVaccineBadge(v.nextDate)}</td>
                     <td className="px-4 py-2 text-foreground">{v.notes ?? "-"}</td>
                   </tr>
@@ -267,25 +270,25 @@ export default async function HayvanDetayPage({
 
       {/* Sut Verimi */}
       <section className="space-y-4">
-        <h2 className="text-lg font-bold text-foreground">Sut Verimi</h2>
+        <h2 className="text-lg font-bold text-foreground">{t("milkYield")}</h2>
 
         {animal.milkYields.length > 0 && (
           <>
             <div className="flex flex-wrap gap-4">
               <div className="rounded-xl border border-border bg-card px-5 py-3">
-                <p className="text-xs text-muted-foreground">Toplam</p>
+                <p className="text-xs text-muted-foreground">{tc("total")}</p>
                 <p className="text-lg font-bold text-foreground">
                   {stats.total.toFixed(1)} L
                 </p>
               </div>
               <div className="rounded-xl border border-border bg-card px-5 py-3">
-                <p className="text-xs text-muted-foreground">Kayit basina ortalama</p>
+                <p className="text-xs text-muted-foreground">{t("avgPerRecord")}</p>
                 <p className="text-lg font-bold text-foreground">
                   {stats.average.toFixed(1)} L
                 </p>
               </div>
               <div className="rounded-xl border border-border bg-card px-5 py-3">
-                <p className="text-xs text-muted-foreground">Son 7 gun ortalama</p>
+                <p className="text-xs text-muted-foreground">{t("avgLast7")}</p>
                 <p className="text-lg font-bold text-foreground">
                   {stats.last7Average.toFixed(1)} L/gun
                 </p>
@@ -299,21 +302,21 @@ export default async function HayvanDetayPage({
         {canMilk && <MilkYieldForm animalId={animal.id} />}
 
         {animal.milkYields.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Henuz sut verimi kaydi yok.</p>
+          <p className="text-sm text-muted-foreground">{t("noMilk")}</p>
         ) : (
           <div className="overflow-hidden rounded-xl border border-border bg-card">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-border bg-muted text-muted-foreground">
                 <tr>
-                  <th className="px-4 py-2 font-medium">Tarih</th>
-                  <th className="px-4 py-2 font-medium">Miktar (L)</th>
-                  <th className="px-4 py-2 font-medium">Not</th>
+                  <th className="px-4 py-2 font-medium">{tc("date")}</th>
+                  <th className="px-4 py-2 font-medium">{t("milkAmount")}</th>
+                  <th className="px-4 py-2 font-medium">{tc("note")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {animal.milkYields.map((m) => (
                   <tr key={m.id}>
-                    <td className="px-4 py-2 text-foreground">{formatDate(m.date)}</td>
+                    <td className="px-4 py-2 text-foreground">{formatDate(m.date, locale)}</td>
                     <td className="px-4 py-2 font-medium text-foreground">
                       {m.amount.toFixed(1)}
                     </td>
@@ -328,25 +331,25 @@ export default async function HayvanDetayPage({
 
       {/* Agirlik Takibi */}
       <section className="space-y-4">
-        <h2 className="text-lg font-bold text-foreground">Ağırlık Takibi</h2>
+        <h2 className="text-lg font-bold text-foreground">{t("weightTracking")}</h2>
 
         {animal.weightRecords.length > 0 && (
           <>
             <div className="flex flex-wrap gap-4">
               <div className="rounded-xl border border-border bg-card px-5 py-3">
-                <p className="text-xs text-muted-foreground">Son tartım</p>
+                <p className="text-xs text-muted-foreground">{t("lastWeighing")}</p>
                 <p className="text-lg font-bold text-foreground">
                   {wStats.latest?.toFixed(1)} kg
                 </p>
               </div>
               <div className="rounded-xl border border-border bg-card px-5 py-3">
-                <p className="text-xs text-muted-foreground">İlk tartım</p>
+                <p className="text-xs text-muted-foreground">{t("firstWeighing")}</p>
                 <p className="text-lg font-bold text-foreground">
                   {wStats.first?.toFixed(1)} kg
                 </p>
               </div>
               <div className="rounded-xl border border-border bg-card px-5 py-3">
-                <p className="text-xs text-muted-foreground">Değişim</p>
+                <p className="text-xs text-muted-foreground">{t("weightChange")}</p>
                 <p
                   className={`text-lg font-bold ${
                     (wStats.change ?? 0) >= 0 ? "text-green-600" : "text-red-600"
@@ -365,22 +368,22 @@ export default async function HayvanDetayPage({
         {canWeight && <WeightForm animalId={animal.id} />}
 
         {animal.weightRecords.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Henuz agirlik kaydi yok.</p>
+          <p className="text-sm text-muted-foreground">{t("noWeight")}</p>
         ) : (
           <div className="overflow-hidden rounded-xl border border-border bg-card">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-border bg-muted text-muted-foreground">
                 <tr>
-                  <th className="px-4 py-2 font-medium">Tarih</th>
-                  <th className="px-4 py-2 font-medium">Ağırlık (kg)</th>
-                  <th className="px-4 py-2 font-medium">Not</th>
-                  {canWeight && <th className="px-4 py-2 text-right font-medium">İşlem</th>}
+                  <th className="px-4 py-2 font-medium">{tc("date")}</th>
+                  <th className="px-4 py-2 font-medium">{t("weightKg")}</th>
+                  <th className="px-4 py-2 font-medium">{tc("note")}</th>
+                  {canWeight && <th className="px-4 py-2 text-right font-medium">{tc("action")}</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {animal.weightRecords.map((w) => (
                   <tr key={w.id}>
-                    <td className="px-4 py-2 text-foreground">{formatDate(w.date)}</td>
+                    <td className="px-4 py-2 text-foreground">{formatDate(w.date, locale)}</td>
                     <td className="px-4 py-2 font-medium text-foreground">
                       {w.weightKg.toFixed(1)}
                     </td>
@@ -389,8 +392,8 @@ export default async function HayvanDetayPage({
                       <td className="px-4 py-2 text-right">
                         <DeleteButton
                           endpoint={`/api/weight/${w.id}`}
-                          itemLabel={`${formatDate(w.date)} tartım`}
-                          kind="Ağırlık kaydı"
+                          itemLabel={`${formatDate(w.date, locale)} tartım`}
+                          kind={t("weightRecordKind")}
                         />
                       </td>
                     )}
@@ -404,32 +407,32 @@ export default async function HayvanDetayPage({
 
       {/* Ureme Kayitlari */}
       <section className="space-y-4">
-        <h2 className="text-lg font-bold text-foreground">Üreme Kayıtları</h2>
+        <h2 className="text-lg font-bold text-foreground">{t("breedingRecords")}</h2>
 
         {canBreeding && <BreedingForm animalId={animal.id} />}
 
         {animal.breedingRecords.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Henuz ureme kaydi yok.</p>
+          <p className="text-sm text-muted-foreground">{t("noBreeding")}</p>
         ) : (
           <div className="overflow-hidden rounded-xl border border-border bg-card">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-border bg-muted text-muted-foreground">
                 <tr>
-                  <th className="px-4 py-2 font-medium">Tohumlama</th>
-                  <th className="px-4 py-2 font-medium">Baba</th>
-                  <th className="px-4 py-2 font-medium">Tahmini Doğum</th>
-                  <th className="px-4 py-2 font-medium">Durum</th>
-                  <th className="px-4 py-2 font-medium">Yavru</th>
-                  {canBreeding && <th className="px-4 py-2 text-right font-medium">İşlem</th>}
+                  <th className="px-4 py-2 font-medium">{t("insemination")}</th>
+                  <th className="px-4 py-2 font-medium">{t("father")}</th>
+                  <th className="px-4 py-2 font-medium">{t("expectedBirth")}</th>
+                  <th className="px-4 py-2 font-medium">{tc("status")}</th>
+                  <th className="px-4 py-2 font-medium">{t("calf")}</th>
+                  {canBreeding && <th className="px-4 py-2 text-right font-medium">{tc("action")}</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {animal.breedingRecords.map((b) => (
                   <tr key={b.id}>
-                    <td className="px-4 py-2 text-foreground">{formatDate(b.breedingDate)}</td>
+                    <td className="px-4 py-2 text-foreground">{formatDate(b.breedingDate, locale)}</td>
                     <td className="px-4 py-2 text-foreground">{b.sireTag ?? "-"}</td>
                     <td className="px-4 py-2 text-foreground">
-                      {formatDate(b.expectedBirthDate)}
+                      {formatDate(b.expectedBirthDate, locale)}
                     </td>
                     <td className="px-4 py-2">
                       <span
@@ -447,8 +450,8 @@ export default async function HayvanDetayPage({
                       <td className="px-4 py-2 text-right">
                         <DeleteButton
                           endpoint={`/api/breeding/${b.id}`}
-                          itemLabel={`${formatDate(b.breedingDate)} üreme kaydı`}
-                          kind="Üreme kaydı"
+                          itemLabel={`${formatDate(b.breedingDate, locale)} üreme kaydı`}
+                          kind={t("breedingRecordKind")}
                         />
                       </td>
                     )}
@@ -462,10 +465,10 @@ export default async function HayvanDetayPage({
 
       {/* Soy (Pedigri) */}
       <section className="space-y-4">
-        <h2 className="text-lg font-bold text-foreground">Soy</h2>
+        <h2 className="text-lg font-bold text-foreground">{t("lineage")}</h2>
         <div className="rounded-xl border border-border bg-card p-6">
           <Row
-            label="Anne"
+            label={t("mother")}
             value={
               animal.mother ? (
                 <Link
@@ -480,7 +483,7 @@ export default async function HayvanDetayPage({
             }
           />
           <Row
-            label="Yavrular"
+            label={t("offspring")}
             value={
               animal.offspring.length === 0 ? (
                 "-"
