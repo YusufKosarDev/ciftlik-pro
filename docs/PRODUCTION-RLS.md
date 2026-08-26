@@ -73,29 +73,36 @@ APP_USER_DATABASE_URL="postgresql://ciftlik_app:…@HOST:PORT/DB?schema=public" 
 npx vitest run src/lib/tenant-rls.int.test.ts
 ```
 
-## Giriş (login) ve RLS
+## Bağlamsız okumalar: giriş (login) ve davet bağlantısı
 
-Kimlik doğrulama, tenant **bilinmeden** (bağlam ayarlanmadan) kullanıcıyı
-e-postayla bulmak zorundadır — `User`'da FORCE RLS olduğundan non-superuser rol
-doğrudan 0 satır görürdü. Bunun için `auth_user_by_email(text)` adında bir
-**`SECURITY DEFINER`** fonksiyonu kullanılır (migration
-`20260618167000_auth_lookup_function`): fonksiyon, **sahibinin** yetkileriyle
-çalışır ve RLS'i yalnızca bu tek e-posta araması için bypass eder.
+İki okuma, tenant bağlamı **var olmadan** önce gerçekleşmek zorundadır; ikisi de
+`SECURITY DEFINER` fonksiyonlarla çözülür. Fonksiyon **sahibinin** yetkileriyle
+çalışır ve RLS'i yalnızca o tek arama için bypass eder:
 
-> Fonksiyonun **sahibi**, RLS'i bypass eden bir rol olmalıdır (migration'ı
+| Fonksiyon | Migration | Neden bağlamsız |
+| --- | --- | --- |
+| `auth_user_by_email(text)` | `20260618167000_auth_lookup_function` | Giriş, kullanıcıyı e-postayla bulana kadar tenant'ı bilmez; `User`'da FORCE RLS olduğu için non-superuser rol doğrudan 0 satır görürdü. |
+| `invitation_by_token(text)` | `20260826120000_invitation_rls` | Davet bağlantısı herkese açıktır (kullanıcı henüz giriş yapmamıştır); `Invitation` da FORCE RLS altındadır. Fonksiyon **token'ın kendisini döndürmez**. |
+
+Her ikisi de tek bir eşitlikle filtreler (enumerasyona yardım etmez) ve yalnızca
+gereken minimum alanları döndürür.
+
+> Fonksiyonların **sahibi**, RLS'i bypass eden bir rol olmalıdır (migration'ı
 > çalıştıran owner/superuser; managed Postgres'te proje sahibi rolü genelde
 > bypass eder). Migration'ları bu rolle çalıştırmak yeterlidir.
 
 Kayıt (`/api/auth/signup`) ve davet kabulü (`/api/invitations/[token]/accept`)
 yeni kullanıcıyı yazmadan önce aynı transaction'da `set_config('app.tenant_id', …)`
 ile bağlamı ayarlar; böylece `WITH CHECK` politikası geçerek non-superuser rolle
-de çalışır. `Invitation` tablosu RLS dışıdır (token ile public okuma).
+de çalışır — davetin `acceptedAt` güncellemesi de bu bağlamın içindedir.
 
 ## Notlar
 
-- `AuditLog`, `Order`, `OrderItem` kolonları `tenantId` için hâlâ **nullable**'dır:
-  `AuditLog` sistem kayıtları (örn. `LOGIN_FAILED`) tenant'sız olabilir;
-  `Order`/`OrderItem` ise per-tenant vitrin (Faz 4) tamamlanana kadar ertelenmiştir.
+- `tenantId` yalnızca `AuditLog`'da **nullable**'dır: sistem kayıtları (örn.
+  `LOGIN_FAILED`) tenant'sız olabilir, bu yüzden politikasının `WITH CHECK`'i
+  `NULL` yazımına da izin verir (`20260618163000_tenant_audit_policy`). Diğer
+  20 tenant tablosunda `NOT NULL`'dur — `Order`/`OrderItem` dahil
+  (`20260618168000_order_rls_notnull`).
 - Yeni bir tenant tablosu eklerken: migration'a `ENABLE`/`FORCE ROW LEVEL SECURITY`
   + `tenant_isolation` politikasını ekleyin. `ALTER DEFAULT PRIVILEGES` sayesinde
   `ciftlik_app` yeni tablolarda otomatik DML yetkisi alır.
