@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 
@@ -26,15 +26,18 @@ export async function PATCH(
       return NextResponse.json({ error: te("invalidStatus") }, { status: 400 });
     }
 
-    const existing = await prisma.order.findUnique({ where: { id } });
-    if (!existing) {
+    const order = await withTenant(authz.session.user.tenantId, async (db) => {
+      const existing = await db.order.findFirst({ where: { id } });
+      if (!existing) return null;
+      return db.order.update({
+        where: { id },
+        data: { status: parsed.data.status },
+      });
+    });
+
+    if (!order) {
       return NextResponse.json({ error: te("orderNotFound") }, { status: 404 });
     }
-
-    const order = await prisma.order.update({
-      where: { id },
-      data: { status: parsed.data.status },
-    });
 
     await logAudit(
       authz.session.user,
@@ -65,12 +68,16 @@ export async function DELETE(
     if ("error" in authz) return authz.error;
 
     const { id } = await params;
-    const existing = await prisma.order.findUnique({ where: { id } });
+    const existing = await withTenant(authz.session.user.tenantId, async (db) => {
+      const existing = await db.order.findFirst({ where: { id } });
+      if (!existing) return null;
+      await db.order.delete({ where: { id } });
+      return existing;
+    });
+
     if (!existing) {
       return NextResponse.json({ error: te("orderNotFound") }, { status: 404 });
     }
-
-    await prisma.order.delete({ where: { id } });
     await logAudit(authz.session.user, "DELETE", "Order", id, existing.customerName);
 
     return NextResponse.json({ success: true });

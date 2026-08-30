@@ -40,7 +40,15 @@ export async function logAudit(
       await withTenant(tenantId, (db) => db.auditLog.create({ data: { ...data, tenantId } }));
     } else {
       // Tenant'siz sistem kaydi (orn. LOGIN_FAILED).
-      await prisma.auditLog.create({ data: { ...data, tenantId: null } });
+      //
+      // NEDEN createMany: `create` her zaman INSERT ... RETURNING uretir ve
+      // Postgres, RETURNING bulunan bir INSERT'te donen satira SELECT
+      // politikasini da uygular. AuditLog politikasinin USING ifadesi
+      // ("tenantId" = current_setting('app.tenant_id', true)) tenantId NULL
+      // iken eslesmez, dolayisiyla non-superuser rolle kayit yazilamazdi.
+      // createMany RETURNING uretmez; WITH CHECK zaten NULL'a izin veriyor
+      // (bkz. migration 20260618163000_tenant_audit_policy).
+      await prisma.auditLog.createMany({ data: [{ ...data, tenantId: null }] });
     }
   } catch (error) {
     console.error("Denetim kaydi olusturulamadi:", error);

@@ -24,6 +24,12 @@ describe.skipIf(!run || !APP_URL)("RLS izolasyonu (app_user, gercek DB)", () => 
   // Davet: RLS'e alinan son tenant tablosu (20260826120000_invitation_rls).
   const inviteToken = `rls-token-${stamp}`;
   let inviteId = "";
+  // Siparis: B'ye ait: A baglamindan okunamamali/yazilamamali.
+  let bOrderId = "";
+  // Vitrin: A'nin AKTIF urunu var (dizine girer), B'nin yalnizca PASIF urunu
+  // var (dizine girmez) — public_storefront_tenants'in active filtresi icin.
+  let aProductId = "";
+  let bProductId = "";
 
   // Verilen tenant baglaminda (SET LOCAL app.tenant_id) calistirir.
   async function asTenant<T>(
@@ -64,10 +70,26 @@ describe.skipIf(!run || !APP_URL)("RLS izolasyonu (app_user, gercek DB)", () => 
       },
     });
     inviteId = invite.id;
+
+    const bOrder = await prisma.order.create({
+      data: { tenantId: B, customerName: `RLS B Musteri ${stamp}`, total: 100 },
+    });
+    bOrderId = bOrder.id;
+
+    const aProduct = await prisma.product.create({
+      data: { tenantId: A, name: `RLS A Urun ${stamp}`, price: 10, active: true },
+    });
+    aProductId = aProduct.id;
+    const bProduct = await prisma.product.create({
+      data: { tenantId: B, name: `RLS B Pasif Urun ${stamp}`, price: 20, active: false },
+    });
+    bProductId = bProduct.id;
   });
 
   afterAll(async () => {
     await prisma.invitation.deleteMany({ where: { id: inviteId } });
+    await prisma.order.deleteMany({ where: { id: bOrderId } });
+    await prisma.product.deleteMany({ where: { id: { in: [aProductId, bProductId] } } });
     await prisma.animal.deleteMany({ where: { id: { in: [aId, bId] } } });
     await prisma.tenant.deleteMany({ where: { id: { in: [A, B] } } });
     await appPrisma.$disconnect();
@@ -127,5 +149,58 @@ describe.skipIf(!run || !APP_URL)("RLS izolasyonu (app_user, gercek DB)", () => 
       Array<{ id: string }>
     >`SELECT * FROM invitation_by_token(${`yok-${stamp}`})`;
     expect(miss).toHaveLength(0);
+  });
+
+  it("baska tenant'in siparisi PATCH/DELETE edilemez", async () => {
+    // src/app/api/orders/[id]/route.ts once findFirst ile kaydi arar; A
+    // baglamindan B'nin siparisi gorunmezse uc 404 doner.
+    const notVisible = await asTenant(A, (tx) => tx.order.findFirst({ where: { id: bOrderId } }));
+    expect(notVisible).toBeNull();
+
+    // Guard kaldirilsa bile yazma DB seviyesinde durur: RLS satiri gizledigi
+    // icin updateMany/deleteMany 0 satir etkiler (hata firlatmadiklarindan
+    // sayiyi dogrudan olcebiliyoruz).
+    const updated = await asTenant(A, (tx) =>
+      tx.order.updateMany({ where: { id: bOrderId }, data: { status: "CANCELLED" } })
+    );
+    expect(updated.count).toBe(0);
+
+    const deleted = await asTenant(A, (tx) => tx.order.deleteMany({ where: { id: bOrderId } }));
+    expect(deleted.count).toBe(0);
+
+    // Baglamsiz (hic tenant ayarlanmadan) da erisilemez — fail-closed.
+    const noContext = await appPrisma.order.findFirst({ where: { id: bOrderId } });
+    expect(noContext).toBeNull();
+
+    // Kayit hala yerinde: superuser baglantisiyla dogrula.
+    const still = await prisma.order.findUnique({ where: { id: bOrderId } });
+    expect(still).not.toBeNull();
+    expect(still!.status).toBe("PENDING");
+
+    // Kendi tenant'i (B) elbette gorebilir ve guncelleyebilir.
+    const own = await asTenant(B, (tx) => tx.order.findFirst({ where: { id: bOrderId } }));
+    expect(own?.id).toBe(bOrderId);
+  });
+
+  it("public_storefront_tenants() baglamsiz cagrildiginda dolu doner", async () => {
+    // Once RLS'in gercekten acik oldugunu goster: baglamsiz dogrudan okuma bos.
+    const direct = await appPrisma.product.findMany();
+    expect(direct.length).toBe(0);
+
+    // Fonksiyon SAHIBININ yetkisiyle okur; magaza dizini oturumsuz calisir.
+    const rows = await appPrisma.$queryRaw<
+      Array<{ id: string; name: string; slug: string }>
+    >`SELECT * FROM public_storefront_tenants()`;
+
+    const ids = rows.map((r) => r.id);
+    // A'nin AKTIF urunu var → dizinde.
+    expect(ids).toContain(A);
+    // B'nin yalnizca PASIF urunu var → dizinde DEGIL.
+    expect(ids).not.toContain(B);
+
+    // Urun detayi sizmaz: donen satirda yalnizca vitrin kimligi vardir.
+    const a = rows.find((r) => r.id === A)!;
+    expect(Object.keys(a).sort()).toEqual(["id", "name", "slug"]);
+    expect(a.name).toBe("RLS A");
   });
 });

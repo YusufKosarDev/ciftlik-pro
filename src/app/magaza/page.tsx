@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Store, ArrowRight } from "lucide-react";
-import { prisma } from "@/lib/prisma";
+import { listStorefrontTenants } from "@/lib/storefront";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Store");
@@ -20,23 +20,14 @@ export async function generateMetadata(): Promise<Metadata> {
 // kaydolan herkes hicbir sey satmadan herkese acik dizine dusuyordu, (2) demo
 // ortaminda bos vitrinler birikiyordu. Urun eklemek dogal bir "yayinla"
 // sinyalidir; katalogu doldurmak listeye girmek icin yeterlidir.
-// NOT: Tenant modelinde iliski alani tutulmuyor (tenantId ile gevsek baglanti),
-// bu yuzden once satistaki urunlerin tenant'lari toplanir, sonra o tenant'lar
-// okunur. Iki sorgu; ikisi de indeksli (Product.tenantId, Tenant.id).
+// NOT: Okuma, SECURITY DEFINER `public_storefront_tenants` fonksiyonuna tasindi
+// (bkz. migration 20260830120000_public_storefront_function). Ziyaretci giris
+// yapmadigindan tenant baglami ayarlanamaz; Product'ta FORCE RLS oldugu icin
+// dogrudan sorgu, uretimdeki non-superuser rolle 0 satir dondururdu. Fonksiyon
+// yalnizca ad ve slug doner — urun detayi sizmaz.
 export default async function MagazaDizinPage() {
   const t = await getTranslations("Store");
-  const active = await prisma.product.findMany({
-    where: { active: true },
-    select: { tenantId: true },
-    distinct: ["tenantId"],
-  });
-  const farms = active.length
-    ? await prisma.tenant.findMany({
-        where: { id: { in: active.map((p) => p.tenantId) } },
-        select: { name: true, slug: true },
-        orderBy: { name: "asc" },
-      })
-    : [];
+  const farms = await listStorefrontTenants();
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
