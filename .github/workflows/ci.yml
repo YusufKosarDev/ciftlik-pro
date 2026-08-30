@@ -7,6 +7,71 @@ on:
     branches: [main]
 
 jobs:
+  # Commit mesajlarinda otomatik eklenen atif satirlarini yakalar.
+  #
+  # NEDEN AYRI JOB: kontrol yalnizca git + POSIX araclari kullanir; npm install
+  # ya da prisma generate gerektirmez, bu yuzden diger islerin ~100 saniyelik
+  # zincirine baglanmasi gereksiz. Ayrica commit araligini gorebilmek icin
+  # `fetch-depth: 0` sart; bunu yalnizca bu ise vererek diger uc isin sig
+  # klonunu (ve hizini) korumus oluyoruz. Hata durumunda PR kontrol listesinde
+  # ayirt edilebilir bir isim gorunur.
+  commit-messages:
+    runs-on: ubuntu-latest
+
+    # Bu is yalnizca gecmisi okur; baska hicbir yetkiye ihtiyaci yok.
+    permissions:
+      contents: read
+
+    steps:
+      - name: Depoyu cek
+        uses: actions/checkout@v4
+        with:
+          # Commit araligini cozebilmek icin tam gecmis gerekir.
+          fetch-depth: 0
+
+      - name: Commit mesajlarini denetle
+        env:
+          EVENT: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_HEAD: ${{ github.sha }}
+        run: |
+          set -eu
+
+          if [ "$EVENT" = "pull_request" ]; then
+            BASE="$PR_BASE"; TIP="$PR_HEAD"
+          else
+            BASE="$PUSH_BEFORE"; TIP="$PUSH_HEAD"
+          fi
+
+          # Yeni bir dal ilk kez itildiginde github.event.before sifirdan olusur;
+          # force-push sonrasi ise dusurulmus bir commit'i gosterebilir. Her iki
+          # durumda da taban cozulemez, yalnizca tepe commit'i tararız.
+          ZERO=0000000000000000000000000000000000000000
+          if [ -z "$BASE" ] || [ "$BASE" = "$ZERO" ] || ! git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
+            echo "Taban commit cozulemedi ('${BASE}'); yalnizca tepe commit taraniyor."
+            if git rev-parse -q --verify "${TIP}^1" >/dev/null 2>&1; then
+              BASE="${TIP}^1"
+            else
+              echo "Tepe commit'in ebeveyni yok (kok commit); tarama atlandi."
+              exit 0
+            fi
+          fi
+
+          echo "Aralik: ${BASE}..${TIP}"
+
+          # KAPSAM NOTU: burada bilincli olarak --range kullaniliyor, --all degil.
+          # Gecmiste henuz temizlenmemis ihlalli commit'ler var; --all bu isi
+          # ilk calistirmada kirmizi yapar ve sinyali kullanissiz kilar.
+          # --range yalnizca YENI commit'leri denetler, yani koruma bugunden
+          # itibaren gecerlidir.
+          #
+          # Gecmis temizligi tamamlandiktan sonra asagidaki satiri
+          #   sh scripts/check-commit-messages.sh --all
+          # ile degistirin; boylece gecmisin temiz kaldigi da surekli dogrulanir.
+          sh scripts/check-commit-messages.sh --range "${BASE}..${TIP}"
+
   build:
     runs-on: ubuntu-latest
 

@@ -1,0 +1,8 @@
+# Kabuk betikleri ve git hook'lari her zaman LF ile checkout edilir.
+#
+# Depo core.autocrlf=true ile kullaniliyor; bu ayar olmadan .sh dosyalari
+# Windows'ta CRLF olarak acilir. `sh` bu dosyalari calistirdiginda satir
+# sonundaki CR degisken degerlerine yapisir ve desen eslestirme sessizce
+# bozulur -- yani kontrol yerelde ve CI'da farkli davranir.
+*.sh      text eol=lf
+.husky/*  text eol=lf
