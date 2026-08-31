@@ -1,0 +1,68 @@
+# Bagimlilik guncellemeleri.
+#
+# TASARIM: Az sayida, incelenebilir PR. Gruplamadan haftada 10+ PR gelir ve
+# hicbiri okunmaz; gruplu halde haftada 1-2 PR olur. Depo public oldugundan
+# Actions dakikasi ucretsizdir, yani asil maliyet CI degil DIKKAT'tir.
+version: 2
+
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Istanbul"
+    open-pull-requests-limit: 5
+
+    groups:
+      # next ve eslint-config-next AYNI surumde olmali: ikincisi birincinin lint
+      # kurallarini yeniden disa aktarir, surum farki kafa karistirici lint
+      # ciktisi uretir. react/react-dom de Next ile birlikte dogrulanmali.
+      # Bu paketlerin hepsi package.json'da TAM PIN'dir; ayri PR'lar gelirse
+      # gecici uyumsuzluk olusur.
+      next-ecosystem:
+        patterns:
+          - "next"
+          - "eslint-config-next"
+          - "@next/*"
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
+
+      # Geri kalan her sey tek PR'da. Gurultuyu asil kesen ayar budur.
+      minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+    ignore:
+      # Major'lar elle yonetilir. Otomatik bir major PR, `npm audit fix --force`
+      # tuzaginin zamanlanmis hali olurdu: Next 17 ya da React 20 gecisi insan
+      # karari ister, yesil CI yeterli kanit degildir.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+    commit-message:
+      # Depo Conventional Commits kullaniyor; bu prefix hem o duzene hem de
+      # commit-msg kontrolune (scripts/check-commit-messages.sh) uyar.
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+      include: "scope"
+
+    labels:
+      - "dependencies"
+
+  # ci.yml'deki action'lar. Denetimde cikan "Node.js 20 is deprecated"
+  # (actions/checkout@v4, actions/setup-node@v4) uyarisini da bu kapatir.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "ci(deps)"
+    labels:
+      - "dependencies"
+      - "ci"
