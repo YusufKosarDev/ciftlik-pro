@@ -24,7 +24,7 @@ jobs:
 
     steps:
       - name: Depoyu cek
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           # Commit araligini cozebilmek icin tam gecmis gerekir.
           fetch-depth: 0
@@ -83,7 +83,7 @@ jobs:
 
     steps:
       - name: Depoyu cek
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Node.js kur
         uses: actions/setup-node@v4
@@ -152,7 +152,7 @@ jobs:
 
     steps:
       - name: Depoyu cek
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Node.js kur
         uses: actions/setup-node@v4
@@ -216,7 +216,7 @@ jobs:
 
     steps:
       - name: Depoyu cek
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Node.js kur
         uses: actions/setup-node@v4
