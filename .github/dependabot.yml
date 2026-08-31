@@ -44,11 +44,32 @@ updates:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
 
+      # next'in MINOR'u da elle yonetilir. 16.2 -> 16.3 edge runtime'i deprecate
+      # ediyor (proxy.ts'teki yetki kapisi orada calisiyor), sunucu render'ini
+      # Node streams'e ceviriyor ve Instant Navigation'i varsayilan aciyor.
+      # Bunlar DAVRANIS degisiklikleri: 316 birim + 18 e2e testi ikisinde de
+      # gecer, yani yesil pipeline bu riski OLCMEZ. Kapattigi postcss ve sharp
+      # bulgulari ise bu projede erisilemez (CSS'i biz yaziyoruz; next/image
+      # hic kullanilmiyor, images.remotePatterns tanimsiz, public/'te SVG yok).
+      # Gecis kendi dalinda, tam duman testiyle yapilacak — bkz. kapatilan #53.
+      #
+      # eslint-config-next, next'in lint kurallarini yeniden disa aktarir ve
+      # ayni surumde kalmalidir; birlikte tutuluyor.
+      - dependency-name: "next"
+        update-types: ["version-update:semver-minor"]
+      - dependency-name: "eslint-config-next"
+        update-types: ["version-update:semver-minor"]
+
     commit-message:
       # Depo Conventional Commits kullaniyor; bu prefix hem o duzene hem de
       # commit-msg kontrolune (scripts/check-commit-messages.sh) uyar.
-      prefix: "chore(deps)"
-      prefix-development: "chore(deps-dev)"
+      #
+      # DIKKAT: prefix'e "(deps)" YAZILMAZ. `include: "scope"` scope'u zaten
+      # Dependabot ekler; ikisi birlikte "chore(deps)(deps)" uretir — ilk
+      # yapilandirmada oldu (bkz. PR #53/#54 basliklari). prefix yalin tip
+      # olmali, scope'u Dependabot koyar.
+      prefix: "chore"
+      prefix-development: "chore"
       include: "scope"
 
     labels:
@@ -61,8 +82,23 @@ updates:
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 3
+
+    ignore:
+      # Action major'lari da elle yonetilir — npm tarafiyla ayni ilke.
+      # NOT: checkout ve setup-node v4 -> v7 gecisi bu kural EKLENMEDEN once,
+      # bilincli olarak alindi (PR #51, #52): Node 20 deprecation uyarisini
+      # kapatiyorlardi ve action major'lari npm major'lariyla ayni risk
+      # sinifinda degil — runner'da calisirlar, uretim paketine girmezler ve
+      # dort isli CI kirilmayi aninda gosterir. Yine de "otomatik gelsin"
+      # demiyoruz: karar insanda kalsin.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
     commit-message:
-      prefix: "ci(deps)"
+      # npm blogundaki ile ayni kural: yalin tip + otomatik scope -> "ci(deps):"
+      prefix: "ci"
+      include: "scope"
+
     labels:
       - "dependencies"
       - "ci"
