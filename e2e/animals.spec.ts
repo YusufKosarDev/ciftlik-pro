@@ -1,5 +1,9 @@
 import { test, expect } from "@playwright/test";
-import { login, ACCOUNTS } from "./helpers";
+import { login, ACCOUNTS, resetLoginRateLimit } from "./helpers";
+
+// Her spec dosyasi giris hiz sinirini sifirlayarak baslar; gerekcesi
+// e2e/helpers.ts icindeki resetLoginRateLimit yorumunda.
+test.beforeAll(resetLoginRateLimit);
 
 const SEARCH = "Kulak no, ad veya ırk ara...";
 

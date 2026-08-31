@@ -13,12 +13,12 @@ role-based dashboard.
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Tests](https://img.shields.io/badge/tests-303%20unit%20%2B%2018%20e2e-success)](#testing--quality)
+[![Tests](https://img.shields.io/badge/tests-304%20unit%20%2B%2030%20e2e-success)](#testing--quality)
 [![Multi-tenant](https://img.shields.io/badge/multi--tenant-Postgres%20RLS-4169E1)](#multi-tenancy)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 🔗 **Live demo: [ciftlik-pro.vercel.app](https://ciftlik-pro.vercel.app)** &nbsp;·&nbsp;
-click **"Browse as demo"** — or sign in with `demo@ciftlik.com` / `demo1234`
+**pick a role** on the sign-in screen — Admin, Worker, Vet or Accountant
 
 <sub>The demo opens in your browser's language; use the TR/EN switch in the header to change it.</sub>
 
@@ -137,7 +137,7 @@ and a monthly income/expense chart:
 - **Onboarding tour** — a role-specific, multi-step welcome modal on the first
   visit to the dashboard; restartable at any time from the profile page.
 - **Bilingual (TR/EN), end to end** — every screen and every API error message,
-  in **all 818 translation keys** across both catalogues: the panel, the public
+  in **all 826 translation keys** across both catalogues: the panel, the public
   storefront and cart, billing, invitations, the 404 and error boundaries, and
   the responses a write endpoint returns. Dates, currency and chart month labels
   follow the active locale too. A first-time visitor gets their **browser's
@@ -334,6 +334,25 @@ npm run dev              # http://localhost:3000
 | `ahmet@ciftlik.com` | `sifre1234` | Worker |
 | `vet@ciftlik.com` | `sifre1234` | Vet |
 
+### Demo accounts (after `npm run db:seed-demo`, and on the live demo)
+
+Read-only showcase accounts — one per role, so the RBAC matrix is something you
+can see rather than take on trust. The sign-in screen offers them as buttons;
+each says up front what that role cannot reach, so a narrower menu reads as a
+permission boundary and not as a broken page.
+
+| Email | Password | Role | What it cannot reach |
+| --- | --- | --- | --- |
+| `demo@ciftlik.com` | `demo1234` | Admin | nothing — every module |
+| `demo-worker@ciftlik.com` | `demo1234` | Worker | finance, sales, customers, products, orders, staff, audit |
+| `demo-vet@ciftlik.com` | `demo1234` | Vet | everything except animals, tasks, map and calendar — 5 of 16 sections |
+| `demo-muhasebe@ciftlik.com` | `demo1234` | Accountant | livestock, fields, inventory, feed, structures, staff, audit |
+
+All four are read-only regardless of role: the guard is keyed on the email
+address, so the Worker account cannot write even where the Worker role
+normally could. Hidden sections are refused server-side too — a direct URL
+returns a real HTTP redirect from the proxy, not a client-side bounce.
+
 ### Commands
 
 | Command | Description |
@@ -351,7 +370,7 @@ npm run dev              # http://localhost:3000
 
 ## Testing & quality
 
-- **303 unit/component tests** (Vitest + Testing Library) covering validation
+- **304 unit/component tests** (Vitest + Testing Library) covering validation
   schemas, RBAC, rate limiting, list query parsing, plan limits, finance/map/date/
   calendar helpers and UI primitives — **~90% line coverage on business logic** (the shared, database-backed paths are covered by integration tests instead).
 - **Tenant isolation integration tests** (`*.int.test.ts`) against a real
@@ -359,7 +378,7 @@ npm run dev              # http://localhost:3000
   reads, the fail-closed empty context, `Invitation` under RLS, and the shared
   rate-limit counter under ten concurrent requests. They are env-gated
   (`RUN_DB_TESTS=1`) so `npm test` stays database-free, and **CI turns them on**.
-- **18 Playwright e2e tests** — authentication, animal CRUD, RBAC denial (real
+- **30 Playwright e2e tests** — authentication, animal CRUD, RBAC denial (real
   307 at the edge), sale → automatic income transaction, storefront cart → order,
   invitation → accept → role, and demo read-only enforcement.
 - **CI (GitHub Actions)** — three parallel jobs on every push and PR: `build`

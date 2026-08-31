@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getTranslations } from "next-intl/server";
 import { withTenant } from "@/lib/tenant-prisma";
 import { auth } from "@/lib/auth";
-import { DEMO_EMAIL } from "@/lib/authz";
+import { isDemoUser } from "@/lib/authz";
 
 // POST /api/profile/onboarding -> giris yapmis kullanicinin hos geldin turunu
 // tamamlandi olarak isaretler (onboardedAt = now). Modulden bagimsiz, kullanicinin
@@ -19,7 +19,7 @@ export async function POST() {
       return NextResponse.json({ error: te("unauthorized") }, { status: 401 });
     }
 
-    const isDemo = (session.user.email ?? "").toLowerCase() === DEMO_EMAIL;
+    const isDemo = isDemoUser(session.user.email);
     if (!isDemo) {
       await withTenant(session.user.tenantId, (db) =>
         db.user.update({
@@ -50,7 +50,7 @@ export async function DELETE() {
       return NextResponse.json({ error: te("unauthorized") }, { status: 401 });
     }
 
-    const isDemo = (session.user.email ?? "").toLowerCase() === DEMO_EMAIL;
+    const isDemo = isDemoUser(session.user.email);
     if (!isDemo) {
       await withTenant(session.user.tenantId, (db) =>
         db.user.update({

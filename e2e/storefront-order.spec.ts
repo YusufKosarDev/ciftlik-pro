@@ -1,5 +1,9 @@
 import { test, expect } from "@playwright/test";
-import { login, ACCOUNTS } from "./helpers";
+import { login, ACCOUNTS, resetLoginRateLimit } from "./helpers";
+
+// Her spec dosyasi giris hiz sinirini sifirlayarak baslar; gerekcesi
+// e2e/helpers.ts icindeki resetLoginRateLimit yorumunda.
+test.beforeAll(resetLoginRateLimit);
 
 // Herkese acik magaza akisi: katalog -> sepet -> cok kalemli siparis.
 // Siparis OTURUMSUZ verilir; tenant slug'dan cozulur ve urunler o tenant

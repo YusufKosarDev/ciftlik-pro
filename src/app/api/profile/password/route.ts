@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getTranslations } from "next-intl/server";
 import { withTenant } from "@/lib/tenant-prisma";
 import { auth } from "@/lib/auth";
-import { DEMO_EMAIL } from "@/lib/authz";
+import { isDemoUser } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { passwordChangeSchema } from "@/lib/validations/password";
 import { hashPassword, verifyPassword } from "@/lib/password-hash";
@@ -18,7 +18,7 @@ export async function PUT(request: Request) {
 
     // Demo hesabi salt-okunurdur; parolasini degistiremez. Aksi halde bir demo
     // ziyaretcisi parolayi degistirip diger ziyaretcileri demodan kilitleyebilir.
-    if ((session.user.email ?? "").toLowerCase() === DEMO_EMAIL) {
+    if (isDemoUser(session.user.email)) {
       return NextResponse.json(
         { error: te("demoReadOnlyPassword") },
         { status: 403 }

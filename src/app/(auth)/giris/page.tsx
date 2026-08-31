@@ -5,18 +5,50 @@ import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Wheat, Mail, Lock, Sprout, AlertCircle } from "lucide-react";
+import {
+  Wheat,
+  Mail,
+  Lock,
+  AlertCircle,
+  Loader2,
+  Crown,
+  HardHat,
+  Stethoscope,
+  Calculator,
+  type LucideIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import {
+  DEMO_ACCOUNTS,
+  DEMO_PASSWORD,
+  type DemoAccount,
+} from "@/lib/demo-accounts";
+
+// NEDEN ROL SECICI: Projenin manset iddiasi "4 rollu RBAC". Tek bir ADMIN
+// hesabiyla ziyaretci butun modulleri gorup "her sey acik" izlenimi aliyordu;
+// yani iddianin kaniti demoda GORUNMUYORDU. Her rolun ne goremedigini dugmenin
+// uzerinde yazmak da sart: aksi halde WORKER ile giren biri eksik menuyu
+// "site bozuk" diye okur.
+//
+// Hesaplarin kendisi src/lib/demo-accounts.ts'te (TEK KAYNAK). Ikonlar burada
+// kaliyor: o modul bilincli olarak hicbir sey import etmiyor, lucide dahil.
+const ROLE_ICONS: Record<DemoAccount["i18nKey"], LucideIcon> = {
+  Admin: Crown,
+  Worker: HardHat,
+  Vet: Stethoscope,
+  Accountant: Calculator,
+};
 
 export default function GirisPage() {
   const router = useRouter();
   const t = useTranslations("Login");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [demoLoading, setDemoLoading] = useState(false);
+  // Hangi rolun girisi surdugu; null ise hicbiri.
+  const [demoLoading, setDemoLoading] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -44,17 +76,18 @@ export default function GirisPage() {
     router.refresh();
   }
 
-  // Ziyaretçiler için: kayıt gerektirmeyen, salt-okunur demo (ADMIN) hesabıyla
-  // giriş — tüm modüller ve SaaS özellikleri (abonelik, personel) gezilebilir.
-  async function handleDemo() {
+  // Ziyaretçiler için: kayıt gerektirmeyen, salt-okunur demo girişi. Seçilen
+  // role göre farklı hesap kullanılır; hepsi aynı çiftliğin verisini görür,
+  // hiçbiri yazma yapamaz (src/lib/authz.ts isDemoUser).
+  async function handleDemo(email: string) {
     setError(null);
-    setDemoLoading(true);
+    setDemoLoading(email);
     const result = await signIn("credentials", {
-      email: "demo@ciftlik.com",
-      password: "demo1234",
+      email,
+      password: DEMO_PASSWORD,
       redirect: false,
     });
-    setDemoLoading(false);
+    setDemoLoading(null);
     if (result?.error) {
       setError(t("errorDemo"));
       return;
@@ -128,16 +161,43 @@ export default function GirisPage() {
           <span className="h-px flex-1 bg-muted" />
         </div>
 
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleDemo}
-          loading={demoLoading}
-          className="w-full"
-        >
-          <Sprout className="h-4 w-4" />
+        <p className="mb-2 text-center text-sm font-medium text-foreground">
           {t("demo")}
-        </Button>
+        </p>
+        {/*
+          Her dugmede rol adi + o rolun NE GOREMEDIGI yaziyor. Aciklama
+          kozmetik degil: ziyaretci tiklamadan once ne bekleyecegini bilmezse,
+          WORKER ile girip daralan menuyu bir arayuz hatasi sanir.
+          `disabled` tum dugmelere uygulanir (cift gonderimi onler); yalnizca
+          ikon spinner ile degisir, boylece yerlesim kaymaz.
+        */}
+        <div className="grid grid-cols-2 gap-2">
+          {DEMO_ACCOUNTS.map(({ email, i18nKey }) => {
+            const Icon = ROLE_ICONS[i18nKey];
+            return (
+              <Button
+                key={email}
+                type="button"
+                variant="outline"
+                onClick={() => handleDemo(email)}
+                disabled={demoLoading !== null}
+                className="h-auto flex-col items-start gap-0.5 px-3 py-2.5"
+              >
+                <span className="flex items-center gap-1.5 text-sm font-semibold">
+                  {demoLoading === email ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+                  ) : (
+                    <Icon className="h-3.5 w-3.5" aria-hidden />
+                  )}
+                  {t(`demo${i18nKey}`)}
+                </span>
+                <span className="text-[11px] font-normal leading-tight text-muted-foreground">
+                  {t(`demo${i18nKey}Note`)}
+                </span>
+              </Button>
+            );
+          })}
+        </div>
         <p className="mt-2 text-center text-xs text-muted-foreground">
           {t("demoHint")}
         </p>

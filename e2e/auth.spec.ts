@@ -1,4 +1,9 @@
 import { test, expect } from "@playwright/test";
+import { resetLoginRateLimit } from "./helpers";
+
+// Her spec dosyasi giris hiz sinirini sifirlayarak baslar; gerekcesi
+// e2e/helpers.ts icindeki resetLoginRateLimit yorumunda.
+test.beforeAll(resetLoginRateLimit);
 
 // Bu testler seed verisini kullanir: admin@ciftlik.com / sifre1234
 

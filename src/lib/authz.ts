@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import type { Role } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { navHrefsFor } from "@/lib/nav-permissions";
+import { DEMO_EMAILS } from "@/lib/demo-accounts";
 
 // Rol bazli yetkilendirme (RBAC) icin tek merkez.
 // Okuma (listeleme/goruntuleme) giris yapmis her kullaniciya aciktir;
@@ -49,12 +50,17 @@ export {
 // Not: navHrefsFor ayrica yukarida import edilir; `export ... from` saf bir
 // yeniden-export'tur ve bu modul icinde kullanilabilir bir bagalanti olusturmaz.
 
-// Demo (salt-okunur) hesap e-postasi. Bu hesap hicbir yazma islemi yapamaz;
-// boylece canli demoda ziyaretçiler veriyi bozamaz.
-export const DEMO_EMAIL = "demo@ciftlik.com";
+// Demo (salt-okunur) hesaplar hicbir yazma islemi yapamaz; boylece canli
+// demoda ziyaretciler veriyi bozamaz. Koruma ROLDEN BAGIMSIZDIR: vitrindeki
+// WORKER/VET/ACCOUNTANT hesaplari kendi rollerinin yazma yetkisine sahip olsa
+// da e-postalari listede oldugu icin reddedilir.
+//
+// Liste src/lib/demo-accounts.ts'te; o dosya hicbir sey import etmez, bu yuzden
+// hem burada hem giris ekraninin istemci bileseninde okunabilir.
+export { DEMO_EMAILS };
 
 export function isDemoUser(email: string | null | undefined): boolean {
-  return (email ?? "").toLowerCase() === DEMO_EMAIL;
+  return DEMO_EMAILS.has((email ?? "").toLowerCase());
 }
 
 // API rotalarinda kullanilir: oturumu dogrular ve yazma yetkisini kontrol eder.

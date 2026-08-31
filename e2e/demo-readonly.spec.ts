@@ -1,13 +1,22 @@
 import { test, expect } from "@playwright/test";
+import { resetLoginRateLimit } from "./helpers";
 
-// Demo hesabi vitrindir: ADMIN rolunde oldugu icin TUM ekranlari gezebilir,
-// ama hicbir yazma yapamaz. Koruma e-posta tabanlidir (authz.ts isDemoUser),
-// yani rolden bagimsizdir — canli demoda veri boyle korunur.
+// Her spec dosyasi giris hiz sinirini sifirlayarak baslar; gerekcesi
+// e2e/helpers.ts icindeki resetLoginRateLimit yorumunda.
+test.beforeAll(resetLoginRateLimit);
+
+// ADMIN vitrin hesabi TUM ekranlari gezebilir ama hicbir yazma yapamaz.
+// Koruma e-posta tabanlidir (authz.ts isDemoUser), yani rolden bagimsizdir —
+// canli demoda veri boyle korunur.
+//
+// Giris ekranindaki tek "Demo olarak gez" dugmesi rol secicisine donustu
+// (dort rol, dort dugme); burasi ADMIN dugmesini kullanir. Diger uc rolun
+// kendi kapsami e2e/demo-roles.spec.ts'te.
 const DEMO = { email: "demo@ciftlik.com", password: "demo1234" };
 
 test("demo hesabi SaaS ekranlarini gezebilir", async ({ page }) => {
   await page.goto("/giris");
-  await page.getByRole("button", { name: /Demo olarak gez/i }).click();
+  await page.getByRole("button", { name: /Yönetici/i }).click();
   await expect(page).toHaveURL(/\/panel$/);
 
   // ADMIN'e acik olan bolumler goruntulenebilir

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { Role } from "@prisma/client";
 
 // authz.ts; @/lib/auth (next-auth + prisma + bcrypt), next/server ve
 // next/navigation modullerini ice aktarir. Saf politika mantigini izole test
@@ -33,9 +34,14 @@ import {
   requirePageWrite,
   requirePageView,
   writePermissions,
-  DEMO_EMAIL,
+  DEMO_EMAILS,
+  isDemoUser,
   type WriteModule,
 } from "@/lib/authz";
+
+// Vitrin hesaplarindan biri (ADMIN olani). Rolden bagimsiz reddedildigini
+// gostermek icin asagida listenin TAMAMI da ayrica taraniyor.
+const DEMO_EMAIL = "demo@ciftlik.com";
 
 describe("canWrite — yazma izin matrisi", () => {
   it("ADMIN her modulde yazabilir", () => {
@@ -152,6 +158,33 @@ describe("authorizeWrite — API yetki kontrolu", () => {
     const r = await authorizeWrite("animals");
     expect("error" in r).toBe(true);
     if ("error" in r) expect(r.error?.status).toBe(403);
+  });
+
+  // Vitrin artik rol basina bir hesap tasiyor. Her birinin KENDI rolunun
+  // yazabildigi bir modulde bile reddedildigini dogruluyoruz — koruma rolden
+  // degil e-postadan geliyor. Bu test olmadan, yeni bir demo hesabi eklenip
+  // isDemoUser listesine yazilmayi unutulsa kimse fark etmezdi.
+  it("TUM demo hesaplari, kendi rollerinin yazabildigi modulde bile reddedilir", async () => {
+    const rolePerEmail: Record<string, { role: Role; module: WriteModule }> = {
+      "demo@ciftlik.com": { role: "ADMIN", module: "tasks" },
+      "demo-worker@ciftlik.com": { role: "WORKER", module: "animals" },
+      "demo-vet@ciftlik.com": { role: "VET", module: "animalMedical" },
+      "demo-muhasebe@ciftlik.com": { role: "ACCOUNTANT", module: "transactions" },
+    };
+
+    // Liste ile test tablosu ayni kumede mi? (biri buyurse digeri de buymeli)
+    expect(Object.keys(rolePerEmail).sort()).toEqual([...DEMO_EMAILS].sort());
+
+    for (const [email, { role, module }] of Object.entries(rolePerEmail)) {
+      // Kontrol: bu rol bu modulde normalde YAZABILIR olmali.
+      expect(canWrite(role, module), `${role} ${module} yazabilmeli`).toBe(true);
+      expect(isDemoUser(email), `${email} demo sayilmali`).toBe(true);
+
+      authMock.mockResolvedValue({ user: { role, email } });
+      const r = await authorizeWrite(module);
+      expect("error" in r, `${email} reddedilmeli`).toBe(true);
+      if ("error" in r) expect(r.error?.status).toBe(403);
+    }
   });
 });
 

@@ -12,12 +12,12 @@ Sistemi (ERP) — hayvan, tarla, stok, finans, satış, mağaza ve personel tek 
 [![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![codecov](https://codecov.io/gh/YusufKosarDev/ciftlik-pro/branch/main/graph/badge.svg)](https://codecov.io/gh/YusufKosarDev/ciftlik-pro)
-[![Tests](https://img.shields.io/badge/tests-303%20unit%20%2B%2018%20e2e-success)](#test--kalite)
+[![Tests](https://img.shields.io/badge/tests-304%20unit%20%2B%2030%20e2e-success)](#test--kalite)
 [![Multi-tenant](https://img.shields.io/badge/multi--tenant-Postgres%20RLS-4169E1)](#-çok-kiracılık-multi-tenant-saas)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 🔗 **Canlı Demo: [ciftlik-pro.vercel.app](https://ciftlik-pro.vercel.app)**
-&nbsp;·&nbsp; Giriş için **"Demo olarak gez"** butonu (veya `demo@ciftlik.com` / `demo1234`)
+&nbsp;·&nbsp; Giriş ekranında **rol seçin** — Yönetici, Çalışan, Veteriner ya da Muhasebeci
 
 </div>
 
@@ -38,7 +38,7 @@ mağazası:
 ![Çiftlik Pro demo turu](docs/demo.gif)
 
 > Kendiniz denemek için: **[ciftlik-pro.vercel.app](https://ciftlik-pro.vercel.app)**
-> → "Demo olarak gez".
+> → giriş ekranından bir rol seçin.
 
 ## 📸 Ekran Görüntüleri
 
@@ -102,7 +102,7 @@ göstergeleriyle) ve aylık gelir-gider grafiği:
 - **Modern arayüz** — sol sidebar düzeni, dark mode (semantik renk token'ları), `⌘K`
   komut paleti (hızlı gezinme + eylem) ve `cva` tabanlı tasarım sistemi.
 - **Çok dillilik (i18n) — uçtan uca** — her ekran ve her API hata mesajı, iki
-  katalogdaki **818 çeviri anahtarının tamamıyla**: panel, herkese açık mağaza ve
+  katalogdaki **826 çeviri anahtarının tamamıyla**: panel, herkese açık mağaza ve
   sepet, abonelik, davet akışı, 404 ve hata sınırları, yazma uçlarının döndürdüğü
   yanıtlar. Tarih, para ve grafik ay etiketleri de aktif dile uyar. İlk kez gelen
   ziyaretçi **tarayıcısının dilini** görür (`Accept-Language`); başlıktaki — ya da
@@ -126,8 +126,8 @@ göstergeleriyle) ve aylık gelir-gider grafiği:
   (API) hem hassas okuma (sayfa) düzeyinde uygulanır.
 - **Uçtan uca tip güvenliği** — Zod şemaları hem istemci hem sunucuda doğrular;
   Prisma ile veritabanı tipleri.
-- **Test & CI/CD** — 303 birim/bileşen testi (Vitest + Testing Library) +
-  tenant-izolasyon entegrasyon testleri + 18 uçtan uca test (Playwright),
+- **Test & CI/CD** — 304 birim/bileşen testi (Vitest + Testing Library) +
+  tenant-izolasyon entegrasyon testleri + 30 uçtan uca test (Playwright),
   GitHub Actions'ta gerçek PostgreSQL servisiyle her PR'da çalışır.
 - **Transactional bütünlük** — yem tüketimi stoğu atomik düşürür (TOCTOU'ya karşı
   koşullu `updateMany`); satış + bağlı gelir işlemi ve sepet → çok-kalemli sipariş
@@ -190,7 +190,7 @@ Sertleştirme önlemleri:
   bağlanır (RLS bypass edilemez). İzolasyon entegrasyon testleriyle doğrulanır.
 - **Kayıt & davet** — herkese açık **çiftlik kaydı** sahip-ADMIN üretir; personel
   yalnızca **token'lı davetle** eklenir. Davet token'ları tahmin edilemez sırlardır,
-  süre sınırlıdır ve tek kullanımlıktır. Ziyaretçiler salt-okunur **"Demo olarak gez"** ile gezer.
+  süre sınırlıdır ve tek kullanımlıktır. Ziyaretçiler giriş ekranından rol seçerek salt-okunur vitrin hesaplarıyla gezer.
 - **Demo hesabı salt-okunurdur** — hiçbir yazma işlemi yapamaz (canlı demoda veri korunur).
 - **Parolalar scrypt** ile hash'lenir (eski bcrypt şifreleriyle geriye dönük uyumludur);
   sabit zamanlı karşılaştırma (`timingSafeEqual`) ve asenkron hashing ile olay döngüsü kilitlenme korumalıdır. Düz metin asla saklanmaz/dönülmez.
@@ -341,6 +341,27 @@ Seed çalıştırıldıysa:
 | ahmet@ciftlik.com   | sifre1234  | Çalışan   |
 | vet@ciftlik.com     | sifre1234  | Veteriner |
 
+### Demo hesapları (`npm run db:seed-demo` sonrası ve canlı demoda)
+
+Salt-okunur vitrin hesapları — her rol için bir tane. Amaç sayı değil,
+görünürlük: RBAC matrisi böylece anlatılan değil, ziyaretçinin kendi gözüyle
+gördüğü bir şey oluyor. Giriş ekranı bunları düğme olarak sunuyor ve her
+düğmede o rolün neye erişemediği yazıyor — daralan menü bir arayüz hatası
+gibi değil, kasıtlı bir yetki sınırı gibi okunsun diye.
+
+| E-posta                     | Parola   | Rol        | Erişemediği                                                        |
+| --------------------------- | -------- | ---------- | ------------------------------------------------------------------ |
+| demo@ciftlik.com            | demo1234 | Yönetici   | yok — tüm modüller                                                 |
+| demo-worker@ciftlik.com     | demo1234 | Çalışan    | finans, satış, müşteriler, ürünler, siparişler, personel, denetim  |
+| demo-vet@ciftlik.com        | demo1234 | Veteriner  | hayvanlar, görevler, harita ve takvim dışında her şey — 16 bölümden 5'i |
+| demo-muhasebe@ciftlik.com   | demo1234 | Muhasebeci | hayvanlar, tarlalar, stok, yem, yapılar, personel, denetim         |
+
+Dördü de **rolden bağımsız olarak salt-okunurdur**: koruma e-posta adresine
+bağlıdır, yani Çalışan hesabı, Çalışan rolünün normalde yazabildiği yerlerde
+bile yazamaz. Gizlenen bölümler sunucu tarafında da reddedilir — doğrudan URL
+ile gidilirse proxy'den **gerçek bir HTTP yönlendirmesi** döner, istemci
+tarafında bir sıçrama değil.
+
 ## Komutlar
 
 | Komut              | Açıklama                          |
@@ -374,7 +395,7 @@ Seed çalıştırıldıysa:
 - **Birim testleri (Vitest):** doğrulama şemaları, RBAC yetkilendirme, hız sınırı,
   liste sorgu parametreleri, plan limitleri, finans/harita/tarih/takvim yardımcıları
   + UI bileşenleri (Testing Library: Badge/Button/EmptyState/DataTable/OnboardingModal)
-  — `npm test` (303 test). Kapsam raporu için
+  — `npm test` (304 test). Kapsam raporu için
   `npm run test:coverage` (iş mantığı `src/lib` için ~%90 satır kapsamı; paylaşılan veritabanı yolları entegrasyon testleriyle kapsanır).
 - **Tenant-izolasyon entegrasyon testleri:** gerçek PostgreSQL + non-superuser
   `ciftlik_app` rolüyle `forTenant`/RLS izolasyonu (`*.int.test.ts`) — tenant A
@@ -384,7 +405,7 @@ Seed çalıştırıldıysa:
   **CI bu değişkeni açar**, testler her push/PR'da gerçekten koşar.
 - **Uçtan uca testler (Playwright):** kimlik doğrulama, hayvan CRUD, RBAC
   reddi (gerçek 307), satış → otomatik gelir işlemi, mağaza sepeti → sipariş,
-  davet → kabul → rol ve demo salt-okunurluğu — `npm run test:e2e` (18 test).
+  davet → kabul → rol, demo rol kapsamı ve salt-okunurluk — `npm run test:e2e` (30 test).
 - **CI (GitHub Actions):** her push/PR'da üç paralel job —
   `build` (tsc + ESLint + Vitest + üretim derlemesi),
   `integration` (PostgreSQL + `ciftlik_app` rolü + izolasyon testleri) ve

@@ -1,7 +1,13 @@
-import type { Prisma } from "@prisma/client";
+import type { Prisma, Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { withTenant, type TenantDb } from "@/lib/tenant-prisma";
 import { hashPassword } from "@/lib/password-hash";
+import {
+  DEMO_ACCOUNTS,
+  DEMO_EMAIL,
+  DEMO_EMAILS,
+  DEMO_PASSWORD,
+} from "@/lib/demo-accounts";
 
 // Vitrin (demo) tenant'inin verisi — TEK KAYNAK.
 //
@@ -22,12 +28,24 @@ import { hashPassword } from "@/lib/password-hash";
 export const TENANT_ID = "default-tenant";
 export const TENANT_SLUG = "default";
 export const TENANT_NAME = "Yeşilvadi Çiftliği";
-export const DEMO_EMAIL = "demo@ciftlik.com";
-export const DEMO_PASSWORD = "demo1234";
+export { DEMO_EMAIL, DEMO_PASSWORD };
+
+// Vitrin hesaplari src/lib/demo-accounts.ts'te tanimlidir (TEK KAYNAK) ve
+// yalnizca yeniden disa aktarilir: prisma/seed-demo.ts bu iki sabiti buradan
+// import ediyor.
+export { DEMO_ACCOUNTS, DEMO_EMAILS };
+
+// Derleme zamani kontrolu: demo-accounts.ts bagimlilik eklememek icin rolleri
+// duz bir birlesim tipiyle tutuyor. Burada Prisma zaten import edili, o yuzden
+// eslesmeyi burada dogruluyoruz — bir rol adi Prisma enum'undan saparsa
+// derleme burada duser.
+const _demoRolesMatchPrisma: ReadonlyArray<{ role: Role }> = DEMO_ACCOUNTS;
+void _demoRolesMatchPrisma;
 
 // Demo veri surumu. Icerigi her degistirdiginizde ARTIRIN; bir sonraki
 // dagitim/cron calismasinda demo tenant'i otomatik yeniden kurulur.
-export const DEMO_DATA_VERSION = "3";
+// 3 -> 4: tek ADMIN hesabi yerine rol basina bir vitrin hesabi.
+export const DEMO_DATA_VERSION = "4";
 
 const SEED_STATE_KEY = "demoDataVersion";
 
@@ -213,23 +231,34 @@ async function buildDemoTenant(): Promise<void> {
   const rnd = makeRandom(20260825);
   const passwordHash = await hashPassword(DEMO_PASSWORD);
 
-  // 1) Demo kullanici (ADMIN — vitrin: abonelik/personel/KVKK ekranlari gezilebilsin).
+  // 1) Vitrin hesaplari — rol basina bir tane (bkz. DEMO_ACCOUNTS).
   //    Salt-okunur koruma e-posta tabanlidir (src/lib/authz.ts isDemoUser), rolden bagimsiz.
-  //    Kullanicilar sifirlamada SILINMEDIGINDEN upsert kullanilir: varsa parola/rol
+  //    Kullanicilar sifirlamada SILINMEDIGINDEN upsert kullanilir: varsa ad/parola/rol
   //    tazelenir, yoksa olusturulur.
+  //
+  //    Gorevler ADMIN hesabina atanir (asagida demoUserId), cunku gorev atama
+  //    yalnizca ADMIN'in yetkisindedir (authz.ts writePermissions.tasks).
   const demoUserId = await seedTx(async (db) => {
-    const user = await db.user.upsert({
-      where: { email: DEMO_EMAIL },
-      update: { name: "Demo Kullanıcı", password: passwordHash, role: "ADMIN" },
-      create: {
-        tenantId: TENANT_ID,
-        name: "Demo Kullanıcı",
-        email: DEMO_EMAIL,
-        password: passwordHash,
-        role: "ADMIN",
-      },
-    });
-    return user.id;
+    let adminId = "";
+    for (const account of DEMO_ACCOUNTS) {
+      const user = await db.user.upsert({
+        where: { email: account.email },
+        update: {
+          name: account.name,
+          password: passwordHash,
+          role: account.role,
+        },
+        create: {
+          tenantId: TENANT_ID,
+          name: account.name,
+          email: account.email,
+          password: passwordHash,
+          role: account.role,
+        },
+      });
+      if (account.email === DEMO_EMAIL) adminId = user.id;
+    }
+    return adminId;
   });
 
   // 2) Yapilar + tarlalar ve ekimleri (harita ve tarla ekonomisi icin).
@@ -574,20 +603,26 @@ export async function seedDemo(
   const state = await prisma.seedState.findUnique({ where: { key: SEED_STATE_KEY } });
 
   // Kendi kendini onarma sondasi. "Hic hayvan var mi?" TEK BASINA yetmez:
-  // `npm run db:seed` ayni tenant'i paylasir, demo kullanicisini silip yerine
+  // `npm run db:seed` ayni tenant'i paylasir, demo kullanicilarini silip yerine
   // kendi hayvanlarini yazar. O durumda hayvan sayisi > 0 oldugu ve surum de
-  // degismedigi icin demo hesabi (salt-okunur vitrin girisi) kalici olarak
-  // kaybolurdu. Bu yuzden vitrinin kendi isaretini de ariyoruz.
+  // degismedigi icin vitrin girisleri kalici olarak kaybolurdu. Bu yuzden
+  // vitrinin kendi isaretini de ariyoruz.
+  //
+  // TAM SAYI aranir, sifir degil: hesaplardan yalnizca biri silinmisse (orn.
+  // birisi elle personel ekranindan kaldirdi) de yeniden kurulmali. "> 0"
+  // kontrolu bu kismi bozulmayi gormezden gelirdi.
   const probe = await seedTx(async (db) => ({
     animals: await db.animal.count(),
-    demoAccounts: await db.user.count({ where: { email: DEMO_EMAIL } }),
+    demoAccounts: await db.user.count({
+      where: { email: { in: [...DEMO_EMAILS] } },
+    }),
   }));
 
   let reason: SeedDemoResult["reason"];
   if (reset) reason = "reset";
   else if (state?.value !== DEMO_DATA_VERSION) reason = "version-changed";
   else if (probe.animals === 0) reason = "empty";
-  else if (probe.demoAccounts === 0) reason = "demo-account-missing";
+  else if (probe.demoAccounts < DEMO_ACCOUNTS.length) reason = "demo-account-missing";
   else {
     return { seeded: false, reason: "up-to-date", version: DEMO_DATA_VERSION };
   }

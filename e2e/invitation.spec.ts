@@ -1,5 +1,9 @@
 import { test, expect } from "@playwright/test";
-import { login, ACCOUNTS } from "./helpers";
+import { login, ACCOUNTS, resetLoginRateLimit } from "./helpers";
+
+// Her spec dosyasi giris hiz sinirini sifirlayarak baslar; gerekcesi
+// e2e/helpers.ts icindeki resetLoginRateLimit yorumunda.
+test.beforeAll(resetLoginRateLimit);
 
 // Personel yalnizca TOKEN'LI DAVETLE eklenir. Bu akis uc seyi birden kanitlar:
 // davet olusturma (ADMIN), token'la kabul (oturumsuz) ve davetlinin kendi
