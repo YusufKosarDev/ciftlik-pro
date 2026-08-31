@@ -107,7 +107,7 @@ jobs:
         run: npm run test:coverage
 
       - name: Coverage'i Codecov'a yukle
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           files: ./coverage/lcov.info
           flags: unit
