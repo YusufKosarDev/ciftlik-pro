@@ -101,6 +101,73 @@ APP_USER_DATABASE_URL="postgresql://ciftlik_app:…@HOST:PORT/DB?schema=public" 
 npx vitest run src/lib/tenant-rls.int.test.ts
 ```
 
+<a id="neon-limitation"></a>
+
+## Neon üzerinde bilinen kısıt
+
+Yukarıdaki adımlar, rol yönetiminin sizde olduğu bir PostgreSQL'de çalışır.
+**Neon'un ücretsiz katmanında çalışmaz** ve bunu üretimde keşfetmemeniz için
+buraya yazıyoruz. Denenen iki yol var; ikisi de kapalı.
+
+### Kapı 1 — Rolü SQL ile oluşturmak
+
+`prisma/rls-app-role.sql` beklendiği gibi çalışır: rol oluşur, `rolsuper = f`,
+`rolbypassrls = f`, tablo/sekans/fonksiyon yetkileri verilir. Postgres tarafında
+hiçbir eksik yoktur — parola `scram-sha-256` ile saklanır, `LOGIN` açıktır,
+`CONNECT` yetkisi vardır.
+
+Ama bu rolle **bağlanılamaz**:
+
+```
+password authentication failed for user "ciftlik_app"
+```
+
+Sebep Postgres değil, Neon'un önündeki bağlantı proxy'si: kimlik doğrulamayı
+kendi kontrol düzlemine karşı yapıyor ve SQL ile oluşturulmuş bir rolü
+tanımıyor. Aynı host, aynı parametreler ve aynı sürücüyle `neondb_owner`
+bağlanabiliyor — değişen tek şey kullanıcı adı.
+
+> `SET ROLE ciftlik_app` da bir çıkış yolu değil: PostgreSQL 16'dan itibaren
+> `CREATEROLE` ile oluşturulan role otomatik verilen üyelik yalnızca `ADMIN`
+> seçeneğini taşır. `SET` seçeneği `createrole_self_grant` GUC'una bağlıdır ve
+> varsayılanı boştur, dolayısıyla `permission denied to set role "ciftlik_app"`
+> alırsınız.
+
+### Kapı 2 — Rolü Neon Console'dan oluşturmak
+
+Console'dan oluşturulan rol proxy tarafından tanınır ve **bağlanabilir**. Ancak
+Neon bu rolü otomatik olarak `neon_superuser` grubuna üye yapar, rol de o grubun
+`BYPASSRLS` özniteliğini devralır. Yani bağlanabilen rol, RLS'i aşan roldür.
+
+Üyeliği kaldırmayı denemek de sonuç vermez:
+
+```
+REVOKE neon_superuser FROM ciftlik_app;
+→ ERROR: permission denied to revoke role
+```
+
+Bu kısıt Neon'un kontrol düzleminde uygulanıyor; veritabanının içinden
+aşılabilir bir şey değil.
+
+### Sonuç ve etkisi
+
+Neon ücretsiz katmanında **RLS'e tabi bir uygulama rolü oluşturulamıyor**:
+bağlanabilen rol bypass ediyor, bypass etmeyen rol bağlanamıyor.
+
+Bunun anlamı, kaybedilenin ne olduğu konusunda net olmak gerekirse:
+
+| | Durum |
+| --- | --- |
+| RLS politikaları | 21 tabloda `ENABLE` + `FORCE` + `tenant_isolation`, **tanımlı ve doğru** |
+| CI doğrulaması | Her push'ta `ciftlik_app` (`NOSUPERUSER NOBYPASSRLS`) ile **6 RLS testi** koşuyor (`src/lib/tenant-rls.int.test.ts`) |
+| Barındırılan demo | İkinci katman **uykuda** — bağlantı `BYPASSRLS` taşıyan bir rolle |
+| Uygulama katmanı | Prisma extension + `withTenant` + `SET LOCAL` — demoda da **etkin** |
+
+Yani izolasyon demoda tek katmana iniyor. Bu, tasarımın değil barındırmanın
+sınırı: rol yönetiminin sizde olduğu herhangi bir PostgreSQL'de (ücretli Neon
+planı, Supabase, kendi sunucunuz) yukarıdaki adımlar olduğu gibi çalışır ve
+ikinci katman açılır. SQL de testler de hazır; değişen tek şey bağlantı dizesi.
+
 ## Bağlamsız okumalar: giriş, davet bağlantısı ve mağaza dizini
 
 İki okuma, tenant bağlamı **var olmadan** önce gerçekleşmek zorundadır; ikisi de

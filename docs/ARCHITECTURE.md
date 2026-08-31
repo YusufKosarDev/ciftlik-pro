@@ -72,9 +72,17 @@ Two **independent** layers:
    safety — it means day-to-day code reads naturally.
 
 `FORCE` matters: without it, the table owner bypasses its own policies. And the
-application connects as a dedicated `NOSUPERUSER NOBYPASSRLS` role
-(`prisma/rls-app-role.sql`), because a superuser ignores RLS entirely — which
-would silently reduce the whole design to layer 2 only.
+role matters just as much — a superuser, or anything holding `BYPASSRLS`, ignores
+policies entirely, which silently reduces the whole design to layer 2. That is
+why the isolation suite does not run as the owner: CI creates `ciftlik_app`
+(`NOSUPERUSER NOBYPASSRLS`, `prisma/rls-app-role.sql`) and points the tests at it,
+so the guarantee is measured under the conditions where it actually holds.
+
+The deployed demo is the exception, and it is a hosting constraint rather than a
+design choice: Neon's free tier has no role that its connection proxy will
+authenticate *and* that sits outside `neon_superuser`. See
+[the known Neon limitation](PRODUCTION-RLS.md#neon-limitation). Layer 2 is
+unaffected and runs there as everywhere else.
 
 ### Why `create` is not auto-injected
 
@@ -296,6 +304,7 @@ Stated plainly, because pretending they do not exist is worse than having them.
 
 | Limitation | Impact | Path forward |
 | --- | --- | --- |
+| **RLS is dormant on the hosted demo** | The deployed instance runs on layer 2 only (the Prisma extension plus `SET LOCAL`), because Neon's free tier cannot produce a role that is both proxy-reachable and outside `neon_superuser`. The policies themselves are correct and are proven in CI under a restricted role on every push. | A paid Neon plan, or any Postgres where you own role management, needs nothing but the connection string swap in [PRODUCTION-RLS.md](PRODUCTION-RLS.md#neon-limitation). The SQL and the tests are already written. |
 | **One tenant per user** | `User.tenantId` is a single value; a person cannot belong to two farms. | Introduce a `Membership` join table; the session already carries `tenantId`, so the change is mostly in auth and the tenant resolver. |
 | **Tenant resolved from the session, not the URL** | No `acme.ciftlik-pro.app` subdomains yet. | `Tenant.slug` already exists and the storefront already resolves by slug; extending it to the panel is additive. |
 | **Invitation tokens stored in plaintext** | Database read access exposes pending invite tokens. | Store a hash and compare on accept — tokens are already single-use and time-limited. |

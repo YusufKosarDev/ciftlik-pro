@@ -49,9 +49,16 @@ So isolation is enforced twice, in two independent layers:
 1. **PostgreSQL Row-Level Security** — every tenant table has `ENABLE` + `FORCE`
    row level security and a `tenant_isolation` policy
    (`tenantId = current_setting('app.tenant_id')`, plus `WITH CHECK` on writes).
-   If a query forgets its filter, the database returns nothing rather than someone
-   else's data. In production the app connects as a dedicated
-   `NOSUPERUSER NOBYPASSRLS` role, because a superuser ignores RLS entirely.
+   If a query forgets its filter the database returns nothing, not someone else's
+   data.
+
+   A policy is worth exactly as much as the role it applies to, so this one is
+   proven rather than asserted: CI provisions `ciftlik_app` — `NOSUPERUSER
+   NOBYPASSRLS` — on every push and runs the isolation suite through it. The
+   hosted demo runs without that second layer, because Neon's free tier offers no
+   role that is both reachable through its connection proxy and outside
+   `neon_superuser`. Both attempts and why each one failed are written down in
+   [PRODUCTION-RLS.md](docs/PRODUCTION-RLS.md#neon-limitation).
 
 2. **A Prisma Client Extension** that injects `tenantId` into every list, count,
    aggregate and bulk-write `where`. This layer is for ergonomics; the database is
@@ -153,7 +160,9 @@ and a monthly income/expense chart:
 ## Engineering highlights
 
 - **Two-layer tenant isolation** (Postgres RLS + Prisma extension), pgbouncer-safe
-  `SET LOCAL`, non-superuser role in production — verified by integration tests.
+  `SET LOCAL`; the RLS layer runs under a `NOSUPERUSER NOBYPASSRLS` role in CI on
+  every push, and the hosting limit that leaves it dormant on the demo is
+  documented rather than glossed over.
 - **One authorization source** (`src/lib/authz.ts`) applied at three levels: edge
   proxy (real `307` before rendering), server pages, and every write endpoint.
 - **End-to-end type safety** — Zod validates on both client and server; Prisma
@@ -218,8 +227,9 @@ typing the URL.
 
 Hardening:
 
-- **Tenant isolation in two layers** (see above), with a non-superuser database
-  role in production.
+- **Tenant isolation in two layers** (see above) — the application layer runs
+  everywhere including the demo; the database layer is verified in CI against a
+  role that cannot bypass it.
 - **Passwords hashed with scrypt** (async, so the event loop never blocks),
   constant-time comparison, and full backward compatibility with legacy bcrypt
   hashes. Plaintext is never stored or returned.
@@ -435,9 +445,11 @@ messages/          tr.json / en.json translation catalogues
    `STRIPE_PRO_PRICE_ID` (subscriptions), `RESEND_API_KEY` + `ALERT_EMAIL_FROM`
    (email alerts), `CRON_SECRET` (cron protection), `NEXT_PUBLIC_SITE_URL`.
 
-4. **Enable RLS properly in production** — create the non-superuser role and point
-   the runtime connection at it: see
-   [docs/PRODUCTION-RLS.md](docs/PRODUCTION-RLS.md).
+4. **Turn on the RLS layer, if your host permits it** — create the non-superuser
+   role and point the runtime connection at it:
+   [docs/PRODUCTION-RLS.md](docs/PRODUCTION-RLS.md). On Neon's free tier this is
+   currently not possible; [that document says why](docs/PRODUCTION-RLS.md#neon-limitation),
+   so the next person does not spend an evening discovering it.
 
 5. Push to `main` → Vercel builds and deploys.
 

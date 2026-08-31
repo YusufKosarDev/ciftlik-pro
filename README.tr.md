@@ -120,8 +120,8 @@ göstergeleriyle) ve aylık gelir-gider grafiği:
 
 - **Çok-kiracılı izolasyon (RLS + app)** — Postgres Row-Level Security (`FORCE` +
   `WITH CHECK`) ve tenant-kapsamlı Prisma extension; pgbouncer-uyumlu
-  `SET LOCAL app.tenant_id`. Üretimde non-superuser rol. (Bkz.
-  [Çok-kiracılık](#-çok-kiracılık-multi-tenant-saas).)
+  `SET LOCAL app.tenant_id`. RLS katmanı CI'da, onu bypass **edemeyen** bir rolle
+  her push'ta sınanır. (Bkz. [Çok-kiracılık](#-çok-kiracılık-multi-tenant-saas).)
 - **Rol bazlı yetkilendirme (RBAC)** tek merkezden (`src/lib/authz.ts`); hem yazma
   (API) hem hassas okuma (sayfa) düzeyinde uygulanır.
 - **Uçtan uca tip güvenliği** — Zod şemaları hem istemci hem sunucuda doğrular;
@@ -186,8 +186,11 @@ Sertleştirme önlemleri:
 
 - **Tenant izolasyonu (iki katman)** — Postgres **RLS** (`ENABLE`+`FORCE`,
   `WITH CHECK`) her tenant-tablosunu DB-seviyesinde korur; ayrıca uygulama katmanı
-  her sorguya `tenantId` enjekte eder. Üretimde uygulama **non-superuser** rolle
-  bağlanır (RLS bypass edilemez). İzolasyon entegrasyon testleriyle doğrulanır.
+  her sorguya `tenantId` enjekte eder. RLS katmanının gerçekten ısırdığı, onu
+  bypass edemeyen bir rolle kanıtlanır: CI her push'ta `ciftlik_app` rolünü
+  (`NOSUPERUSER NOBYPASSRLS`) kurup izolasyon testlerini o rolle koşar.
+  Barındırılan demoda bu katman etkin değildir; gerekçesi
+  [`docs/PRODUCTION-RLS.md`](docs/PRODUCTION-RLS.md#neon-limitation) içinde.
 - **Kayıt & davet** — herkese açık **çiftlik kaydı** sahip-ADMIN üretir; personel
   yalnızca **token'lı davetle** eklenir. Davet token'ları tahmin edilemez sırlardır,
   süre sınırlıdır ve tek kullanımlıktır. Ziyaretçiler giriş ekranından rol seçerek salt-okunur vitrin hesaplarıyla gezer.
@@ -229,8 +232,20 @@ bağımsız katmanda** zorlanır:
 1. **Postgres Row-Level Security (RLS)** — her tenant-tablosunda `ENABLE` + `FORCE`
    ve `tenant_isolation` policy'si (`tenantId = current_setting('app.tenant_id')`,
    yazmada `WITH CHECK`). Sorgu nereyi unutursa unutsun **veritabanı sızdırmaz**.
-   Üretimde uygulama **non-superuser** rolle bağlanır (`prisma/rls-app-role.sql`,
-   bkz. [`docs/PRODUCTION-RLS.md`](docs/PRODUCTION-RLS.md)).
+   Bir politika, uygulandığı rol kadar değerlidir. Bu yüzden iddia sözde değil,
+   koşumda: CI'nın `integration` job'ı her push'ta `prisma/rls-app-role.sql` ile
+   `ciftlik_app` rolünü (`NOSUPERUSER NOBYPASSRLS`) oluşturur ve izolasyon
+   testlerini **o rolle** çalıştırır — tenant A, tenant B'nin satırlarına
+   `findMany` ile de `findUnique` ile de ulaşamaz; bağlam yokken sıfır satır
+   görünür.
+
+   > **Barındırılan demoda bu ikinci katman etkin değildir.** Neon'un ücretsiz
+   > katmanında, hem bağlantı proxy'sinin tanıdığı hem de `neon_superuser`
+   > dışında kalan bir rol oluşturulamıyor. Denenen iki yol ve ikisinin de neden
+   > kapandığı:
+   > [`docs/PRODUCTION-RLS.md`](docs/PRODUCTION-RLS.md#neon-limitation).
+   > Uygulama katmanı (Prisma extension + `withTenant` + `SET LOCAL`) demoda da
+   > tam olarak çalışır.
 2. **Uygulama katmanı** — bir Prisma Client Extension (`forTenant`) `where`'lere
    otomatik `tenantId` enjekte eder; `withTenant` interaktif `$transaction` içinde
    `SET LOCAL app.tenant_id` ayarlar — **pgbouncer/serverless uyumlu** desen.
