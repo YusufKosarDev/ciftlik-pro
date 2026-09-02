@@ -1,19 +1,20 @@
 import { prisma } from "@/lib/prisma";
 
-// Tenant'a kapsanmis Prisma client (Cok-kiracilik Faz 1, app-katmani izolasyon).
+// Tenant-scoped Prisma client (multi-tenancy phase 1, application-layer isolation).
 //
-// Liste/sayim/aggregate/where-tabanli islemlere otomatik `tenantId` enjekte eder;
-// boylece bir tenant baska tenant'in verisini goremez/yazamaz.
+// Injects `tenantId` into every list / count / aggregate / where-based operation,
+// so one tenant cannot read or write another tenant's data.
 //
-// YAZMA islemlerinde (create) tenantId, cagiran tarafindan acikca verilir; tip
-// sistemi bunu zorunlu kilar (tenantId 17 tabloda NOT NULL). Yanlis/eksik tenantId
-// ile yazma, Postgres RLS WITH CHECK politikasi tarafindan reddedilir (DB-seviyesi
-// garanti). Boylece tek ve net mekanizma: acik tenantId + RLS.
+// On WRITES (create) the caller passes tenantId explicitly; the type system makes
+// that mandatory (tenantId is NOT NULL on 17 tables). A write with a wrong or
+// missing tenantId is rejected by the Postgres RLS WITH CHECK policy — the
+// database-level guarantee. One mechanism, stated once: explicit tenantId plus RLS.
 //
-// SINIR: Unique-hedefli islemler (findUnique / update / delete / upsert) tek bir
-// kaydi benzersiz anahtarla hedefler ve where'e `tenantId` eklenemez. Bu islemlerde
-// cagiran katman `tenantId`'yi where'e koymali (orn. `where: { id }` findFirst ile,
-// RLS kapsami zaten satiri gizler) VEYA Postgres RLS her islemi garanti eder.
+// LIMIT: unique-targeted operations (findUnique / update / delete / upsert) address
+// a single row by a unique key and cannot take `tenantId` in their where. For those
+// the calling layer must put `tenantId` in the where itself (e.g. `where: { id }`
+// via findFirst, where the forTenant scope already hides the row) OR rely on
+// Postgres RLS, which covers every operation.
 
 const WHERE_OPS = new Set([
   "findFirst",
@@ -32,15 +33,16 @@ export function forTenant(tenantId: string) {
     query: {
       $allModels: {
         async $allOperations({ model, operation, args, query }) {
-          // Tenant tablosunun kendisi kapsanmaz.
+          // The Tenant table itself is not scoped.
           if (model === "Tenant") return query(args);
 
           const a = (args ?? {}) as Record<string, unknown>;
           if (WHERE_OPS.has(operation)) {
             a.where = { ...((a.where as object) ?? {}), tenantId };
           }
-          // create/createMany: tenantId cagiran tarafindan acikca verilir (tip
-          // zorunlulugu + RLS WITH CHECK). Burada enjeksiyon yapilmaz.
+          // create/createMany: the caller passes tenantId explicitly (enforced by
+          // the type system, checked again by RLS WITH CHECK). Nothing is injected
+          // here.
           return query(a);
         },
       },
@@ -50,25 +52,26 @@ export function forTenant(tenantId: string) {
 
 export type TenantPrisma = ReturnType<typeof forTenant>;
 
-// RLS baglamini ayarlayarak tenant-kapsamli calistirir: interaktif transaction
-// icinde `app.tenant_id` GUC'unu SET LOCAL eder (pgbouncer uyumlu) ve forTenant
-// enjeksiyonlu tx verir. Uretimde uygulama NON-SUPERUSER rolle baglandiginda
-// Postgres RLS, bu baglam disindaki tum satirlari gizler (findUnique/update/delete
-// dahil). Cagiranlar: `await withTenant(session.user.tenantId, (db) => db.animal.findMany())`.
+// Runs a unit of work tenant-scoped by establishing the RLS context: sets the
+// `app.tenant_id` GUC with SET LOCAL inside an interactive transaction
+// (pgbouncer-safe) and hands back a forTenant-injected tx. When the application
+// connects as a NON-SUPERUSER role in production, Postgres RLS then hides every
+// row outside that context — findUnique / update / delete included.
+// Callers: `await withTenant(session.user.tenantId, (db) => db.animal.findMany())`.
 export async function withTenant<T>(
   tenantId: string,
   fn: (db: Parameters<Parameters<TenantPrisma["$transaction"]>[0]>[0]) => Promise<T>,
-  // Uzun suren toplu isler (orn. demo verisi kurulumu) icin transaction
-  // zaman asimi yukseltilebilir. Varsayilan Prisma degerleri istek yollarinda
-  // kalir; yalnizca acikca verildiginde degisir.
+  // Long-running batch jobs (e.g. seeding the showcase dataset) can raise the
+  // transaction timeout. Request paths keep Prisma's defaults; this only changes
+  // when passed explicitly.
   options?: { timeout?: number; maxWait?: number }
 ): Promise<T> {
   return forTenant(tenantId).$transaction(async (tx) => {
-    // set_config(name, value, is_local=true) === SET LOCAL (transaction kapsamli).
+    // set_config(name, value, is_local=true) === SET LOCAL (transaction-scoped).
     await tx.$executeRaw`SELECT set_config('app.tenant_id', ${tenantId}, true)`;
     return fn(tx);
   }, options);
 }
 
-// withTenant'in fn'ine gecen kapsanmis tx tipi (cagiranlar icin kisayol).
+// The scoped tx type passed to withTenant's fn (shorthand for callers).
 export type TenantDb = Parameters<Parameters<TenantPrisma["$transaction"]>[0]>[0];
