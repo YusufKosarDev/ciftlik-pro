@@ -4,7 +4,7 @@ import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { saleSchema } from "@/lib/validations/sale";
-import { saleDescription } from "@/app/api/sales/route";
+import { saleDescription } from "@/lib/sale-description";
 
 // PUT /api/sales/[id] -> satisi gunceller ve bagli gelir islemini senkronlar.
 export async function PUT(

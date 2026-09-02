@@ -4,11 +4,7 @@ import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { saleSchema } from "@/lib/validations/sale";
-
-// Satistan otomatik gelir islemi icin aciklama.
-export function saleDescription(item: string, customer?: string | null): string {
-  return customer ? `${item} — ${customer}` : item;
-}
+import { saleDescription } from "@/lib/sale-description";
 
 // POST /api/sales -> yeni satis olusturur ve ona bagli bir gelir (INCOME)
 // islemi yaratir (tek transaction'da). Boylece satislar finansa otomatik yansir.
