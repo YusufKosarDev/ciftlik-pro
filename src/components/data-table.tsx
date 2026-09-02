@@ -177,7 +177,7 @@ export function DataTable<T extends { id: string }>({
 
   return (
     <div className="space-y-3">
-      {/* Üst İşlem Çubuğu (Arama + CSV + Sütunlar) */}
+      {/* Top action bar (search, CSV, columns) */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         {searchable && (
           <div className="relative max-w-xs flex-1 min-w-[200px]">
@@ -224,7 +224,7 @@ export function DataTable<T extends { id: string }>({
                             type="checkbox"
                             checked={!hiddenColumnKeys.has(col.key)}
                             onChange={() => toggleColumn(col.key)}
-                            className="rounded border-border text-green-600 focus:ring-green-500 h-3.5 w-3.5"
+                            className="rounded border-border text-green-700 focus:ring-green-500 h-3.5 w-3.5"
                           />
                           {col.header}
                         </label>
@@ -237,7 +237,7 @@ export function DataTable<T extends { id: string }>({
         </div>
       </div>
 
-      {/* Toplu İşlem Çubuğu */}
+      {/* Bulk action bar */}
       {selectedIds.length > 0 && onBulkDelete && (
         <div className="flex items-center justify-between rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 p-3 text-sm animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="flex items-center gap-2 text-red-700 dark:text-red-400 font-medium">
@@ -278,7 +278,7 @@ export function DataTable<T extends { id: string }>({
                         type="checkbox"
                         checked={selectedIds.length === data.length}
                         onChange={toggleSelectAll}
-                        className="rounded border-border text-green-600 focus:ring-green-500 h-4 w-4 cursor-pointer"
+                        className="rounded border-border text-green-700 focus:ring-green-500 h-4 w-4 cursor-pointer"
                       />
                     </th>
                   )}
@@ -328,7 +328,7 @@ export function DataTable<T extends { id: string }>({
                           type="checkbox"
                           checked={selectedIds.includes(row.id)}
                           onChange={() => toggleSelectRow(row.id)}
-                          className="rounded border-border text-green-600 focus:ring-green-500 h-4 w-4 cursor-pointer"
+                          className="rounded border-border text-green-700 focus:ring-green-500 h-4 w-4 cursor-pointer"
                         />
                       </td>
                     )}

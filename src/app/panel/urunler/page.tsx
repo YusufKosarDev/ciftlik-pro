@@ -67,7 +67,7 @@ export default async function UrunlerPage({
             {t("totalWithStore", { count: total })}{" "}
             <Link
               href={tenant ? `/magaza/${tenant.slug}` : "/magaza"}
-              className="text-green-600 hover:underline dark:text-green-400"
+              className="text-green-700 hover:underline dark:text-green-400"
             >
               {t("storeLink")}
             </Link>

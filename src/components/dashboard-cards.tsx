@@ -14,14 +14,14 @@ type DeltaProp = {
 } | null;
 
 const statTones = {
-  green: "bg-green-50 text-green-600 dark:bg-green-500/15 dark:text-green-400",
+  green: "bg-green-50 text-green-700 dark:bg-green-500/15 dark:text-green-400",
   amber: "bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400",
   sky: "bg-sky-50 text-sky-600 dark:bg-sky-500/15 dark:text-sky-400",
   violet: "bg-violet-50 text-violet-600 dark:bg-violet-500/15 dark:text-violet-400",
 } as const;
 
 const deltaToneClass = {
-  up: "text-green-600 dark:text-green-400",
+  up: "text-green-700 dark:text-green-400",
   down: "text-red-600 dark:text-red-400",
   neutral: "text-muted-foreground",
 } as const;
@@ -66,10 +66,10 @@ function StatCard({
       <div className="min-w-0 flex-1">
         <p className="text-sm text-muted-foreground truncate">{label}</p>
         {/*
-          Deger uzunluguna gore olcek: "26" ile "327.715,00 TL" ayni kutuya
-          sigmaz. Gercekci verilerle para tutarlari text-2xl'de tasip
-          kirpiliyordu (kirpilmis bir tutar yanlis okunur). Uzun degerlerde
-          punto kuculur; truncate yalnizca son care olarak kalir.
+          Scale with the value's length: "26" and "327.715,00 TL" do not fit the
+          same box. With realistic data the currency amounts overflowed at
+          text-2xl and were clipped, and a clipped amount is read wrong. Long
+          values step the size down; truncate stays as the last resort.
         */}
         <p
           className={cn(
@@ -152,7 +152,7 @@ export function DashboardCards({
 
   return (
     <div className="space-y-4">
-      {/* Widget Özelleştirme Butonu */}
+      {/* Widget customisation button */}
       <div className="flex justify-end relative">
         <button
           onClick={() => setShowConfig(!showConfig)}
@@ -181,7 +181,7 @@ export function DashboardCards({
                       type="checkbox"
                       checked={visibleWidgets[w.key] !== false}
                       onChange={() => toggleWidget(w.key)}
-                      className="rounded border-border text-green-600 focus:ring-green-500 h-3.5 w-3.5"
+                      className="rounded border-border text-green-700 focus:ring-green-500 h-3.5 w-3.5"
                     />
                     {w.label}
                   </label>
@@ -192,7 +192,7 @@ export function DashboardCards({
         )}
       </div>
 
-      {/* Özet kartları */}
+      {/* Summary cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {visibleWidgets.animals !== false && (
           <StatCard
@@ -221,7 +221,7 @@ export function DashboardCards({
             value={balanceFormatted}
             Icon={Wallet}
             tone="sky"
-            valueClass={balance >= 0 ? "text-green-600" : "text-red-600"}
+            valueClass={balance >= 0 ? "text-green-700" : "text-red-600"}
             delta={balanceDelta}
           />
         )}

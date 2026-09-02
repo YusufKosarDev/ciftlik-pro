@@ -66,12 +66,12 @@ export function PanelShell({
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Masaustu: sabit sidebar */}
+      {/* Desktop: fixed sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:block">
         <Sidebar navItems={navItems} userName={userName} roleLabel={roleLabel} />
       </div>
 
-      {/* Mobil: cekmece */}
+      {/* Mobile: drawer */}
       {mobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div
@@ -90,7 +90,7 @@ export function PanelShell({
         </div>
       )}
 
-      {/* Icerik kolonu */}
+      {/* Content column */}
       <div className="lg:pl-64">
         <Topbar
           navItems={navItems}

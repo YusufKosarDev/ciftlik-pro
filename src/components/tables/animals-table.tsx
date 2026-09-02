@@ -86,7 +86,7 @@ export function AnimalsTable({
         <div className="flex items-center justify-end gap-4">
           <Link
             href={`/panel/hayvanlar/${a.id}/duzenle`}
-            className="text-sm font-medium text-green-600 dark:text-green-400 hover:underline"
+            className="text-sm font-medium text-green-700 dark:text-green-400 hover:underline"
           >
             {tc("edit")}
           </Link>

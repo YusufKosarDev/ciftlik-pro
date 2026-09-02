@@ -49,7 +49,7 @@ export function SalesTable({
       sortKey: "amount",
       headerClassName: "text-right",
       className: "text-right",
-      cell: (s) => <span className="font-medium text-green-600 dark:text-green-400">{formatMoney(s.amount)}</span>,
+      cell: (s) => <span className="font-medium text-green-700 dark:text-green-400">{formatMoney(s.amount)}</span>,
     },
   ];
 
@@ -63,7 +63,7 @@ export function SalesTable({
         <div className="flex items-center justify-end gap-4">
           <Link
             href={`/panel/satis/${s.id}/duzenle`}
-            className="text-sm font-medium text-green-600 hover:underline dark:text-green-400"
+            className="text-sm font-medium text-green-700 hover:underline dark:text-green-400"
           >
             {tc("edit")}
           </Link>

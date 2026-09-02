@@ -60,7 +60,7 @@ export default async function LandingPage() {
       <header className="sticky top-0 z-20 border-b border-border bg-card/80 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-5xl items-center gap-3 px-4 sm:px-6">
           <span className="flex items-center gap-2 font-bold text-foreground">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-600 text-white">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-700 text-white">
               <Wheat className="h-4 w-4" />
             </span>
             Çiftlik Pro
@@ -148,7 +148,7 @@ export default async function LandingPage() {
             {HIGHLIGHTS.map(({ icon: Icon, key }) => (
               <Card key={key} className="p-5">
                 <h3 className="flex items-center gap-2 font-semibold text-foreground">
-                  <Icon className="h-4 w-4 text-green-600 dark:text-green-400" aria-hidden />
+                  <Icon className="h-4 w-4 text-green-700 dark:text-green-400" aria-hidden />
                   {t(`${key}Title`)}
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">

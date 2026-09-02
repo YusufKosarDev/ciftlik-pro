@@ -33,7 +33,7 @@ function BreakdownList({
           {rows.map((r) => (
             <li key={r.category} className="flex justify-between">
               <span className="text-foreground">{r.category}</span>
-              <span className={`font-medium ${tone === "green" ? "text-green-600" : "text-red-600"}`}>
+              <span className={`font-medium ${tone === "green" ? "text-green-700" : "text-red-600"}`}>
                 {formatMoney(r.total, locale)}
               </span>
             </li>
@@ -112,7 +112,7 @@ export default async function FinansPage({
           <span>💰</span> {t("title")}
         </h1>
         <div className="flex items-center gap-2">
-          {/* Dosya indirme ucnoktasi; sayfa navigasyonu degil, bu yuzden <a download>. */}
+          {/* A file download endpoint, not a page navigation — hence <a download>. */}
           <a
             href="/api/transactions/export"
             download
@@ -128,11 +128,11 @@ export default async function FinansPage({
         </div>
       </div>
 
-      {/* Ozet kartlari */}
+      {/* Summary cards */}
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-xl border border-border bg-card p-5">
           <p className="text-sm text-muted-foreground">{t("income")}</p>
-          <p className="mt-1 text-xl font-bold text-green-600">
+          <p className="mt-1 text-xl font-bold text-green-700">
             {formatMoney(totalIncome, locale)}
           </p>
         </div>
@@ -146,7 +146,7 @@ export default async function FinansPage({
           <p className="text-sm text-muted-foreground">{t("title")} Net Bakiye</p>
           <p
             className={`mt-1 text-xl font-bold ${
-              balance >= 0 ? "text-green-600" : "text-red-600"
+              balance >= 0 ? "text-green-700" : "text-red-600"
             }`}
           >
             {formatMoney(balance, locale)}
@@ -154,7 +154,7 @@ export default async function FinansPage({
         </div>
       </div>
 
-      {/* Kategori kirilimi */}
+      {/* Category breakdown */}
       {grouped.length > 0 && (
         <div className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">

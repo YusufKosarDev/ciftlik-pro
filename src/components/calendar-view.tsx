@@ -144,7 +144,7 @@ export function CalendarView({
 
   return (
     <div className="space-y-6">
-      {/* Üst Kısım / Ay Seçici */}
+      {/* Header and month picker */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
@@ -173,7 +173,7 @@ export function CalendarView({
         </div>
       </div>
 
-      {/* İnteraktif Filtre Paneli */}
+      {/* Interactive filter panel */}
       <div className="flex flex-wrap gap-2.5">
         {[
           { key: "vaccination", label: t("vaccination"), color: "bg-yellow-400 text-yellow-950 dark:bg-yellow-500/20 dark:text-yellow-400" },
@@ -199,7 +199,7 @@ export function CalendarView({
         })}
       </div>
 
-      {/* Grid Takvim */}
+      {/* Calendar grid */}
       <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
         <div className="grid grid-cols-7 border-b border-border bg-muted text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           {weekdays.map((d) => (
@@ -220,12 +220,12 @@ export function CalendarView({
                 }`}
               >
                 <div className="flex justify-between items-center mb-1">
-                  {/* Hücre Hızlı Ekle İkonu */}
-                  <span className="text-[10px] text-green-600 font-bold opacity-0 group-hover:opacity-100 transition">{t("cellAdd")}</span>
+                  {/* Per-cell quick add icon */}
+                  <span className="text-[10px] text-green-700 font-bold opacity-0 group-hover:opacity-100 transition">{t("cellAdd")}</span>
                   <div
                     className={`text-xs ${
                       day.isToday
-                        ? "flex h-5 w-5 items-center justify-center rounded-full bg-green-600 font-bold text-white shadow-sm"
+                        ? "flex h-5 w-5 items-center justify-center rounded-full bg-green-700 font-bold text-white shadow-sm"
                         : day.inMonth
                         ? "text-foreground"
                         : "text-muted-foreground"
@@ -253,13 +253,13 @@ export function CalendarView({
         </div>
       </div>
 
-      {/* Hızlı Ekle Modalı */}
+      {/* Quick add modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop */}
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowModal(false)} />
 
-          {/* Modal Gövdesi */}
+          {/* Modal body */}
           <div className="relative w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-2xl animate-in zoom-in-95 duration-200 z-10 space-y-4">
             <div className="flex justify-between items-center border-b border-border pb-3">
               <h3 className="font-bold text-lg text-foreground flex items-center gap-1.5">
@@ -273,7 +273,7 @@ export function CalendarView({
               </button>
             </div>
 
-            {/* Form Seçimi Tabları */}
+            {/* Form selection tabs */}
             <div className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-1">
               <button
                 type="button"
@@ -401,7 +401,7 @@ export function CalendarView({
                 <button
                   type="submit"
                   disabled={saving}
-                  className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-60 transition cursor-pointer"
+                  className="rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800 disabled:opacity-60 transition cursor-pointer"
                 >
                   {saving ? "Kaydediliyor..." : tc("save")}
                 </button>

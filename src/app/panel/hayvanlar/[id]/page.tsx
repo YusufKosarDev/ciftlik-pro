@@ -158,7 +158,7 @@ export default async function HayvanDetayPage({
           {canEditAnimal && (
             <Link
               href={`/panel/hayvanlar/${animal.id}/duzenle`}
-              className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700"
+              className="rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-800"
             >
               {tc("edit")}
             </Link>
@@ -205,7 +205,7 @@ export default async function HayvanDetayPage({
         <Row label={t("notes")} value={animal.notes ?? "-"} />
       </div>
 
-      {/* Saglik Kayitlari */}
+      {/* Health records */}
       <section className="space-y-4">
         <h2 className="text-lg font-bold text-foreground">{t("healthRecords")}</h2>
 
@@ -241,7 +241,7 @@ export default async function HayvanDetayPage({
         )}
       </section>
 
-      {/* Asi Takvimi */}
+      {/* Vaccination schedule */}
       <section className="space-y-4">
         <h2 className="text-lg font-bold text-foreground">{t("vaccinationSchedule")}</h2>
 
@@ -275,7 +275,7 @@ export default async function HayvanDetayPage({
         )}
       </section>
 
-      {/* Sut Verimi */}
+      {/* Milk yield */}
       <section className="space-y-4">
         <h2 className="text-lg font-bold text-foreground">{t("milkYield")}</h2>
 
@@ -336,7 +336,7 @@ export default async function HayvanDetayPage({
         )}
       </section>
 
-      {/* Agirlik Takibi */}
+      {/* Weight tracking */}
       <section className="space-y-4">
         <h2 className="text-lg font-bold text-foreground">{t("weightTracking")}</h2>
 
@@ -359,7 +359,7 @@ export default async function HayvanDetayPage({
                 <p className="text-xs text-muted-foreground">{t("weightChange")}</p>
                 <p
                   className={`text-lg font-bold ${
-                    (wStats.change ?? 0) >= 0 ? "text-green-600" : "text-red-600"
+                    (wStats.change ?? 0) >= 0 ? "text-green-700" : "text-red-600"
                   }`}
                 >
                   {(wStats.change ?? 0) >= 0 ? "+" : ""}
@@ -412,7 +412,7 @@ export default async function HayvanDetayPage({
         )}
       </section>
 
-      {/* Ureme Kayitlari */}
+      {/* Breeding records */}
       <section className="space-y-4">
         <h2 className="text-lg font-bold text-foreground">{t("breedingRecords")}</h2>
 
@@ -470,7 +470,7 @@ export default async function HayvanDetayPage({
         )}
       </section>
 
-      {/* Soy (Pedigri) */}
+      {/* Lineage (pedigree) */}
       <section className="space-y-4">
         <h2 className="text-lg font-bold text-foreground">{t("lineage")}</h2>
         <div className="rounded-xl border border-border bg-card p-6">

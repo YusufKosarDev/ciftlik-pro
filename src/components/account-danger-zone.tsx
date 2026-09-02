@@ -46,7 +46,7 @@ export function AccountDangerZone({
         <AlertTriangle className="h-4 w-4" /> {t("dangerZone")}
       </h2>
 
-      {/* Veri dışa aktarma (KVKK taşınabilirlik) */}
+      {/* Data export (GDPR/KVKK portability) */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-5">
         <div>
           <p className="text-sm font-medium text-foreground">{t("exportData")}</p>
@@ -59,7 +59,7 @@ export function AccountDangerZone({
         </a>
       </div>
 
-      {/* Çiftliği kalıcı silme */}
+      {/* Permanently delete the farm */}
       {canDelete ? (
         <div className="space-y-3">
           <div>

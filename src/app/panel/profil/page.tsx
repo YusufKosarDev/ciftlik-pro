@@ -62,8 +62,8 @@ export default async function ProfilPage() {
         </Link>
       )}
 
-      {/* Dil secimi: baslik cubugundaki degistirici dar ekranlarda gizlidir,
-          bu yuzden kalici yeri burasi. */}
+      {/* Language choice: the switcher in the top bar is hidden on narrow screens,
+          so this is its permanent home. */}
       <div className="flex items-center justify-between rounded-xl border border-border bg-card p-5">
         <div>
           <h2 className="font-semibold text-foreground">{t("language")}</h2>

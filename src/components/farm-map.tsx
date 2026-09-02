@@ -346,7 +346,7 @@ export function FarmMap({
 
   return (
     <div className="space-y-3">
-      {/* Arac cubugu + renk aciklamasi */}
+      {/* Toolbar and colour legend */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
           {(Object.keys(statusLabels) as CropMapStatus[]).map((s) => (
@@ -393,7 +393,7 @@ export function FarmMap({
                 <button
                   onClick={saveLayout}
                   disabled={saving || movedCount === 0}
-                  className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-60"
+                  className="rounded-lg bg-green-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-green-800 disabled:opacity-60"
                 >
                   {saving ? "Kaydediliyor..." : "Kaydet"}
                 </button>
@@ -426,7 +426,7 @@ export function FarmMap({
           onPointerMove={onSvgPointerMove}
           onPointerUp={onSvgPointerUp}
         >
-          {/* Zoom/Pan Transform Grubu */}
+          {/* Zoom/pan transform group */}
           <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
             {renderFields.map((f) => {
               const c = statusColors[f.status];
@@ -478,7 +478,7 @@ export function FarmMap({
               );
             })}
 
-            {/* Yapilar (ahir/kumes/depo) */}
+            {/* Structures (barn/coop/store) */}
             {renderStructs.map((s) => (
               <g
                 key={s.id}
@@ -523,7 +523,7 @@ export function FarmMap({
           </g>
         </svg>
 
-        {/* Hover Bilgi Kartı (Tooltip) */}
+        {/* Hover info card (tooltip) */}
         {hoverInfo && !editing && (
           <div
             className="absolute z-30 pointer-events-none rounded-lg border border-border bg-card p-3 shadow-lg text-xs space-y-1 w-52 animate-in fade-in zoom-in-95 duration-100"
@@ -538,7 +538,7 @@ export function FarmMap({
                 <p className="text-muted-foreground">📍 Konum: {hoverInfo.data.location || "-"}</p>
                 <p className="text-muted-foreground">📐 Alan: {hoverInfo.data.area} dönüm</p>
                 <p className="text-muted-foreground">
-                  🌾 Durum: <span className="font-semibold text-green-600 dark:text-green-400">{statusLabels[hoverInfo.data.status as CropMapStatus]}</span>
+                  🌾 Durum: <span className="font-semibold text-green-700 dark:text-green-400">{statusLabels[hoverInfo.data.status as CropMapStatus]}</span>
                 </p>
                 {hoverInfo.data.notes && (
                   <p className="border-t border-border mt-1 pt-1 italic text-[10px] text-muted-foreground truncate">
@@ -562,7 +562,7 @@ export function FarmMap({
           </div>
         )}
 
-        {/* Zoom & Pan Buton Kontrolleri */}
+        {/* Zoom and pan button controls */}
         {!editing && (
           <div className="absolute bottom-4 right-4 flex flex-col gap-1.5 z-10">
             <button

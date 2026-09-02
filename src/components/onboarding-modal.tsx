@@ -103,7 +103,7 @@ export function OnboardingModal({
               key={m.title}
               className="flex flex-col gap-1.5 rounded-xl border border-border bg-muted/60 p-3"
             >
-              <m.icon className="h-5 w-5 text-green-600" aria-hidden />
+              <m.icon className="h-5 w-5 text-green-700" aria-hidden />
               <span className="font-semibold text-foreground">{m.title}</span>
               <span className="text-xs text-muted-foreground">{m.desc}</span>
             </div>
@@ -203,8 +203,8 @@ export function OnboardingModal({
       aria-labelledby="onboarding-title"
     >
       <div className="onboarding-panel w-full max-w-lg overflow-hidden rounded-2xl bg-card shadow-2xl">
-        {/* Markali baslik */}
-        <div className="relative bg-gradient-to-br from-green-600 to-emerald-500 px-6 py-7 text-white">
+        {/* Branded header */}
+        <div className="relative bg-gradient-to-br from-green-700 to-emerald-700 px-6 py-7 text-white">
           <button
             type="button"
             onClick={finish}
@@ -232,14 +232,14 @@ export function OnboardingModal({
           </div>
         </div>
 
-        {/* Adim icerigi */}
+        {/* Step content */}
         <div className="px-6 py-6">
           <div key={step} className="onboarding-step min-h-[150px]">
             {current.body}
           </div>
         </div>
 
-        {/* Alt cubuk: ilerleme + gezinme */}
+        {/* Bottom bar: progress and navigation */}
         <div className="flex items-center justify-between border-t border-border px-6 py-4">
           <div className="flex items-center gap-2">
             {steps.map((_, i) => (
@@ -251,7 +251,7 @@ export function OnboardingModal({
                 onClick={() => setStep(i)}
                 className={cn(
                   "h-2 rounded-full transition-all",
-                  i === step ? "w-6 bg-green-600" : "w-2 bg-muted-foreground/40 hover:bg-muted-foreground/70"
+                  i === step ? "w-6 bg-green-700" : "w-2 bg-muted-foreground/40 hover:bg-muted-foreground/70"
                 )}
               />
             ))}

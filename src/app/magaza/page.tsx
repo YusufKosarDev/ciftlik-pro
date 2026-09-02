@@ -54,7 +54,7 @@ export default async function MagazaDizinPage() {
               className="group flex items-center justify-between rounded-xl border border-border bg-card p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
             >
               <span className="font-semibold text-foreground">{f.name}</span>
-              <ArrowRight className="h-4 w-4 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-green-600 dark:group-hover:text-green-400" />
+              <ArrowRight className="h-4 w-4 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-green-700 dark:group-hover:text-green-400" />
             </Link>
           ))}
         </div>

@@ -55,7 +55,7 @@ export default async function YemPage() {
         </p>
       </div>
 
-      {/* Mevcut yem stogu ve Tüketim Analizi */}
+      {/* Current feed stock and consumption analysis */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {feedItems.map((i) => {
           const isCritical = i.quantity <= i.criticalLevel;
@@ -79,7 +79,7 @@ export default async function YemPage() {
                 </div>
               </div>
 
-              {/* Tüketim Analizi Bilgileri */}
+              {/* Consumption analysis details */}
               <div className="mt-4 pt-3 border-t border-border space-y-2">
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>{t("dailyConsumption")}</span>
@@ -100,7 +100,7 @@ export default async function YemPage() {
                       ⚠️ {remainingDays} gün
                     </span>
                   ) : (
-                    <span className="rounded bg-green-50 dark:bg-green-500/10 px-2 py-0.5 font-bold text-green-600 dark:text-green-400 text-[11px]">
+                    <span className="rounded bg-green-50 dark:bg-green-500/10 px-2 py-0.5 font-bold text-green-700 dark:text-green-400 text-[11px]">
                       🟢 {remainingDays} gün
                     </span>
                   )}
@@ -111,7 +111,7 @@ export default async function YemPage() {
         })}
       </div>
 
-      {/* Tuketim formu */}
+      {/* Consumption form */}
       {canEdit &&
         (feedItems.length === 0 ? (
           <p className="rounded-xl border border-dashed border-border bg-card p-6 text-center text-sm text-muted-foreground">
@@ -121,7 +121,7 @@ export default async function YemPage() {
           <FeedForm items={feedItems} />
         ))}
 
-      {/* Son tuketimler */}
+      {/* Recent consumption */}
       <section className="space-y-3">
         <h2 className="text-lg font-bold text-foreground">{t("lastConsumptions")}</h2>
         {logs.length === 0 ? (

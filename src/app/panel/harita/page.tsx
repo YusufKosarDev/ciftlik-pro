@@ -73,7 +73,7 @@ export default async function HaritaPage() {
           </p>
           <Link
             href="/panel/tarlalar/yeni"
-            className="mt-3 inline-block text-sm font-medium text-green-600 dark:text-green-400 hover:underline"
+            className="mt-3 inline-block text-sm font-medium text-green-700 dark:text-green-400 hover:underline"
           >
             {t("addField")}
           </Link>

@@ -83,7 +83,7 @@ export function NotificationBell() {
               <p className="px-3 py-6 text-center text-muted-foreground">{t("empty")}</p>
             ) : (
               <>
-                {/* Kritik Stoklar */}
+                {/* Critical stock */}
                 {data.criticalStock.map((item) => (
                   <Link
                     key={item.id}
@@ -96,7 +96,7 @@ export function NotificationBell() {
                   </Link>
                 ))}
 
-                {/* Geciken Görevler */}
+                {/* Overdue tasks */}
                 {data.overdueTasks.map((item) => (
                   <Link
                     key={item.id}
@@ -109,7 +109,7 @@ export function NotificationBell() {
                   </Link>
                 ))}
 
-                {/* Yaklaşan Aşılar */}
+                {/* Upcoming vaccinations */}
                 {data.upcomingVaccinations.map((item) => (
                   <Link
                     key={item.id}

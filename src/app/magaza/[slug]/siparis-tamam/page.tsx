@@ -26,7 +26,7 @@ export default async function SiparisTamamPage({
       <p className="mt-2 text-sm text-muted-foreground">{t("doneBody")}</p>
       <Link
         href={`/magaza/${slug}`}
-        className="mt-6 inline-block text-sm font-medium text-green-600 hover:underline dark:text-green-400"
+        className="mt-6 inline-block text-sm font-medium text-green-700 hover:underline dark:text-green-400"
       >
         {t("backToStore")}
       </Link>

@@ -31,7 +31,7 @@ function UsageRow({
       {!unlimited && (
         <div className="h-2 overflow-hidden rounded-full bg-muted">
           <div
-            className={`h-full rounded-full ${atLimit ? "bg-red-500" : "bg-green-600"}`}
+            className={`h-full rounded-full ${atLimit ? "bg-red-500" : "bg-green-700"}`}
             style={{ width: `${pct}%` }}
           />
         </div>

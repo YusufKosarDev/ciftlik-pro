@@ -146,7 +146,7 @@ export default async function PanelPage() {
         </p>
       </div>
 
-      {/* Ozet kartlari (Client Component - Özelleştirilebilir) */}
+      {/* Summary cards (client component, customisable) */}
       <DashboardCards
         animalCount={animalCount}
         animalsDelta={resolveDelta(countDelta(animalsThisMonth), t, locale)}
@@ -165,10 +165,10 @@ export default async function PanelPage() {
         }}
       />
 
-      {/* Aylik gelir-gider grafigi */}
+      {/* Monthly income/expense chart */}
       <MonthlyFinanceChart data={monthlyFinance} />
 
-      {/* Uyarilar */}
+      {/* Alerts */}
       <section className="space-y-4">
         <h2 className="text-lg font-bold text-foreground">{t("alerts")}</h2>
 

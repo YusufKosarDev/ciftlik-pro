@@ -39,7 +39,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
           className={cn(
             "rounded-md px-2 py-1 font-medium uppercase transition disabled:opacity-60",
             locale === code
-              ? "bg-green-600 text-white"
+              ? "bg-green-700 text-white"
               : "text-muted-foreground hover:bg-muted hover:text-foreground"
           )}
         >

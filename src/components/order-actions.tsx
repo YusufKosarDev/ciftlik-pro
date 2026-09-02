@@ -36,7 +36,7 @@ export function OrderActions({ id, status }: { id: string; status: OrderStatus }
         <button
           onClick={() => setStatus("CONFIRMED")}
           disabled={loading}
-          className="text-sm font-medium text-green-600 hover:underline disabled:opacity-50 dark:text-green-400"
+          className="text-sm font-medium text-green-700 hover:underline disabled:opacity-50 dark:text-green-400"
         >
           {t("confirm")}
         </button>

@@ -65,7 +65,7 @@ export default async function StorefrontPage({
                   <p className="mt-1 text-sm text-muted-foreground">{p.description}</p>
                 )}
               </div>
-              <p className="text-lg font-bold text-green-600 dark:text-green-400">
+              <p className="text-lg font-bold text-green-700 dark:text-green-400">
                 {formatMoney(p.price, locale)}
                 {p.unit ? <span className="text-sm font-normal text-muted-foreground"> / {p.unit}</span> : null}
               </p>
