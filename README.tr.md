@@ -12,12 +12,12 @@ Sistemi (ERP) — hayvan, tarla, stok, finans, satış, mağaza ve personel tek 
 [![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![codecov](https://codecov.io/gh/YusufKosarDev/ciftlik-pro/branch/main/graph/badge.svg)](https://codecov.io/gh/YusufKosarDev/ciftlik-pro)
-[![Tests](https://img.shields.io/badge/tests-304%20unit%20%2B%2030%20e2e-success)](#test--kalite)
+[![Tests](https://img.shields.io/badge/tests-304%20unit%20%2B%2033%20e2e-success)](#test--kalite)
 [![Multi-tenant](https://img.shields.io/badge/multi--tenant-Postgres%20RLS-4169E1)](#-çok-kiracılık-multi-tenant-saas)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 🔗 **Canlı Demo: [ciftlik-pro.vercel.app](https://ciftlik-pro.vercel.app)**
-&nbsp;·&nbsp; Giriş ekranında **rol seçin** — Yönetici, Çalışan, Veteriner ya da Muhasebeci
+&nbsp;·&nbsp; Açılış sayfasından **rol seçin** — Yönetici, Çalışan, Veteriner ya da Muhasebeci
 
 </div>
 
@@ -38,7 +38,7 @@ mağazası:
 ![Çiftlik Pro demo turu](docs/demo.gif)
 
 > Kendiniz denemek için: **[ciftlik-pro.vercel.app](https://ciftlik-pro.vercel.app)**
-> → giriş ekranından bir rol seçin.
+> → açılış sayfasından bir rol seçin.
 
 ## 📸 Ekran Görüntüleri
 
@@ -102,7 +102,7 @@ göstergeleriyle) ve aylık gelir-gider grafiği:
 - **Modern arayüz** — sol sidebar düzeni, dark mode (semantik renk token'ları), `⌘K`
   komut paleti (hızlı gezinme + eylem) ve `cva` tabanlı tasarım sistemi.
 - **Çok dillilik (i18n) — uçtan uca** — her ekran ve her API hata mesajı, iki
-  katalogdaki **826 çeviri anahtarının tamamıyla**: panel, herkese açık mağaza ve
+  katalogdaki **853 çeviri anahtarının tamamıyla**: panel, herkese açık mağaza ve
   sepet, abonelik, davet akışı, 404 ve hata sınırları, yazma uçlarının döndürdüğü
   yanıtlar. Tarih, para ve grafik ay etiketleri de aktif dile uyar. İlk kez gelen
   ziyaretçi **tarayıcısının dilini** görür (`Accept-Language`); başlıktaki — ya da
@@ -127,7 +127,7 @@ göstergeleriyle) ve aylık gelir-gider grafiği:
 - **Uçtan uca tip güvenliği** — Zod şemaları hem istemci hem sunucuda doğrular;
   Prisma ile veritabanı tipleri.
 - **Test & CI/CD** — 304 birim/bileşen testi (Vitest + Testing Library) +
-  tenant-izolasyon entegrasyon testleri + 30 uçtan uca test (Playwright),
+  tenant-izolasyon entegrasyon testleri + 33 uçtan uca test (Playwright),
   GitHub Actions'ta gerçek PostgreSQL servisiyle her PR'da çalışır.
 - **Transactional bütünlük** — yem tüketimi stoğu atomik düşürür (TOCTOU'ya karşı
   koşullu `updateMany`); satış + bağlı gelir işlemi ve sepet → çok-kalemli sipariş
@@ -449,14 +449,16 @@ tarafında bir sıçrama değil.
   **CI bu değişkeni açar**, testler her push/PR'da gerçekten koşar.
 - **Uçtan uca testler (Playwright):** kimlik doğrulama, hayvan CRUD, RBAC
   reddi (gerçek 307), satış → otomatik gelir işlemi, mağaza sepeti → sipariş,
-  davet → kabul → rol, demo rol kapsamı ve salt-okunurluk — `npm run test:e2e` (30 test).
+  davet → kabul → rol, demo rol kapsamı ve salt-okunurluk, açılış sayfası
+  (yönlendirme değil 200, iki kaynak bağlantısı ve hâlâ oturum açan rol düğmesi)
+  — `npm run test:e2e` (33 test).
 - **CI (GitHub Actions):** her push/PR'da üç paralel job —
   `build` (tsc + ESLint + Vitest + üretim derlemesi),
   `integration` (PostgreSQL + `ciftlik_app` rolü + izolasyon testleri) ve
   `e2e` (gerçek PostgreSQL servisi + seed + Playwright).
-- **Lighthouse** (üretim derlemesi, mobil emülasyon): giriş **88** / mağaza **92**
+- **Lighthouse** (üretim derlemesi, mobil emülasyon): açılış **91** / giriş **88** / mağaza **91**
   performans, **95-96** erişilebilirlik, **100** best practices, **100** SEO,
-  ikisinde de **CLS 0**. Ayrıntı: [docs/LIGHTHOUSE.md](docs/LIGHTHOUSE.md).
+  üçünde de **CLS 0**. Ayrıntı: [docs/LIGHTHOUSE.md](docs/LIGHTHOUSE.md) (İngilizce).
 - **Pre-commit (husky + lint-staged):** commit öncesi staged `.ts/.tsx`
   dosyalarında otomatik `eslint --fix` çalışır.
 

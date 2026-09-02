@@ -1,7 +1,33 @@
 {
-  "name": "ciftlik",
-  "version": "0.1.0",
+  "name": "ciftlik-pro",
+  "version": "1.0.0",
   "private": true,
+  "description": "Multi-tenant SaaS farm management system (ERP) with PostgreSQL row-level security tenant isolation, four-role RBAC, Stripe billing and a public per-tenant storefront.",
+  "keywords": [
+    "multi-tenant",
+    "saas",
+    "row-level-security",
+    "rbac",
+    "erp",
+    "farm-management",
+    "nextjs",
+    "prisma",
+    "postgresql",
+    "typescript"
+  ],
+  "homepage": "https://ciftlik-pro.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YusufKosarDev/ciftlik-pro.git"
+  },
+  "bugs": {
+    "url": "https://github.com/YusufKosarDev/ciftlik-pro/issues"
+  },
+  "license": "MIT",
+  "author": "Yusuf Kosar (https://github.com/YusufKosarDev)",
+  "engines": {
+    "node": ">=20.12"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

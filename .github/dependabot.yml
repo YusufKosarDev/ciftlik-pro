@@ -49,7 +49,7 @@ updates:
       # next's MINOR is handled by hand too. 16.2 -> 16.3 deprecates the edge
       # runtime (the authorization gate in proxy.ts runs there), moves server
       # rendering to Node streams, and turns Instant Navigation on by default.
-      # Those are BEHAVIOUR changes: 304 unit and 30 e2e tests pass on either
+      # Those are BEHAVIOUR changes: 304 unit and 33 e2e tests pass on either
       # version, so a green pipeline does NOT measure this risk. The postcss and
       # sharp advisories it closes are unreachable in this project (we author the
       # CSS ourselves; next/image is never used, images.remotePatterns is
