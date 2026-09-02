@@ -211,6 +211,8 @@ flowchart LR
 
 ## Security & RBAC
 
+> Found something? Please report it privately — see [SECURITY.md](SECURITY.md).
+
 Authorization lives in `src/lib/authz.ts` and is enforced at three levels: the
 edge proxy, sensitive pages (`requirePageView` / `requirePageWrite`), and every
 write endpoint (`authorizeWrite`). Within the sections a role can see, reading is

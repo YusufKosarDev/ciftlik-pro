@@ -170,6 +170,8 @@ alternatifler ve bilinen sınırlamalar (İngilizce) ·
 
 ## 🔐 Güvenlik & RBAC
 
+> Bir açık mı buldunuz? Lütfen özel olarak bildirin — [SECURITY.md](SECURITY.md) (İngilizce).
+
 Yetkilendirme tek merkezden yönetilir (`src/lib/authz.ts`) ve **iki katmanda**
 uygulanır: yazma uçları `authorizeWrite` ile, hassas/forma dayalı sayfalar ise
 `requirePageWrite` / `requirePageView` ile korunur. **Okuma** giriş yapmış her
