@@ -13,7 +13,7 @@ role-based dashboard.
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Tests](https://img.shields.io/badge/tests-304%20unit%20%2B%2033%20e2e-success)](#testing--quality)
+[![Tests](https://img.shields.io/badge/tests-308%20unit%20%2B%2033%20e2e-success)](#testing--quality)
 [![Multi-tenant](https://img.shields.io/badge/multi--tenant-Postgres%20RLS-4169E1)](#multi-tenancy)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -262,29 +262,28 @@ Hardening:
 
 ### The advisories `npm audit` reports
 
-`npm audit` is not clean here, and that is a decision rather than an oversight —
-so it is written down instead of left for you to wonder about. At the time of
-writing it reports 11 findings (10 high, 1 low); restricted to the production
-tree (`npm audit --omit=dev`) it reports **6 high**, in two dependency chains:
+`npm audit` is not clean here, and what is left is a decision rather than an
+oversight — so it is written down instead of left for you to wonder about. At the
+time of writing it reports 8 findings (7 high, 1 low); restricted to the
+production tree (`npm audit --omit=dev`) it reports **3 high**, all of them one
+chain:
 
 | Chain | Closed by | Reachable in this app? |
 | --- | --- | --- |
-| `next` → `postcss` | `next@16.3.x` | **No** — postcss runs at build time over CSS written in this repository. Nothing user-supplied reaches it. |
-| `next` → `sharp` | `next@16.3.x` | **No** — `sharp` is pulled in for `next/image`, which this app never imports (the one remote image is rendered with a plain `<img>`, because its URL is arbitrary tenant input), and `images.remotePatterns` is undefined, so the optimizer route is unreachable. |
 | `@prisma/client` → `prisma` → `@prisma/config` → `deepmerge-ts` | Prisma 7 (major) | **No** — reached only by the Prisma CLI's config loader during `generate` and `migrate`, never on a request path. |
 
-Both holds are recorded where they are enforced, in
-[`.github/dependabot.yml`](.github/dependabot.yml). The Next **minor** is
-deferred because 16.3 deprecates the edge runtime that `src/proxy.ts` — the
-authorization gate — runs on, and also changes server rendering and navigation
-defaults; the unit and e2e suites pass on either version, so a green pipeline
-does not measure that risk. It gets its own branch and a real smoke test.
-**Majors** are never taken automatically, which is what the Prisma chain needs:
-npm's only offered "fix" there is a *downgrade* to `prisma@6.12.0`.
+**Majors are never taken automatically** — the rule, and why, is in
+[`.github/dependabot.yml`](.github/dependabot.yml). That is exactly what this
+chain needs: npm's only offered "fix" is a *downgrade* to `prisma@6.12.0`, which
+is not one.
 
-`sharp` is additionally a direct devDependency, used by `scripts/demo-gif.mjs` to
-build the demo GIF above from local screenshots — a one-off tool run over files
-from this repository, not a service.
+The other chain that used to be here — `next` → `postcss` and `next` → `sharp` —
+is closed. It was held back because 16.3 deprecates the edge runtime that
+`src/proxy.ts`, the authorization gate, runs on; both suites passed on either
+version, so a green pipeline was no evidence about it. The hold was released by
+measuring: 16.3.4 was taken on its own branch and the full e2e suite run against
+it, including the three tests that navigate straight to a forbidden panel path and
+assert a real `307` from the edge.
 
 ---
 
@@ -407,7 +406,7 @@ returns a real HTTP redirect from the proxy, not a client-side bounce.
 
 ## Testing & quality
 
-- **304 unit/component tests** (Vitest + Testing Library) covering validation
+- **308 unit/component tests** (Vitest + Testing Library) covering validation
   schemas, RBAC, rate limiting, list query parsing, plan limits, finance/map/date/
   calendar helpers and UI primitives — **~90% line coverage on business logic** (the shared, database-backed paths are covered by integration tests instead).
 - **Tenant isolation integration tests** (`*.int.test.ts`) against a real

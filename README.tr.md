@@ -12,7 +12,7 @@ Sistemi (ERP) — hayvan, tarla, stok, finans, satış, mağaza ve personel tek 
 [![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![codecov](https://codecov.io/gh/YusufKosarDev/ciftlik-pro/branch/main/graph/badge.svg)](https://codecov.io/gh/YusufKosarDev/ciftlik-pro)
-[![Tests](https://img.shields.io/badge/tests-304%20unit%20%2B%2033%20e2e-success)](#test--kalite)
+[![Tests](https://img.shields.io/badge/tests-308%20unit%20%2B%2033%20e2e-success)](#test--kalite)
 [![Multi-tenant](https://img.shields.io/badge/multi--tenant-Postgres%20RLS-4169E1)](#-çok-kiracılık-multi-tenant-saas)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -126,7 +126,7 @@ göstergeleriyle) ve aylık gelir-gider grafiği:
   (API) hem hassas okuma (sayfa) düzeyinde uygulanır.
 - **Uçtan uca tip güvenliği** — Zod şemaları hem istemci hem sunucuda doğrular;
   Prisma ile veritabanı tipleri.
-- **Test & CI/CD** — 304 birim/bileşen testi (Vitest + Testing Library) +
+- **Test & CI/CD** — 308 birim/bileşen testi (Vitest + Testing Library) +
   tenant-izolasyon entegrasyon testleri + 33 uçtan uca test (Playwright),
   GitHub Actions'ta gerçek PostgreSQL servisiyle her PR'da çalışır.
 - **Transactional bütünlük** — yem tüketimi stoğu atomik düşürür (TOCTOU'ya karşı
@@ -225,30 +225,28 @@ Sertleştirme önlemleri:
 
 ### `npm audit`'in bildirdiği açık bulgular
 
-Bu depoda `npm audit` temiz değil. Bunun sebebi gözden kaçırmak değil, verilmiş
-bir karar — o yüzden merak konusu bırakmak yerine buraya yazılıyor. Bu satırların
-yazıldığı anda 11 bulgu var (10 high, 1 low); üretim ağacıyla sınırlandığında
-(`npm audit --omit=dev`) geriye **6 high** kalıyor ve hepsi iki zincirden geliyor:
+Bu depoda `npm audit` temiz değil. Geriye kalanın sebebi gözden kaçırmak değil,
+verilmiş bir karar — o yüzden merak konusu bırakmak yerine buraya yazılıyor. Bu
+satırların yazıldığı anda 8 bulgu var (7 high, 1 low); üretim ağacıyla
+sınırlandığında (`npm audit --omit=dev`) geriye **3 high** kalıyor ve hepsi tek
+bir zincirden geliyor:
 
 | Zincir | Neyle kapanır | Bu uygulamada erişilebilir mi? |
 | --- | --- | --- |
-| `next` → `postcss` | `next@16.3.x` | **Hayır** — postcss derleme zamanında, bu depoda yazılmış CSS üzerinde çalışır. Kullanıcıdan gelen hiçbir şey oraya ulaşmaz. |
-| `next` → `sharp` | `next@16.3.x` | **Hayır** — `sharp`, `next/image` için çekiliyor; bu uygulama onu hiç import etmiyor (tek uzak görsel düz `<img>` ile basılıyor, çünkü URL'i kiracının girdiği serbest bir adres) ve `images.remotePatterns` tanımsız olduğu için optimizasyon rotası da erişilemez. |
 | `@prisma/client` → `prisma` → `@prisma/config` → `deepmerge-ts` | Prisma 7 (majör) | **Hayır** — yalnızca Prisma CLI'ın `generate` ve `migrate` sırasındaki config yükleyicisinden geçiliyor; istek yolunda değil. |
 
-İki bekletme kararı da uygulandıkları yerde,
-[`.github/dependabot.yml`](.github/dependabot.yml) içinde gerekçeleriyle duruyor.
-Next'in **minör**'ü bekletiliyor, çünkü 16.3 yetkilendirme kapısı olan
-`src/proxy.ts`'in üzerinde çalıştığı edge runtime'ı deprecate ediyor; sunucu
-render'ını ve gezinme varsayılanlarını da değiştiriyor. Birim ve e2e testleri iki
-sürümde de geçiyor, yani yeşil boru hattı bu riski **ölçmüyor** — geçiş kendi
-dalında, gerçek bir duman testiyle yapılır. **Majör**'ler ise hiçbir zaman
-otomatik alınmıyor; Prisma zincirinin ihtiyacı tam olarak bu, zira npm'in orada
-önerdiği tek "düzeltme" `prisma@6.12.0`'a **geri dönmek**.
+**Majörler hiçbir zaman otomatik alınmıyor** — kural ve gerekçesi
+[`.github/dependabot.yml`](.github/dependabot.yml) içinde. Bu zincirin ihtiyacı
+tam olarak bu: npm'in önerdiği tek "düzeltme" `prisma@6.12.0`'a **geri dönmek**,
+ki bu bir düzeltme değil.
 
-`sharp` ayrıca doğrudan bir devDependency: yukarıdaki demo GIF'ini yerel ekran
-görüntülerinden üreten `scripts/demo-gif.mjs` kullanıyor. Bu, bu deponun kendi
-dosyaları üzerinde çalışan tek seferlik bir araç; bir servis değil.
+Burada duran diğer zincir — `next` → `postcss` ve `next` → `sharp` — kapandı.
+Bekletiliyordu, çünkü 16.3 yetkilendirme kapısı olan `src/proxy.ts`'in üzerinde
+çalıştığı edge runtime'ı deprecate ediyor; iki sürümde de bütün testler geçtiği
+için yeşil boru hattı bu konuda hiçbir şey söylemiyordu. Bekletme, beklenerek
+değil **ölçülerek** kaldırıldı: 16.3.4 kendi dalında alındı ve e2e paketinin
+tamamı ona karşı koşuldu — yasak bir panel yoluna doğrudan gidip edge'den gerçek
+bir `307` döndüğünü doğrulayan üç test dahil.
 
 ## 🏢 Çok-kiracılık (Multi-tenant SaaS)
 
@@ -439,7 +437,7 @@ tarafında bir sıçrama değil.
 - **Birim testleri (Vitest):** doğrulama şemaları, RBAC yetkilendirme, hız sınırı,
   liste sorgu parametreleri, plan limitleri, finans/harita/tarih/takvim yardımcıları
   + UI bileşenleri (Testing Library: Badge/Button/EmptyState/DataTable/OnboardingModal)
-  — `npm test` (304 test). Kapsam raporu için
+  — `npm test` (308 test). Kapsam raporu için
   `npm run test:coverage` (iş mantığı `src/lib` için ~%90 satır kapsamı; paylaşılan veritabanı yolları entegrasyon testleriyle kapsanır).
 - **Tenant-izolasyon entegrasyon testleri:** gerçek PostgreSQL + non-superuser
   `ciftlik_app` rolüyle `forTenant`/RLS izolasyonu (`*.int.test.ts`) — tenant A

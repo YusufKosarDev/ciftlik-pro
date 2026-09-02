@@ -46,22 +46,29 @@ updates:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
 
-      # next's MINOR is handled by hand too. 16.2 -> 16.3 deprecates the edge
-      # runtime (the authorization gate in proxy.ts runs there), moves server
-      # rendering to Node streams, and turns Instant Navigation on by default.
-      # Those are BEHAVIOUR changes: 304 unit and 33 e2e tests pass on either
-      # version, so a green pipeline does NOT measure this risk. The postcss and
-      # sharp advisories it closes are unreachable in this project (we author the
-      # CSS ourselves; next/image is never used, images.remotePatterns is
-      # undefined, and there are no SVGs in public/). The migration will happen on
-      # its own branch with a full smoke test — see the closed #53.
+      # HISTORY, kept because the reasoning still applies to the next one.
       #
-      # eslint-config-next re-exports next's lint rules and must stay on the same
-      # version; the two are held together.
-      - dependency-name: "next"
-        update-types: ["version-update:semver-minor"]
-      - dependency-name: "eslint-config-next"
-        update-types: ["version-update:semver-minor"]
+      # next's MINOR used to be held here as well: 16.2 -> 16.3 deprecates the
+      # edge runtime (the authorization gate in proxy.ts runs there), moves server
+      # rendering to Node streams, and turns Instant Navigation on by default.
+      # Those are BEHAVIOUR changes, and both suites passing on either version
+      # meant a green pipeline did not measure them.
+      #
+      # The hold was released by measuring rather than by waiting. 16.3.4 was
+      # taken on its own branch with a full smoke test: 33 e2e tests pass,
+      # including the three that navigate to a forbidden panel path and assert a
+      # real 307 from the edge. It also closed the postcss and sharp advisories
+      # and surfaced a genuine defect — a route module exporting a shared helper,
+      # which 16.3's stricter route types reject.
+      #
+      # So minors flow automatically again. If a future minor deprecates something
+      # load-bearing, hold it HERE with the reason, take it on a branch, and run
+      # the e2e suite — that is what worked.
+      #
+      # Windows note from that upgrade: 16.3 makes Turbopack the default for dev
+      # and build with no WASM fallback, so a machine whose policy blocks the
+      # native @next/swc binary needs `--webpack` locally. Linux CI and Vercel are
+      # unaffected, which is why the npm scripts do not pass that flag.
 
     commit-message:
       # The repository uses Conventional Commits; this prefix matches both that
