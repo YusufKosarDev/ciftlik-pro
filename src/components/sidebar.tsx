@@ -24,6 +24,8 @@ import {
   LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { GithubIcon } from "@/components/github-icon";
+import { GITHUB_URL } from "@/lib/site";
 
 export const navIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   "/panel": LayoutDashboard,
@@ -81,6 +83,7 @@ export function Sidebar({
   const pathname = usePathname();
   const t = useTranslations("Nav");
   const tc = useTranslations("Common");
+  const tl = useTranslations("Landing");
   const labelOf = new Map(navItems.map((i) => [i.href, i.label]));
   const allowed = new Set(navItems.map((i) => i.href));
 
@@ -174,6 +177,22 @@ export function Sidebar({
             <LogOut className="h-[18px] w-[18px]" />
           </button>
         </div>
+
+        {/*
+          Someone exploring the demo spends their time in here, not on the
+          landing page they passed through once. Without this they would have to
+          go back out to find the code.
+        */}
+        <a
+          href={GITHUB_URL}
+          target="_blank"
+          rel="noreferrer"
+          onClick={onNavigate}
+          className="mt-1 flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-muted-foreground transition hover:bg-muted hover:text-foreground"
+        >
+          <GithubIcon className="h-3.5 w-3.5 shrink-0" />
+          {tl("source")}
+        </a>
       </div>
     </aside>
   );
