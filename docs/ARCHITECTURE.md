@@ -4,8 +4,9 @@ This document explains **why** Çiftlik Pro is built the way it is. It is organi
 around the decisions that were genuinely hard, the alternatives that were rejected,
 and the trade-offs that came with each choice.
 
-For the phased migration plan see [`SAAS-PLAN.md`](SAAS-PLAN.md) (Turkish); for the
-production database role setup see [`PRODUCTION-RLS.md`](PRODUCTION-RLS.md) (Turkish).
+For the production database role setup see
+[`PRODUCTION-RLS.md`](PRODUCTION-RLS.md); for the phased migration plan see
+[`SAAS-PLAN.md`](SAAS-PLAN.md) (Turkish).
 
 ---
 
@@ -59,12 +60,14 @@ Two **independent** layers:
    row cannot be written into the wrong tenant either. If a query forgets its
    filter, the database returns nothing rather than someone else's data.
 
-   Two reads legitimately happen *before* a tenant context exists: signing in
-   (the user is found by email) and opening an invitation link (the invite is
-   found by token). Both are `SECURITY DEFINER` functions — `auth_user_by_email`
-   and `invitation_by_token` — each filtering on a single equality and returning
-   the minimum. That keeps the tables themselves under RLS with **no exceptions**;
-   the token function does not even return the token.
+   Three reads legitimately happen *before* a tenant context exists: signing in
+   (the user is found by email), opening an invitation link (the invite is found
+   by token), and listing the public `/magaza` directory (which is cross-tenant by
+   design, for a visitor who is not signed in). All three are `SECURITY DEFINER`
+   functions — `auth_user_by_email`, `invitation_by_token` and
+   `public_storefront_tenants` — each returning the minimum. That keeps the tables
+   themselves under RLS with **no exceptions**; the token function does not even
+   return the token, and the directory function returns no product field at all.
 
 2. **A Prisma Client Extension** (`forTenant`, [`src/lib/tenant-prisma.ts`](../src/lib/tenant-prisma.ts))
    that injects `tenantId` into the `where` of every list/count/aggregate/

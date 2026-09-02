@@ -6,79 +6,78 @@ import { auth } from "@/lib/auth";
 import { navHrefsFor } from "@/lib/nav-permissions";
 import { DEMO_EMAILS } from "@/lib/demo-accounts";
 
-// Rol bazli yetkilendirme (RBAC) icin tek merkez.
-// Okuma (listeleme/goruntuleme) giris yapmis her kullaniciya aciktir;
-// yazma (ekle/duzenle/sil) islemleri ise asagidaki matrise gore kisitlanir.
-// ADMIN her modulde tam yetkilidir.
+// Single source of truth for role-based authorization (RBAC).
+// Reading (listing / viewing) is open to any signed-in user; writing (create,
+// edit, delete) is restricted by the matrix below. ADMIN can write everywhere.
 
-// Yazma yetkisi gerektiren moduller ve bu modulde yazabilen roller.
+// Modules that require write permission, and the roles allowed to write in each.
 export const writePermissions = {
-  animals: ["ADMIN", "WORKER"], // Hayvan kaydi
-  animalMedical: ["ADMIN", "VET"], // Saglik kaydi ve asi
-  breeding: ["ADMIN", "VET", "WORKER"], // Ureme/gebelik kayitlari
-  milk: ["ADMIN", "WORKER"], // Sut verimi (gunluk islem)
-  weight: ["ADMIN", "WORKER", "VET"], // Agirlik (tartim) kayitlari
-  fields: ["ADMIN", "WORKER"], // Tarla ve ekim
-  inventory: ["ADMIN", "WORKER"], // Stok / envanter
-  transactions: ["ADMIN", "ACCOUNTANT"], // Finans
-  sales: ["ADMIN", "ACCOUNTANT"], // Satis (gelir olarak finansa yansir)
-  customers: ["ADMIN", "ACCOUNTANT"], // Musteri yonetimi
-  products: ["ADMIN", "ACCOUNTANT"], // Magaza urunleri
-  orders: ["ADMIN", "ACCOUNTANT"], // Siparis yonetimi (durum guncelleme)
-  tasks: ["ADMIN"], // Gorev atama
-  users: ["ADMIN"], // Personel yonetimi
-  structures: ["ADMIN", "WORKER"], // Yapilar (ahir/kumes/depo) ve harita konumu
+  animals: ["ADMIN", "WORKER"], // Animal records
+  animalMedical: ["ADMIN", "VET"], // Health records and vaccinations
+  breeding: ["ADMIN", "VET", "WORKER"], // Breeding / gestation records
+  milk: ["ADMIN", "WORKER"], // Milk yield (daily operation)
+  weight: ["ADMIN", "WORKER", "VET"], // Weight (weighing) records
+  fields: ["ADMIN", "WORKER"], // Fields and crops
+  inventory: ["ADMIN", "WORKER"], // Stock / inventory
+  transactions: ["ADMIN", "ACCOUNTANT"], // Finance
+  sales: ["ADMIN", "ACCOUNTANT"], // Sales (posted to finance as income)
+  customers: ["ADMIN", "ACCOUNTANT"], // Customer management
+  products: ["ADMIN", "ACCOUNTANT"], // Storefront products
+  orders: ["ADMIN", "ACCOUNTANT"], // Order management (status updates)
+  tasks: ["ADMIN"], // Task assignment
+  users: ["ADMIN"], // Staff management
+  structures: ["ADMIN", "WORKER"], // Structures (barn/coop/store) and map position
 } satisfies Record<string, Role[]>;
 
 export type WriteModule = keyof typeof writePermissions;
 
-// Bir rolun belirli bir modulde yazma yetkisi var mi?
+// Does this role have write permission in this module?
 export function canWrite(role: Role, module: WriteModule): boolean {
   return (writePermissions[module] as readonly Role[]).includes(role);
 }
 
-// Menu/bolum izinleri edge-guvenli ayri bir modulde tutulur (nav-permissions.ts):
-// proxy EDGE ortaminda calisir; bu dosyanin next-auth / next/navigation
-// importlarini oraya tasiyamayiz. Mevcut cagiranlar bozulmasin diye buradan
-// yeniden export ediliyor.
+// Menu / section permissions live in a separate, edge-safe module
+// (nav-permissions.ts): the proxy runs in the EDGE runtime and cannot carry this
+// file's next-auth / next/navigation imports. They are re-exported here so
+// existing callers keep working.
 export {
   navByRole,
   navHrefsFor,
   canViewPanelPath,
   panelSectionOf,
 } from "@/lib/nav-permissions";
-// Not: navHrefsFor ayrica yukarida import edilir; `export ... from` saf bir
-// yeniden-export'tur ve bu modul icinde kullanilabilir bir bagalanti olusturmaz.
+// Note: navHrefsFor is also imported above; `export ... from` is a pure
+// re-export and does not create a binding usable inside this module.
 
-// Demo (salt-okunur) hesaplar hicbir yazma islemi yapamaz; boylece canli
-// demoda ziyaretciler veriyi bozamaz. Koruma ROLDEN BAGIMSIZDIR: vitrindeki
-// WORKER/VET/ACCOUNTANT hesaplari kendi rollerinin yazma yetkisine sahip olsa
-// da e-postalari listede oldugu icin reddedilir.
+// Showcase (read-only) accounts cannot perform any write, so visitors cannot
+// damage the live demo. The guard is INDEPENDENT OF ROLE: the WORKER/VET/
+// ACCOUNTANT showcase accounts hold their own roles' write permissions, but are
+// still refused because their email address is on the list.
 //
-// Liste src/lib/demo-accounts.ts'te; o dosya hicbir sey import etmez, bu yuzden
-// hem burada hem giris ekraninin istemci bileseninde okunabilir.
+// The list itself is in src/lib/demo-accounts.ts; that file imports nothing, so
+// it can be read both here and by the sign-in screen's client component.
 export { DEMO_EMAILS };
 
 export function isDemoUser(email: string | null | undefined): boolean {
   return DEMO_EMAILS.has((email ?? "").toLowerCase());
 }
 
-// API rotalarinda kullanilir: oturumu dogrular ve yazma yetkisini kontrol eder.
-// Yetki varsa { session } doner; yoksa hazir bir hata yaniti ({ error }) doner.
+// Used in API routes: verifies the session and checks write permission.
+// Returns { session } when allowed, or a ready-made error response ({ error }).
 //
 //   const authz = await authorizeWrite("animals");
 //   if ("error" in authz) return authz.error;
-//   // authz.session.user kullanilabilir
+//   // authz.session.user is available
 export async function authorizeWrite(module: WriteModule) {
-  // Bu uc mesaj ~35 yazma ucunun tamamini kapsar; dil kullanicinin secimine
-  // (cookie) ya da tarayici tercihine gore gelir.
+  // These three messages cover all ~35 write endpoints; the language follows the
+  // user's choice (cookie) or their browser preference.
   const [session, te] = await Promise.all([auth(), getTranslations("Errors")]);
   if (!session?.user) {
     return {
       error: NextResponse.json({ error: te("unauthorized") }, { status: 401 }),
     } as const;
   }
-  // Demo hesabi salt-okunurdur.
+  // Demo accounts are read-only.
   if (isDemoUser(session.user.email)) {
     return {
       error: NextResponse.json({ error: te("demoReadOnly") }, { status: 403 }),
@@ -92,8 +91,8 @@ export async function authorizeWrite(module: WriteModule) {
   return { session } as const;
 }
 
-// Sunucu sayfalarinda (ekle/duzenle formlari) kullanilir: yazma yetkisi
-// yoksa kullaniciyi panele yonlendirir. Yetki varsa oturumu doner.
+// Used on server pages (create / edit forms): redirects to the dashboard when the
+// user has no write permission. Returns the session when they do.
 export async function requirePageWrite(module: WriteModule) {
   const session = await auth();
   if (
@@ -106,9 +105,10 @@ export async function requirePageWrite(module: WriteModule) {
   return session;
 }
 
-// Hassas okuma sayfalarinda (orn. finans) kullanilir: rolun menusunde
-// gorunmeyen bir yolu dogrudan URL ile acmasini engeller. Menude varsa
-// (yani navByRole'de tanimliysa) oturumu doner, yoksa panele yonlendirir.
+// Used on sensitive read pages (e.g. finance): stops a user from opening a path
+// that is not in their role's menu by typing the URL. Returns the session if the
+// path is in the menu (i.e. defined in navByRole), otherwise redirects to the
+// dashboard.
 export async function requirePageView(href: string) {
   const session = await auth();
   if (!session?.user) {

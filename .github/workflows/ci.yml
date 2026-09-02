@@ -7,29 +7,30 @@ on:
     branches: [main]
 
 jobs:
-  # Commit mesajlarinda otomatik eklenen atif satirlarini yakalar.
+  # Catches the attribution lines that coding assistants append to commit
+  # messages.
   #
-  # NEDEN AYRI JOB: kontrol yalnizca git + POSIX araclari kullanir; npm install
-  # ya da prisma generate gerektirmez, bu yuzden diger islerin ~100 saniyelik
-  # zincirine baglanmasi gereksiz. Ayrica commit araligini gorebilmek icin
-  # `fetch-depth: 0` sart; bunu yalnizca bu ise vererek diger uc isin sig
-  # klonunu (ve hizini) korumus oluyoruz. Hata durumunda PR kontrol listesinde
-  # ayirt edilebilir bir isim gorunur.
+  # WHY A SEPARATE JOB: the check uses only git and POSIX tools; it needs neither
+  # npm install nor prisma generate, so tying it to the other jobs' ~100 second
+  # chain would be waste. It also needs `fetch-depth: 0` to resolve the commit
+  # range; keeping that here preserves the shallow clone (and the speed) of the
+  # other three jobs. On failure it shows up under a distinguishable name in the
+  # PR checklist.
   commit-messages:
     runs-on: ubuntu-latest
 
-    # Bu is yalnizca gecmisi okur; baska hicbir yetkiye ihtiyaci yok.
+    # This job only reads history; it needs no other permission.
     permissions:
       contents: read
 
     steps:
-      - name: Depoyu cek
+      - name: Check out the repository
         uses: actions/checkout@v7
         with:
-          # Commit araligini cozebilmek icin tam gecmis gerekir.
+          # Full history is required to resolve the commit range.
           fetch-depth: 0
 
-      - name: Commit mesajlarini denetle
+      - name: Lint commit messages
         env:
           EVENT: ${{ github.event_name }}
           PR_BASE: ${{ github.event.pull_request.base.sha }}
@@ -45,68 +46,68 @@ jobs:
             BASE="$PUSH_BEFORE"; TIP="$PUSH_HEAD"
           fi
 
-          # Yeni bir dal ilk kez itildiginde github.event.before sifirdan olusur;
-          # force-push sonrasi ise dusurulmus bir commit'i gosterebilir. Her iki
-          # durumda da taban cozulemez, yalnizca tepe commit'i tararız.
+          # The first push of a new branch makes github.event.before all zeroes;
+          # after a force-push it can point at a dropped commit. In both cases the
+          # base cannot be resolved, so only the tip commit is scanned.
           ZERO=0000000000000000000000000000000000000000
           if [ -z "$BASE" ] || [ "$BASE" = "$ZERO" ] || ! git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
-            echo "Taban commit cozulemedi ('${BASE}'); yalnizca tepe commit taraniyor."
+            echo "Could not resolve the base commit ('${BASE}'); scanning the tip commit only."
             if git rev-parse -q --verify "${TIP}^1" >/dev/null 2>&1; then
               BASE="${TIP}^1"
             else
-              echo "Tepe commit'in ebeveyni yok (kok commit); tarama atlandi."
+              echo "The tip commit has no parent (root commit); scan skipped."
               exit 0
             fi
           fi
 
-          echo "Aralik: ${BASE}..${TIP}"
+          echo "Range: ${BASE}..${TIP}"
 
-          # KAPSAM NOTU: burada bilincli olarak --range kullaniliyor, --all degil.
-          # Gecmiste henuz temizlenmemis ihlalli commit'ler var; --all bu isi
-          # ilk calistirmada kirmizi yapar ve sinyali kullanissiz kilar.
-          # --range yalnizca YENI commit'leri denetler, yani koruma bugunden
-          # itibaren gecerlidir.
+          # SCOPE NOTE: --range is used here deliberately, not --all. History
+          # still holds commits that predate this rule; --all would turn the job
+          # red on its first run and make the signal useless. --range checks only
+          # NEW commits, so the protection applies from today onward.
           #
-          # Gecmis temizligi tamamlandiktan sonra asagidaki satiri
+          # Once the history has been cleaned up, replace the line below with
           #   sh scripts/check-commit-messages.sh --all
-          # ile degistirin; boylece gecmisin temiz kaldigi da surekli dogrulanir.
+          # so that history staying clean is verified continuously too.
           sh scripts/check-commit-messages.sh --range "${BASE}..${TIP}"
 
   build:
     runs-on: ubuntu-latest
 
-    # Derleme/Prisma icin yer tutucu degiskenler (gercek DB'ye baglanilmaz).
+    # Placeholder variables for the build and for Prisma (no real database is
+    # contacted).
     env:
       DATABASE_URL: "postgresql://placeholder:placeholder@localhost:5432/placeholder"
       DIRECT_URL: "postgresql://placeholder:placeholder@localhost:5432/placeholder"
       AUTH_SECRET: "ci-build-placeholder-secret"
 
     steps:
-      - name: Depoyu cek
+      - name: Check out the repository
         uses: actions/checkout@v7
 
-      - name: Node.js kur
+      - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
 
-      - name: Bagimliliklari yukle
+      - name: Install dependencies
         run: npm install
 
-      - name: Prisma Client uret
+      - name: Generate Prisma Client
         run: npx prisma generate
 
-      - name: Tip kontrolu
+      - name: Type check
         run: npx tsc --noEmit
 
       - name: Lint
         run: npm run lint
 
-      - name: Birim testleri (coverage)
+      - name: Unit tests (coverage)
         run: npm run test:coverage
 
-      - name: Coverage'i Codecov'a yukle
+      - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
           files: ./coverage/lcov.info
@@ -115,15 +116,16 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-      - name: Uretim derlemesi
+      - name: Production build
         run: npm run build
 
-  # Tenant izolasyonunun GERCEKTEN dogrulandigi is. Bu testler yerelde
-  # RUN_DB_TESTS ile gatelenir; burada acikca acilir, boylece RLS korumasi her
-  # push/PR'da regresyona karsi korunur (yoksa 11 test sessizce skip olurdu).
+  # The job where tenant isolation is ACTUALLY verified. These tests are gated
+  # locally behind RUN_DB_TESTS; here the gate is opened explicitly, so the RLS
+  # guarantee is protected against regression on every push and PR (otherwise 13
+  # tests would silently skip).
   #
-  # NEDEN AYRI JOB: kendi Postgres'iyle e2e'nin seed verisinden izole calisir ve
-  # `build` isinin coverage esiklerine dokunmaz.
+  # WHY A SEPARATE JOB: it runs against its own Postgres, isolated from the e2e
+  # job's seed data, and does not touch the `build` job's coverage thresholds.
   integration:
     runs-on: ubuntu-latest
 
@@ -143,44 +145,45 @@ jobs:
           --health-retries 5
 
     env:
-      # Kurulum/temizlik adimlari sahip (superuser) rolle yapilir; RLS'i bypass
-      # eder, testlerin iki tenant'i hazirlayabilmesi icin gereklidir.
+      # Setup and teardown run as the owner (superuser) role; it bypasses RLS,
+      # which the tests need in order to prepare two tenants.
       DATABASE_URL: "postgresql://ciftlik:ciftlik@localhost:5432/ciftlik_test?schema=public"
       DIRECT_URL: "postgresql://ciftlik:ciftlik@localhost:5432/ciftlik_test?schema=public"
       AUTH_SECRET: "ci-integration-test-secret"
       APP_USER_PASSWORD: "ci_app_pw"
 
     steps:
-      - name: Depoyu cek
+      - name: Check out the repository
         uses: actions/checkout@v7
 
-      - name: Node.js kur
+      - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
 
-      - name: Bagimliliklari yukle
+      - name: Install dependencies
         run: npm install
 
-      - name: Prisma Client uret
+      - name: Generate Prisma Client
         run: npx prisma generate
 
-      - name: Veritabani semasini uygula
+      - name: Apply the database schema
         run: npx prisma migrate deploy
 
-      # Migration'lardan SONRA calismali: betik MEVCUT tablolara GRANT verir.
+      # Must run AFTER the migrations: the script grants on EXISTING tables.
       #
-      # URL'in sorgu dizesi kirpilir: `?schema=public` Prisma'ya ozgudur, libpq
-      # bunu tanimaz ve "invalid URI query parameter: schema" ile durur.
-      - name: Non-superuser uygulama rolunu olustur (ciftlik_app)
+      # The URL's query string is trimmed: `?schema=public` is Prisma-specific,
+      # libpq does not recognise it and stops with "invalid URI query parameter:
+      # schema".
+      - name: Create the non-superuser application role (ciftlik_app)
         run: |
           psql "${DIRECT_URL%%\?*}" -v ON_ERROR_STOP=1 -v app_pw="$APP_USER_PASSWORD" \
             -f prisma/rls-app-role.sql
 
-      # RLS izolasyonu yalnizca NOSUPERUSER + NOBYPASSRLS rolle anlamlidir;
-      # testler bu baglantiyi APP_USER_DATABASE_URL'den alir.
-      - name: Entegrasyon testleri (RLS izolasyonu + paylasilan hiz siniri)
+      # RLS isolation is only meaningful under a NOSUPERUSER + NOBYPASSRLS role;
+      # the tests take that connection from APP_USER_DATABASE_URL.
+      - name: Integration tests (RLS isolation + shared rate limit)
         env:
           RUN_DB_TESTS: "1"
           APP_USER_DATABASE_URL: "postgresql://ciftlik_app:ci_app_pw@localhost:5432/ciftlik_test?schema=public"
@@ -193,7 +196,7 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
 
-    # Uctan uca testler icin gercek bir Postgres ve seed verisi gerekir.
+    # End-to-end tests need a real Postgres and seed data.
     services:
       postgres:
         image: postgres:16-alpine
@@ -215,35 +218,35 @@ jobs:
       AUTH_SECRET: "ci-e2e-test-secret"
 
     steps:
-      - name: Depoyu cek
+      - name: Check out the repository
         uses: actions/checkout@v7
 
-      - name: Node.js kur
+      - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
 
-      - name: Bagimliliklari yukle
+      - name: Install dependencies
         run: npm install
 
-      - name: Prisma Client uret
+      - name: Generate Prisma Client
         run: npx prisma generate
 
-      - name: Veritabani semasini uygula
+      - name: Apply the database schema
         run: npx prisma migrate deploy
 
-      - name: Ornek veriyle doldur (seed)
+      - name: Seed sample data
         run: npm run db:seed
 
-      # Vitrin verisi: e2e testlerinin bir kismi demo hesabini (salt-okunurluk)
-      # ve magaza katalogunu (sepet -> siparis akisi) kullanir. seed.ts bunlari
-      # olusturmaz, bu yuzden demo seed'i de calistiriyoruz.
-      - name: Vitrin (demo) verisiyle doldur
+      # Showcase data: some e2e tests use the demo account (read-only enforcement)
+      # and the storefront catalogue (cart -> order flow). seed.ts does not create
+      # those, so the demo seed runs as well.
+      - name: Seed the showcase (demo) data
         run: npm run db:seed-demo
 
-      - name: Playwright tarayicilarini kur
+      - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
-      - name: Uctan uca testler
+      - name: End-to-end tests
         run: npm run test:e2e

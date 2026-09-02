@@ -2,56 +2,58 @@ import type { NextAuthConfig } from "next-auth";
 import type { Role } from "@prisma/client";
 import { canViewPanelPath } from "@/lib/nav-permissions";
 
-// Edge ortaminda (middleware) da calisabilen hafif yapilandirma.
-// Veritabani/bcrypt gibi agir islemler burada YOKTUR; onlar auth.ts'tedir.
+// The lightweight configuration, able to run in the edge runtime (the proxy).
+// Nothing heavy — no database, no password hashing — lives here; that is in
+// auth.ts.
 export const authConfig = {
-  // Host basligina guven. Auth.js v5, Vercel disinda (Docker/self-host, ters
-  // proxy arkasi) Host'u dogrulayamadigi icin varsayilan olarak REDDEDER ve
-  // /api/auth/* uclarini 500 "UntrustedHost" ile dusurur. Uygulama kendi
-  // proxy'sinin arkasinda calistigindan bu guveni acikca veriyoruz; ortamdan
-  // AUTH_TRUST_HOST ile de gecilebilir (Vercel'de zaten otomatiktir).
+  // Trust the Host header. Off Vercel (self-hosted, Docker, behind a reverse
+  // proxy) Auth.js v5 cannot validate Host and REFUSES by default, failing every
+  // /api/auth/* endpoint with a 500 "UntrustedHost". This app runs behind its own
+  // proxy, so the trust is granted explicitly; AUTH_TRUST_HOST does the same from
+  // the environment (and Vercel sets it automatically).
   trustHost: true,
 
-  // Oturum bilgisini JWT icinde tutuyoruz (Credentials provider icin gerekli).
+  // The session lives in a JWT (required by the Credentials provider).
   session: { strategy: "jwt" },
 
-  // Ozel giris sayfamiz (ileride olusturulacak).
+  // Our own sign-in page.
   pages: {
     signIn: "/giris",
   },
 
   callbacks: {
-    // Middleware bu callback'i her istekte calistirir.
-    // true -> erisime izin ver, false -> giris sayfasina yonlendir.
+    // The proxy runs this callback on every request.
+    // true -> allow, false -> redirect to the sign-in page.
     authorized({ auth, request }) {
       const isLoggedIn = !!auth?.user;
       const { pathname } = request.nextUrl;
 
-      // Korumali alanlar
+      // Protected area
       const isProtected = pathname.startsWith("/panel");
 
-      // Giris yapmamis kullanici korumali alana giremez
+      // A signed-out user cannot enter the protected area
       if (isProtected) {
         if (!isLoggedIn) return false;
 
-        // Rol bazli bolum kontrolu BURADA yapilir ki reddedilen erisim gercek
-        // bir HTTP 307 ile donsun. Sunucu bileseninde redirect() cagirmak,
-        // layout stream'lendikten sonra calistigi icin 200 + istemci tarafi
-        // yonlendirme uretiyordu; veri sizmiyordu ama yetkisiz erisim durum
-        // kodundan ayirt edilemiyordu (izleme/denetim icin zayif sinyal).
+        // The per-role section check happens HERE so that a refused request
+        // returns a real HTTP 307. Calling redirect() in a server component runs
+        // after the layout has streamed, which produced 200 + a client-side
+        // redirect; no data leaked, but an unauthorized access was
+        // indistinguishable by status code — a weak signal for monitoring and
+        // auditing.
         //
-        // Sunucu tarafi requirePageView/requirePageWrite kontrolleri KALIR:
-        // burasi ilk kapi, orasi savunma derinligi.
+        // The server-side requirePageView / requirePageWrite checks REMAIN: this
+        // is the first gate, those are defence in depth.
         const role = auth?.user?.role;
         if (role && !canViewPanelPath(role, pathname)) {
-          // 307: Auth.js'in kendi giris yonlendirmesiyle ayni kod (varsayilan
-          // Response.redirect 302 dondururdu); panel yonlendirmeleri tek tip kalir.
+          // 307: the same code Auth.js uses for its own sign-in redirect (a bare
+          // Response.redirect would return 302), so panel redirects stay uniform.
           return Response.redirect(new URL("/panel", request.nextUrl), 307);
         }
         return true;
       }
 
-      // Giris yapmis kullanici giris/kayit sayfasina giderse panele yonlendir
+      // A signed-in user visiting sign-in or sign-up goes to the dashboard
       if (isLoggedIn && (pathname === "/giris" || pathname === "/kayit")) {
         return Response.redirect(new URL("/panel", request.nextUrl));
       }
@@ -59,9 +61,9 @@ export const authConfig = {
       return true;
     },
 
-    // Giris yapildiginda kullanicinin id, rol ve onboarding durumunu token'a yaziyoruz.
-    // "update" tetikleyicisi (useSession().update) ile onboarding durumu DB sorgusu
-    // olmadan tazelenir (tur tamamlaninca true, sifirlaninca false).
+    // On sign-in, write the user's id, role and onboarding state into the token.
+    // The "update" trigger (useSession().update) refreshes the onboarding state
+    // without a database query (true once the tour completes, false when reset).
     jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id as string;
@@ -74,7 +76,7 @@ export const authConfig = {
       }
       return token;
     },
-    // Token'daki bilgileri oturuma (session) tasiyoruz.
+    // Carry the token's fields onto the session.
     session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
@@ -86,6 +88,6 @@ export const authConfig = {
     },
   },
 
-  // Providers auth.ts'te eklenir (Credentials).
+  // Providers are added in auth.ts (Credentials).
   providers: [],
 } satisfies NextAuthConfig;

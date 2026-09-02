@@ -12,12 +12,12 @@ Sistemi (ERP) — hayvan, tarla, stok, finans, satış, mağaza ve personel tek 
 [![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![codecov](https://codecov.io/gh/YusufKosarDev/ciftlik-pro/branch/main/graph/badge.svg)](https://codecov.io/gh/YusufKosarDev/ciftlik-pro)
-[![Tests](https://img.shields.io/badge/tests-304%20unit%20%2B%2030%20e2e-success)](#test--kalite)
+[![Tests](https://img.shields.io/badge/tests-308%20unit%20%2B%2033%20e2e-success)](#test--kalite)
 [![Multi-tenant](https://img.shields.io/badge/multi--tenant-Postgres%20RLS-4169E1)](#-çok-kiracılık-multi-tenant-saas)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 🔗 **Canlı Demo: [ciftlik-pro.vercel.app](https://ciftlik-pro.vercel.app)**
-&nbsp;·&nbsp; Giriş ekranında **rol seçin** — Yönetici, Çalışan, Veteriner ya da Muhasebeci
+&nbsp;·&nbsp; Açılış sayfasından **rol seçin** — Yönetici, Çalışan, Veteriner ya da Muhasebeci
 
 </div>
 
@@ -38,7 +38,7 @@ mağazası:
 ![Çiftlik Pro demo turu](docs/demo.gif)
 
 > Kendiniz denemek için: **[ciftlik-pro.vercel.app](https://ciftlik-pro.vercel.app)**
-> → giriş ekranından bir rol seçin.
+> → açılış sayfasından bir rol seçin.
 
 ## 📸 Ekran Görüntüleri
 
@@ -102,7 +102,7 @@ göstergeleriyle) ve aylık gelir-gider grafiği:
 - **Modern arayüz** — sol sidebar düzeni, dark mode (semantik renk token'ları), `⌘K`
   komut paleti (hızlı gezinme + eylem) ve `cva` tabanlı tasarım sistemi.
 - **Çok dillilik (i18n) — uçtan uca** — her ekran ve her API hata mesajı, iki
-  katalogdaki **826 çeviri anahtarının tamamıyla**: panel, herkese açık mağaza ve
+  katalogdaki **853 çeviri anahtarının tamamıyla**: panel, herkese açık mağaza ve
   sepet, abonelik, davet akışı, 404 ve hata sınırları, yazma uçlarının döndürdüğü
   yanıtlar. Tarih, para ve grafik ay etiketleri de aktif dile uyar. İlk kez gelen
   ziyaretçi **tarayıcısının dilini** görür (`Accept-Language`); başlıktaki — ya da
@@ -126,8 +126,8 @@ göstergeleriyle) ve aylık gelir-gider grafiği:
   (API) hem hassas okuma (sayfa) düzeyinde uygulanır.
 - **Uçtan uca tip güvenliği** — Zod şemaları hem istemci hem sunucuda doğrular;
   Prisma ile veritabanı tipleri.
-- **Test & CI/CD** — 304 birim/bileşen testi (Vitest + Testing Library) +
-  tenant-izolasyon entegrasyon testleri + 30 uçtan uca test (Playwright),
+- **Test & CI/CD** — 308 birim/bileşen testi (Vitest + Testing Library) +
+  tenant-izolasyon entegrasyon testleri + 33 uçtan uca test (Playwright),
   GitHub Actions'ta gerçek PostgreSQL servisiyle her PR'da çalışır.
 - **Transactional bütünlük** — yem tüketimi stoğu atomik düşürür (TOCTOU'ya karşı
   koşullu `updateMany`); satış + bağlı gelir işlemi ve sepet → çok-kalemli sipariş
@@ -190,7 +190,8 @@ Sertleştirme önlemleri:
   bypass edemeyen bir rolle kanıtlanır: CI her push'ta `ciftlik_app` rolünü
   (`NOSUPERUSER NOBYPASSRLS`) kurup izolasyon testlerini o rolle koşar.
   Barındırılan demoda bu katman etkin değildir; gerekçesi
-  [`docs/PRODUCTION-RLS.md`](docs/PRODUCTION-RLS.md#neon-limitation) içinde.
+  [`docs/PRODUCTION-RLS.md`](docs/PRODUCTION-RLS.md#neon-limitation) içinde
+  (İngilizce).
 - **Kayıt & davet** — herkese açık **çiftlik kaydı** sahip-ADMIN üretir; personel
   yalnızca **token'lı davetle** eklenir. Davet token'ları tahmin edilemez sırlardır,
   süre sınırlıdır ve tek kullanımlıktır. Ziyaretçiler giriş ekranından rol seçerek salt-okunur vitrin hesaplarıyla gezer.
@@ -222,6 +223,31 @@ Sertleştirme önlemleri:
   turu bayrağı bilinçli olarak denetlenmez: iş verisi değil, arayüz tercihidir.
 - **Korumalı cron** — bildirim ucu `CRON_SECRET` ile `Authorization` başlığı doğrular.
 
+### `npm audit`'in bildirdiği açık bulgular
+
+Bu depoda `npm audit` temiz değil. Geriye kalanın sebebi gözden kaçırmak değil,
+verilmiş bir karar — o yüzden merak konusu bırakmak yerine buraya yazılıyor. Bu
+satırların yazıldığı anda 8 bulgu var (7 high, 1 low); üretim ağacıyla
+sınırlandığında (`npm audit --omit=dev`) geriye **3 high** kalıyor ve hepsi tek
+bir zincirden geliyor:
+
+| Zincir | Neyle kapanır | Bu uygulamada erişilebilir mi? |
+| --- | --- | --- |
+| `@prisma/client` → `prisma` → `@prisma/config` → `deepmerge-ts` | Prisma 7 (majör) | **Hayır** — yalnızca Prisma CLI'ın `generate` ve `migrate` sırasındaki config yükleyicisinden geçiliyor; istek yolunda değil. |
+
+**Majörler hiçbir zaman otomatik alınmıyor** — kural ve gerekçesi
+[`.github/dependabot.yml`](.github/dependabot.yml) içinde. Bu zincirin ihtiyacı
+tam olarak bu: npm'in önerdiği tek "düzeltme" `prisma@6.12.0`'a **geri dönmek**,
+ki bu bir düzeltme değil.
+
+Burada duran diğer zincir — `next` → `postcss` ve `next` → `sharp` — kapandı.
+Bekletiliyordu, çünkü 16.3 yetkilendirme kapısı olan `src/proxy.ts`'in üzerinde
+çalıştığı edge runtime'ı deprecate ediyor; iki sürümde de bütün testler geçtiği
+için yeşil boru hattı bu konuda hiçbir şey söylemiyordu. Bekletme, beklenerek
+değil **ölçülerek** kaldırıldı: 16.3.4 kendi dalında alındı ve e2e paketinin
+tamamı ona karşı koşuldu — yasak bir panel yoluna doğrudan gidip edge'den gerçek
+bir `307` döndüğünü doğrulayan üç test dahil.
+
 ## 🏢 Çok-kiracılık (Multi-tenant SaaS)
 
 Proje tek-çiftlik bir ERP'den, **her çiftlik sahibinin kendi izole çiftliğini
@@ -243,7 +269,8 @@ bağımsız katmanda** zorlanır:
    > katmanında, hem bağlantı proxy'sinin tanıdığı hem de `neon_superuser`
    > dışında kalan bir rol oluşturulamıyor. Denenen iki yol ve ikisinin de neden
    > kapandığı:
-   > [`docs/PRODUCTION-RLS.md`](docs/PRODUCTION-RLS.md#neon-limitation).
+   > [`docs/PRODUCTION-RLS.md`](docs/PRODUCTION-RLS.md#neon-limitation)
+   > (İngilizce).
    > Uygulama katmanı (Prisma extension + `withTenant` + `SET LOCAL`) demoda da
    > tam olarak çalışır.
 2. **Uygulama katmanı** — bir Prisma Client Extension (`forTenant`) `where`'lere
@@ -410,7 +437,7 @@ tarafında bir sıçrama değil.
 - **Birim testleri (Vitest):** doğrulama şemaları, RBAC yetkilendirme, hız sınırı,
   liste sorgu parametreleri, plan limitleri, finans/harita/tarih/takvim yardımcıları
   + UI bileşenleri (Testing Library: Badge/Button/EmptyState/DataTable/OnboardingModal)
-  — `npm test` (304 test). Kapsam raporu için
+  — `npm test` (308 test). Kapsam raporu için
   `npm run test:coverage` (iş mantığı `src/lib` için ~%90 satır kapsamı; paylaşılan veritabanı yolları entegrasyon testleriyle kapsanır).
 - **Tenant-izolasyon entegrasyon testleri:** gerçek PostgreSQL + non-superuser
   `ciftlik_app` rolüyle `forTenant`/RLS izolasyonu (`*.int.test.ts`) — tenant A
@@ -420,14 +447,16 @@ tarafında bir sıçrama değil.
   **CI bu değişkeni açar**, testler her push/PR'da gerçekten koşar.
 - **Uçtan uca testler (Playwright):** kimlik doğrulama, hayvan CRUD, RBAC
   reddi (gerçek 307), satış → otomatik gelir işlemi, mağaza sepeti → sipariş,
-  davet → kabul → rol, demo rol kapsamı ve salt-okunurluk — `npm run test:e2e` (30 test).
+  davet → kabul → rol, demo rol kapsamı ve salt-okunurluk, açılış sayfası
+  (yönlendirme değil 200, iki kaynak bağlantısı ve hâlâ oturum açan rol düğmesi)
+  — `npm run test:e2e` (33 test).
 - **CI (GitHub Actions):** her push/PR'da üç paralel job —
   `build` (tsc + ESLint + Vitest + üretim derlemesi),
   `integration` (PostgreSQL + `ciftlik_app` rolü + izolasyon testleri) ve
   `e2e` (gerçek PostgreSQL servisi + seed + Playwright).
-- **Lighthouse** (üretim derlemesi, mobil emülasyon): giriş **88** / mağaza **92**
+- **Lighthouse** (üretim derlemesi, mobil emülasyon): açılış **91** / giriş **88** / mağaza **91**
   performans, **95-96** erişilebilirlik, **100** best practices, **100** SEO,
-  ikisinde de **CLS 0**. Ayrıntı: [docs/LIGHTHOUSE.md](docs/LIGHTHOUSE.md).
+  üçünde de **CLS 0**. Ayrıntı: [docs/LIGHTHOUSE.md](docs/LIGHTHOUSE.md) (İngilizce).
 - **Pre-commit (husky + lint-staged):** commit öncesi staged `.ts/.tsx`
   dosyalarında otomatik `eslint --fix` çalışır.
 

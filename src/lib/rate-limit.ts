@@ -1,36 +1,36 @@
 import { prisma } from "@/lib/prisma";
 
-// Hiz sinirlayici (sabit pencere sayaci).
+// Rate limiter (fixed-window counter).
 //
-// SAYAC NEREDE TUTULUR: Postgres. Bellek-ici bir sayac tek ornekte dogru
-// calisir, ama serverless'ta (Vercel) her ornek kendi sayacini tuttugu icin
-// koruma ornek sayisina bolunur — 3 ornek, 3 kat daha gevsek limit demektir.
-// Paylasilan tek bir sayac icin zaten elimizde olan veritabanini kullaniyoruz;
-// yeni bir servis (Redis vb.) ve yeni bir gizli anahtar gerektirmez.
+// WHERE THE COUNTER LIVES: Postgres. An in-memory counter is correct on a single
+// instance, but on serverless (Vercel) every instance keeps its own, so the
+// protection is divided by the instance count — three instances mean a limit
+// three times looser. A single shared counter uses the database we already have;
+// it needs no new service (Redis and friends) and no new secret.
 //
-// ATOMIKLIK: Artirma TEK bir INSERT ... ON CONFLICT DO UPDATE ile yapilir ve
-// guncel sayaci RETURNING ile geri verir. Oku-sonra-yaz yaris kosulu yoktur:
-// es zamanli iki istek de sayilir.
+// ATOMICITY: the increment is one INSERT ... ON CONFLICT DO UPDATE that returns
+// the current count via RETURNING. There is no read-then-write race: two
+// concurrent requests are both counted.
 //
-// DAYANIKLILIK: Veritabanina ulasilamazsa istek REDDEDILMEZ; bellek-ici
-// sayaca dusulur (fail-open). Hiz siniri bir guvenlik derinligi katmanidir,
-// tek basina bir kapi degil — DB kesintisinde girisi tamamen kilitlemek
-// (fail-closed) korumadan daha buyuk bir zarar olurdu.
+// RESILIENCE: if the database is unreachable the request is NOT refused; the
+// limiter falls back to the in-memory counter (fail-open). Rate limiting is a
+// defence-in-depth layer, not a gate on its own — locking everyone out of sign-in
+// during a database blip would do more damage than it prevents.
 
 export type RateLimitResult = {
-  success: boolean; // Istek izinli mi?
-  remaining: number; // Pencerede kalan deneme hakki
-  retryAfterSec: number; // Engellendiyse, kac saniye sonra tekrar denenebilir
+  success: boolean; // Is the request allowed?
+  remaining: number; // Attempts left in the window
+  retryAfterSec: number; // If blocked, how many seconds until a retry is allowed
 };
 
-// --- Bellek-ici uygulama (yedek + birim testleri) ---------------------------
+// --- In-memory implementation (fallback + unit tests) -----------------------
 
 type Bucket = { count: number; resetAt: number };
 
 const store = new Map<string, Bucket>();
 
-// Bellek sismesini onlemek icin kaba bir ust sinir; asilirsa suresi gecmisler
-// temizlenir, hala buyukse en eski girisler atilir.
+// A rough ceiling to stop memory growth; when exceeded, expired entries are
+// swept, and if it is still too large the oldest entries are dropped.
 const MAX_KEYS = 10_000;
 
 function sweep(now: number): void {
@@ -48,9 +48,9 @@ function sweep(now: number): void {
 }
 
 /**
- * Bellek-ici sabit pencere sayaci. Dogrudan kullanilmaz; `rateLimit` bunu
- * yalnizca veritabanina ulasilamadiginda yedek olarak cagirir. Saf ve
- * senkron oldugu icin birim testleri bunun uzerinden yazilir.
+ * In-memory fixed-window counter. Not used directly; `rateLimit` calls it as a
+ * fallback only when the database is unreachable. It is pure and synchronous,
+ * which is why the unit tests are written against it.
  */
 export function rateLimitMemory(
   key: string,
@@ -60,14 +60,14 @@ export function rateLimitMemory(
 ): RateLimitResult {
   const existing = store.get(key);
 
-  // Pencere yok ya da suresi gecmis -> yeni pencere baslat.
+  // No window, or the window has expired -> start a new one.
   if (!existing || existing.resetAt <= now) {
     if (store.size > MAX_KEYS) sweep(now);
     store.set(key, { count: 1, resetAt: now + windowMs });
     return { success: true, remaining: limit - 1, retryAfterSec: 0 };
   }
 
-  // Pencere dolu -> engelle.
+  // Window is full -> block.
   if (existing.count >= limit) {
     return {
       success: false,
@@ -84,14 +84,14 @@ export function rateLimitMemory(
   };
 }
 
-// --- Paylasilan (veritabani) uygulama ---------------------------------------
+// --- Shared (database) implementation ---------------------------------------
 
 type CounterRow = { count: number; resetAt: Date };
 
 /**
- * Bir anahtar icin sabit pencere sinir kontrolu. Her cagri bir deneme sayar.
- *   limit    : pencere basina izin verilen deneme sayisi
- *   windowMs : pencere uzunlugu (ms)
+ * Fixed-window limit check for one key. Every call counts as one attempt.
+ *   limit    : attempts allowed per window
+ *   windowMs : window length (ms)
  */
 export async function rateLimit(
   key: string,
@@ -102,8 +102,9 @@ export async function rateLimit(
   const resetAt = new Date(now.getTime() + windowMs);
 
   try {
-    // Tek atomik adim: satir yoksa 1'den baslat; varsa penceresi gecmisse
-    // sifirla, gecmemisse artir. RETURNING guncel degeri verir.
+    // One atomic step: start at 1 when the row is absent; when it exists, reset
+    // it if the window has passed, otherwise increment. RETURNING gives back the
+    // current value.
     const rows = await prisma.$queryRaw<CounterRow[]>`
       INSERT INTO "RateLimit" ("key", "count", "resetAt")
       VALUES (${key}, 1, ${resetAt})
@@ -128,30 +129,31 @@ export async function rateLimit(
     }
     return { success: true, remaining: limit - row.count, retryAfterSec: 0 };
   } catch (error) {
-    // Veritabani erisilemez: fail-open + bellek-ici yedek (bkz. dosya basi).
-    console.error("Hiz siniri sayaci veritabanina yazilamadi:", error);
+    // Database unreachable: fail open onto the in-memory counter (see the note at
+    // the top of this file).
+    console.error("Could not write the rate limit counter to the database:", error);
     return rateLimitMemory(key, limit, windowMs, now.getTime());
   }
 }
 
-/** Yalnizca bellek-ici sayaci sifirlar (yedek yol + birim testleri). */
+/** Resets only the in-memory counter (fallback path + unit tests). */
 export function resetRateLimitMemory(key: string): void {
   store.delete(key);
 }
 
-/** Belirli bir anahtarin sayacini sifirlar (orn. basarili giristen sonra). */
+/** Resets the counter for one key (e.g. after a successful sign-in). */
 export async function resetRateLimit(key: string): Promise<void> {
   resetRateLimitMemory(key);
   try {
     await prisma.rateLimit.deleteMany({ where: { key } });
   } catch (error) {
-    console.error("Hiz siniri sayaci silinemedi:", error);
+    console.error("Could not delete the rate limit counter:", error);
   }
 }
 
 /**
- * Suresi gecmis sayaclari temizler. Gunluk cron tarafindan cagrilir; tablo
- * sinirsiz buyumesin diye. Silinen satir sayisini doner.
+ * Removes expired counters so the table does not grow without bound. Called by
+ * the daily cron. Returns the number of rows deleted.
  */
 export async function pruneRateLimits(): Promise<number> {
   try {
@@ -160,12 +162,12 @@ export async function pruneRateLimits(): Promise<number> {
     });
     return count;
   } catch (error) {
-    console.error("Hiz siniri temizligi basarisiz:", error);
+    console.error("Rate limit cleanup failed:", error);
     return 0;
   }
 }
 
-// Bir Request'ten istemci IP'sini cikarir (proxy/Vercel basliklari oncelikli).
+// Extracts the client IP from a Request (proxy / Vercel headers take priority).
 export function clientIp(req: Request): string {
   const xff = req.headers.get("x-forwarded-for");
   if (xff) return xff.split(",")[0]!.trim();

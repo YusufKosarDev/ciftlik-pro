@@ -7,23 +7,23 @@ import { authConfig } from "@/lib/auth.config";
 import { rateLimit, resetRateLimit, clientIp } from "@/lib/rate-limit";
 import { logAudit } from "@/lib/audit";
 
-// Brute-force / kimlik bilgisi doldurma (credential stuffing) korumasi:
-// 15 dakikalik pencerede ayni IP+e-posta ikilisi icin en fazla bu kadar
-// giris denemesi; ayrica ayni IP icin daha genis bir ust sinir.
+// Brute-force / credential-stuffing protection: within a 15-minute window, at
+// most this many attempts for the same IP+email pair, plus a wider ceiling for
+// the IP on its own.
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
-const MAX_PER_IP_EMAIL = 8; // Belirli bir hesaba yonelik denemeler
-const MAX_PER_IP = 30; // Bir IP'den tum hesaplara toplam denemeler
+const MAX_PER_IP_EMAIL = 8; // Attempts against one specific account
+const MAX_PER_IP = 30; // Attempts from one IP across all accounts
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   providers: [
     Credentials({
-      // Giris formundan beklenen alanlar
+      // Fields expected from the sign-in form
       credentials: {
         email: { label: "E-posta", type: "email" },
         password: { label: "Parola", type: "password" },
       },
-      // E-posta + parola dogrulama mantigi
+      // Email + password verification
       async authorize(credentials, request) {
         const email = credentials?.email as string | undefined;
         const password = credentials?.password as string | undefined;
@@ -32,21 +32,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const normalizedEmail = email.toLowerCase();
 
-        // Hiz siniri: once IP+e-posta (dar), sonra IP (genis). Asilirsa
-        // dogrulama yapmadan reddederiz; mesaj genel kalir (kilit bilgisi sizmaz).
+        // Rate limit: IP+email first (narrow), then IP (wide). If either is
+        // exceeded we refuse without verifying anything; the message stays
+        // generic so no lockout information leaks.
         const ip = clientIp(request as unknown as Request);
         const ipEmail = await rateLimit(`login:${ip}:${normalizedEmail}`, MAX_PER_IP_EMAIL, LOGIN_WINDOW_MS);
         const perIp = await rateLimit(`login:${ip}`, MAX_PER_IP, LOGIN_WINDOW_MS);
         if (!ipEmail.success || !perIp.success) {
-          console.warn(`Giris hiz siniri asildi: ip=${ip} email=${normalizedEmail}`);
+          console.warn(`Login rate limit exceeded: ip=${ip} email=${normalizedEmail}`);
           return null;
         }
 
-        // Giris tenant BILINMEDEN gerceklesir; User'da RLS (FORCE) etkin oldugundan
-        // non-superuser rolle dogrudan findUnique 0 satir donerdi. Bu yuzden aramayi
-        // RLS-bypass eden SECURITY DEFINER fonksiyonla yapiyoruz (bkz. migration
-        // 20260618167000_auth_lookup_function). E-posta global benzersiz oldugundan
-        // tek satir doner.
+        // Sign-in happens before the tenant is KNOWN, and User has RLS (FORCE)
+        // enabled, so a direct findUnique would return 0 rows under the
+        // non-superuser role. The lookup therefore goes through a SECURITY
+        // DEFINER function that bypasses RLS for this one query (see migration
+        // 20260618167000_auth_lookup_function). Email is globally unique, so at
+        // most one row comes back.
         const rows = await prisma.$queryRaw<
           Array<{
             id: string;
@@ -59,20 +61,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           }>
         >`SELECT * FROM auth_user_by_email(${normalizedEmail})`;
         const user = rows[0];
-        // Kullanici yoksa hash'i bosa calistirmayiz; parola yanlissa karsilastirma false doner.
+        // No user: skip hashing rather than burning a comparison. Wrong password:
+        // the comparison returns false.
         const isValid = user ? await verifyPassword(password, user.password) : false;
         if (!user || !isValid) {
-          // Basarisiz giris denemesini denetim gunlugune yaz (guvenlik izi).
-          // Best-effort: logAudit hata firlatmaz. Denemeler zaten hiz siniriyla bounded.
+          // Record the failed attempt in the audit log (security trail).
+          // Best-effort: logAudit never throws. Attempts are already bounded by
+          // the rate limit above.
           await logAudit({ email: normalizedEmail }, "LOGIN_FAILED", "Auth", null, `ip=${ip}`);
           return null;
         }
 
-        // Basarili giris: bu hesaba ait IP+e-posta sayacini sifirla ki mesru
-        // kullanici onceki yanlis denemelerden dolayi kilitlenmesin.
+        // Successful sign-in: reset this account's IP+email counter so a
+        // legitimate user is not locked out by their own earlier typos.
         await resetRateLimit(`login:${ip}:${normalizedEmail}`);
 
-        // Donen nesne token'a (jwt callback) gider. Parolayi ASLA dondurmuyoruz.
+        // The returned object flows into the token (jwt callback). The password
+        // is NEVER returned.
         return {
           id: user.id,
           name: user.name,

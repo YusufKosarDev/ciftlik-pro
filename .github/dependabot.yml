@@ -1,8 +1,9 @@
-# Bagimlilik guncellemeleri.
+# Dependency updates.
 #
-# TASARIM: Az sayida, incelenebilir PR. Gruplamadan haftada 10+ PR gelir ve
-# hicbiri okunmaz; gruplu halde haftada 1-2 PR olur. Depo public oldugundan
-# Actions dakikasi ucretsizdir, yani asil maliyet CI degil DIKKAT'tir.
+# DESIGN: few pull requests, each reviewable. Without grouping this repository
+# gets 10+ PRs a week and none of them are read; grouped it gets 1-2. The repo is
+# public, so Actions minutes are free — meaning the real cost is not CI, it is
+# ATTENTION.
 version: 2
 
 updates:
@@ -16,11 +17,11 @@ updates:
     open-pull-requests-limit: 5
 
     groups:
-      # next ve eslint-config-next AYNI surumde olmali: ikincisi birincinin lint
-      # kurallarini yeniden disa aktarir, surum farki kafa karistirici lint
-      # ciktisi uretir. react/react-dom de Next ile birlikte dogrulanmali.
-      # Bu paketlerin hepsi package.json'da TAM PIN'dir; ayri PR'lar gelirse
-      # gecici uyumsuzluk olusur.
+      # next and eslint-config-next must stay on the SAME version: the second
+      # re-exports the first's lint rules, and a version gap produces confusing
+      # lint output. react/react-dom have to be validated together with Next as
+      # well. All of these are pinned EXACTLY in package.json, so separate PRs
+      # would create a temporary mismatch.
       next-ecosystem:
         patterns:
           - "next"
@@ -31,43 +32,53 @@ updates:
           - "@types/react"
           - "@types/react-dom"
 
-      # Geri kalan her sey tek PR'da. Gurultuyu asil kesen ayar budur.
+      # Everything else in a single PR. This is the setting that actually cuts
+      # the noise.
       minor-and-patch:
         update-types:
           - "minor"
           - "patch"
 
     ignore:
-      # Major'lar elle yonetilir. Otomatik bir major PR, `npm audit fix --force`
-      # tuzaginin zamanlanmis hali olurdu: Next 17 ya da React 20 gecisi insan
-      # karari ister, yesil CI yeterli kanit degildir.
+      # Majors are handled by hand. An automatic major PR would be `npm audit fix
+      # --force` on a schedule: migrating to Next 17 or React 20 is a human
+      # decision, and a green CI run is not sufficient evidence.
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
 
-      # next'in MINOR'u da elle yonetilir. 16.2 -> 16.3 edge runtime'i deprecate
-      # ediyor (proxy.ts'teki yetki kapisi orada calisiyor), sunucu render'ini
-      # Node streams'e ceviriyor ve Instant Navigation'i varsayilan aciyor.
-      # Bunlar DAVRANIS degisiklikleri: 316 birim + 18 e2e testi ikisinde de
-      # gecer, yani yesil pipeline bu riski OLCMEZ. Kapattigi postcss ve sharp
-      # bulgulari ise bu projede erisilemez (CSS'i biz yaziyoruz; next/image
-      # hic kullanilmiyor, images.remotePatterns tanimsiz, public/'te SVG yok).
-      # Gecis kendi dalinda, tam duman testiyle yapilacak — bkz. kapatilan #53.
+      # HISTORY, kept because the reasoning still applies to the next one.
       #
-      # eslint-config-next, next'in lint kurallarini yeniden disa aktarir ve
-      # ayni surumde kalmalidir; birlikte tutuluyor.
-      - dependency-name: "next"
-        update-types: ["version-update:semver-minor"]
-      - dependency-name: "eslint-config-next"
-        update-types: ["version-update:semver-minor"]
+      # next's MINOR used to be held here as well: 16.2 -> 16.3 deprecates the
+      # edge runtime (the authorization gate in proxy.ts runs there), moves server
+      # rendering to Node streams, and turns Instant Navigation on by default.
+      # Those are BEHAVIOUR changes, and both suites passing on either version
+      # meant a green pipeline did not measure them.
+      #
+      # The hold was released by measuring rather than by waiting. 16.3.4 was
+      # taken on its own branch with a full smoke test: 33 e2e tests pass,
+      # including the three that navigate to a forbidden panel path and assert a
+      # real 307 from the edge. It also closed the postcss and sharp advisories
+      # and surfaced a genuine defect — a route module exporting a shared helper,
+      # which 16.3's stricter route types reject.
+      #
+      # So minors flow automatically again. If a future minor deprecates something
+      # load-bearing, hold it HERE with the reason, take it on a branch, and run
+      # the e2e suite — that is what worked.
+      #
+      # Windows note from that upgrade: 16.3 makes Turbopack the default for dev
+      # and build with no WASM fallback, so a machine whose policy blocks the
+      # native @next/swc binary needs `--webpack` locally. Linux CI and Vercel are
+      # unaffected, which is why the npm scripts do not pass that flag.
 
     commit-message:
-      # Depo Conventional Commits kullaniyor; bu prefix hem o duzene hem de
-      # commit-msg kontrolune (scripts/check-commit-messages.sh) uyar.
+      # The repository uses Conventional Commits; this prefix matches both that
+      # convention and the commit-msg check (scripts/check-commit-messages.sh).
       #
-      # DIKKAT: prefix'e "(deps)" YAZILMAZ. `include: "scope"` scope'u zaten
-      # Dependabot ekler; ikisi birlikte "chore(deps)(deps)" uretir — ilk
-      # yapilandirmada oldu (bkz. PR #53/#54 basliklari). prefix yalin tip
-      # olmali, scope'u Dependabot koyar.
+      # CAREFUL: do NOT write "(deps)" into the prefix. `include: "scope"` already
+      # makes Dependabot add the scope, and the two together produce
+      # "chore(deps)(deps)" — which is what the first configuration did (see the
+      # titles of PR #53/#54). The prefix must be the bare type; Dependabot
+      # supplies the scope.
       prefix: "chore"
       prefix-development: "chore"
       include: "scope"
@@ -75,8 +86,8 @@ updates:
     labels:
       - "dependencies"
 
-  # ci.yml'deki action'lar. Denetimde cikan "Node.js 20 is deprecated"
-  # (actions/checkout@v4, actions/setup-node@v4) uyarisini da bu kapatir.
+  # The actions used in ci.yml. This also silences the "Node.js 20 is deprecated"
+  # warning that showed up in the audit (actions/checkout@v4, actions/setup-node@v4).
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -84,18 +95,18 @@ updates:
     open-pull-requests-limit: 3
 
     ignore:
-      # Action major'lari da elle yonetilir — npm tarafiyla ayni ilke.
-      # NOT: checkout ve setup-node v4 -> v7 gecisi bu kural EKLENMEDEN once,
-      # bilincli olarak alindi (PR #51, #52): Node 20 deprecation uyarisini
-      # kapatiyorlardi ve action major'lari npm major'lariyla ayni risk
-      # sinifinda degil — runner'da calisirlar, uretim paketine girmezler ve
-      # dort isli CI kirilmayi aninda gosterir. Yine de "otomatik gelsin"
-      # demiyoruz: karar insanda kalsin.
+      # Action majors are handled by hand as well — the same principle as the npm
+      # side. NOTE: the checkout and setup-node v4 -> v7 moves were taken
+      # deliberately BEFORE this rule was added (PR #51, #52): they closed the
+      # Node 20 deprecation warning, and action majors are not in the same risk
+      # class as npm majors — they run on the runner, never enter the production
+      # bundle, and a four-job CI shows a break immediately. Even so we do not say
+      # "let them come automatically": the decision stays with a human.
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
 
     commit-message:
-      # npm blogundaki ile ayni kural: yalin tip + otomatik scope -> "ci(deps):"
+      # Same rule as the npm block: bare type + automatic scope -> "ci(deps):"
       prefix: "ci"
       include: "scope"
 
