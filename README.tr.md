@@ -464,9 +464,10 @@ tarafında bir sıçrama değil.
   `build` (tsc + ESLint + Vitest + üretim derlemesi),
   `integration` (PostgreSQL + `ciftlik_app` rolü + izolasyon testleri) ve
   `e2e` (gerçek PostgreSQL servisi + seed + Playwright).
-- **Lighthouse** (üretim derlemesi, mobil emülasyon): açılış **91** / giriş **88** / mağaza **91**
-  performans, **95-96** erişilebilirlik, **100** best practices, **100** SEO,
-  üçünde de **CLS 0**. Ayrıntı: [docs/LIGHTHOUSE.md](docs/LIGHTHOUSE.md) (İngilizce).
+- **Lighthouse** (canlı site üzerinde ölçüldü, mobil emülasyon): açılış **96** /
+  giriş **100** / mağaza **100** performans; üçünde de **100** erişilebilirlik,
+  best practices ve SEO, ve **CLS 0**. Ayrıntı:
+  [docs/LIGHTHOUSE.md](docs/LIGHTHOUSE.md) (İngilizce).
 - **Pre-commit (husky + lint-staged):** commit öncesi staged `.ts/.tsx`
   dosyalarında otomatik `eslint --fix` çalışır.
 
