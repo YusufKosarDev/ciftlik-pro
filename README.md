@@ -434,10 +434,10 @@ returns a real HTTP redirect from the proxy, not a client-side bounce.
   `ciftlik_app` role + the isolation tests) and `e2e` (real PostgreSQL service +
   seed + Playwright).
 - **Pre-commit** — husky + lint-staged run `eslint --fix` on staged files.
-- **Lighthouse** (production build, mobile emulation): landing **91** / sign-in
-  **88** / storefront **91** performance, **95-96** accessibility, **100** best
-  practices, **100** SEO, **CLS 0** on all three. Details and caveats in
-  [docs/LIGHTHOUSE.md](docs/LIGHTHOUSE.md).
+- **Lighthouse** (measured against the deployed site, mobile emulation): landing
+  **96** / sign-in **100** / storefront **100** performance, and **100**
+  accessibility, best practices and SEO on all three, with **CLS 0**. Details and
+  caveats in [docs/LIGHTHOUSE.md](docs/LIGHTHOUSE.md).
 
 ---
 
