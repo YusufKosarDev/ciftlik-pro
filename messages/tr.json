@@ -49,6 +49,10 @@
     "bilingualBody": "Her ekran ve her API hata mesajı Türkçe ve İngilizce. İlk gelen ziyaretçi tarayıcısının dilini alır; değiştirici seçimi o andan sonra sabitler.",
     "readMore": "Gerekçeler, elenen alternatifler ve bilinen sınırlar <repo>depoda</repo> yazılı."
   },
+  "Meta": {
+    "title": "Çiftlik Pro — Çiftlik Yönetim Sistemi",
+    "description": "Hayvan, tarla, stok, finans, satış ve herkese açık mağazayı rol bazlı tek panelden yöneten çok kiracılı çiftlik yönetim sistemi (ERP)."
+  },
   "Signup": {
     "title": "Çiftliğini oluştur",
     "subtitle": "Ücretsiz başla — kendi izole çiftliğini yönet",

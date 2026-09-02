@@ -49,6 +49,10 @@
     "bilingualBody": "Every screen and every API error message in Turkish and English. A first-time visitor gets their browser's language; the switcher pins a choice from then on.",
     "readMore": "The reasoning, the alternatives that were rejected and the known limitations are written down in <repo>the repository</repo>."
   },
+  "Meta": {
+    "title": "Çiftlik Pro — Farm Management System",
+    "description": "A multi-tenant SaaS farm management system (ERP): livestock, fields, inventory, finance, sales and a public storefront in one role-based dashboard."
+  },
   "Signup": {
     "title": "Create your farm",
     "subtitle": "Start free — manage your own isolated farm",
