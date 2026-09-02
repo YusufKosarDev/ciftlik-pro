@@ -222,6 +222,33 @@ Sertleştirme önlemleri:
   turu bayrağı bilinçli olarak denetlenmez: iş verisi değil, arayüz tercihidir.
 - **Korumalı cron** — bildirim ucu `CRON_SECRET` ile `Authorization` başlığı doğrular.
 
+### `npm audit`'in bildirdiği açık bulgular
+
+Bu depoda `npm audit` temiz değil. Bunun sebebi gözden kaçırmak değil, verilmiş
+bir karar — o yüzden merak konusu bırakmak yerine buraya yazılıyor. Bu satırların
+yazıldığı anda 11 bulgu var (10 high, 1 low); üretim ağacıyla sınırlandığında
+(`npm audit --omit=dev`) geriye **6 high** kalıyor ve hepsi iki zincirden geliyor:
+
+| Zincir | Neyle kapanır | Bu uygulamada erişilebilir mi? |
+| --- | --- | --- |
+| `next` → `postcss` | `next@16.3.x` | **Hayır** — postcss derleme zamanında, bu depoda yazılmış CSS üzerinde çalışır. Kullanıcıdan gelen hiçbir şey oraya ulaşmaz. |
+| `next` → `sharp` | `next@16.3.x` | **Hayır** — `sharp`, `next/image` için çekiliyor; bu uygulama onu hiç import etmiyor (tek uzak görsel düz `<img>` ile basılıyor, çünkü URL'i kiracının girdiği serbest bir adres) ve `images.remotePatterns` tanımsız olduğu için optimizasyon rotası da erişilemez. |
+| `@prisma/client` → `prisma` → `@prisma/config` → `deepmerge-ts` | Prisma 7 (majör) | **Hayır** — yalnızca Prisma CLI'ın `generate` ve `migrate` sırasındaki config yükleyicisinden geçiliyor; istek yolunda değil. |
+
+İki bekletme kararı da uygulandıkları yerde,
+[`.github/dependabot.yml`](.github/dependabot.yml) içinde gerekçeleriyle duruyor.
+Next'in **minör**'ü bekletiliyor, çünkü 16.3 yetkilendirme kapısı olan
+`src/proxy.ts`'in üzerinde çalıştığı edge runtime'ı deprecate ediyor; sunucu
+render'ını ve gezinme varsayılanlarını da değiştiriyor. Birim ve e2e testleri iki
+sürümde de geçiyor, yani yeşil boru hattı bu riski **ölçmüyor** — geçiş kendi
+dalında, gerçek bir duman testiyle yapılır. **Majör**'ler ise hiçbir zaman
+otomatik alınmıyor; Prisma zincirinin ihtiyacı tam olarak bu, zira npm'in orada
+önerdiği tek "düzeltme" `prisma@6.12.0`'a **geri dönmek**.
+
+`sharp` ayrıca doğrudan bir devDependency: yukarıdaki demo GIF'ini yerel ekran
+görüntülerinden üreten `scripts/demo-gif.mjs` kullanıyor. Bu, bu deponun kendi
+dosyaları üzerinde çalışan tek seferlik bir araç; bir servis değil.
+
 ## 🏢 Çok-kiracılık (Multi-tenant SaaS)
 
 Proje tek-çiftlik bir ERP'den, **her çiftlik sahibinin kendi izole çiftliğini

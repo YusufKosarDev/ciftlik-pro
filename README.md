@@ -259,6 +259,32 @@ Hardening:
   `503`, with it they require a bearer token.
 - **Read-only demo account** — cannot write anything, so the live demo stays intact.
 
+### The advisories `npm audit` reports
+
+`npm audit` is not clean here, and that is a decision rather than an oversight —
+so it is written down instead of left for you to wonder about. At the time of
+writing it reports 11 findings (10 high, 1 low); restricted to the production
+tree (`npm audit --omit=dev`) it reports **6 high**, in two dependency chains:
+
+| Chain | Closed by | Reachable in this app? |
+| --- | --- | --- |
+| `next` → `postcss` | `next@16.3.x` | **No** — postcss runs at build time over CSS written in this repository. Nothing user-supplied reaches it. |
+| `next` → `sharp` | `next@16.3.x` | **No** — `sharp` is pulled in for `next/image`, which this app never imports (the one remote image is rendered with a plain `<img>`, because its URL is arbitrary tenant input), and `images.remotePatterns` is undefined, so the optimizer route is unreachable. |
+| `@prisma/client` → `prisma` → `@prisma/config` → `deepmerge-ts` | Prisma 7 (major) | **No** — reached only by the Prisma CLI's config loader during `generate` and `migrate`, never on a request path. |
+
+Both holds are recorded where they are enforced, in
+[`.github/dependabot.yml`](.github/dependabot.yml). The Next **minor** is
+deferred because 16.3 deprecates the edge runtime that `src/proxy.ts` — the
+authorization gate — runs on, and also changes server rendering and navigation
+defaults; the unit and e2e suites pass on either version, so a green pipeline
+does not measure that risk. It gets its own branch and a real smoke test.
+**Majors** are never taken automatically, which is what the Prisma chain needs:
+npm's only offered "fix" there is a *downgrade* to `prisma@6.12.0`.
+
+`sharp` is additionally a direct devDependency, used by `scripts/demo-gif.mjs` to
+build the demo GIF above from local screenshots — a one-off tool run over files
+from this repository, not a service.
+
 ---
 
 ## Multi-tenancy
