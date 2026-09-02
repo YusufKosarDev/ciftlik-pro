@@ -4,13 +4,13 @@ import { screen, fireEvent, waitFor } from "@testing-library/react";
 import { renderWithIntl as render } from "../test-utils";
 import { OnboardingModal } from "./onboarding-modal";
 
-// next/navigation router'ini mock'la (bilesen useRouter().refresh kullaniyor).
+// Mock the next/navigation router (the component uses useRouter().refresh).
 const refresh = vi.fn();
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh, push: vi.fn() }),
 }));
 
-// next-auth oturum guncellemesini mock'la (finish -> update({onboarded:true})).
+// Mock the next-auth session update (finish -> update({onboarded:true})).
 const update = vi.fn();
 vi.mock("next-auth/react", () => ({
   useSession: () => ({ update }),
@@ -19,7 +19,7 @@ vi.mock("next-auth/react", () => ({
 beforeEach(() => {
   refresh.mockClear();
   update.mockClear();
-  // Tamamlama isteklerini yakalamak icin fetch'i mock'la.
+  // Mock fetch, to capture the completion requests.
   vi.stubGlobal(
     "fetch",
     vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve({}) }))
@@ -42,7 +42,7 @@ describe("OnboardingModal", () => {
 
   it("role ozel adim, rolun yetkilerini gosterir (VET)", () => {
     render(<OnboardingModal userName="Vet" role="VET" />);
-    // 3. adima git
+    // Go to step 3
     fireEvent.click(screen.getByRole("button", { name: /İleri/ }));
     fireEvent.click(screen.getByRole("button", { name: /İleri/ }));
     expect(
@@ -69,7 +69,7 @@ describe("OnboardingModal", () => {
 
   it("son adimda Basla butonu cikar ve turu tamamlar", async () => {
     render(<OnboardingModal userName="Yusuf" role="ACCOUNTANT" />);
-    // Son adima kadar ilerle (5 adim -> 4 kez Ileri)
+    // Advance to the last step (5 steps -> Next 4 times)
     for (let i = 0; i < 4; i++) {
       fireEvent.click(screen.getByRole("button", { name: /İleri/ }));
     }

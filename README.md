@@ -211,6 +211,8 @@ flowchart LR
 
 ## Security & RBAC
 
+> Found something? Please report it privately — see [SECURITY.md](SECURITY.md).
+
 Authorization lives in `src/lib/authz.ts` and is enforced at three levels: the
 edge proxy, sensitive pages (`requirePageView` / `requirePageWrite`), and every
 write endpoint (`authorizeWrite`). Within the sections a role can see, reading is
@@ -270,12 +272,20 @@ chain:
 
 | Chain | Closed by | Reachable in this app? |
 | --- | --- | --- |
-| `@prisma/client` → `prisma` → `@prisma/config` → `deepmerge-ts` | Prisma 7 (major) | **No** — reached only by the Prisma CLI's config loader during `generate` and `migrate`, never on a request path. |
+| `@prisma/client` → `prisma` → `@prisma/config` → `deepmerge-ts` | Nothing yet — see below | **No** — reached only by the Prisma CLI's config loader during `generate` and `migrate`, never on a request path. |
 
-**Majors are never taken automatically** — the rule, and why, is in
-[`.github/dependabot.yml`](.github/dependabot.yml). That is exactly what this
-chain needs: npm's only offered "fix" is a *downgrade* to `prisma@6.12.0`, which
-is not one.
+**No Prisma release closes it yet, and that was measured rather than assumed.**
+Prisma 7.10.0 was installed on a branch to check: it still pins the vulnerable
+`deepmerge-ts@7.1.5` — patched 7.1.6 and 8.x exist, but no Prisma release has
+picked either up — *and* it bundles `mysql2`, a driver this project does not use,
+which carries a high advisory of its own. So the major upgrade would take the
+count from three to four while requiring a breaking config migration
+(`directUrl` moves out of the schema into `prisma.config.ts`). npm's own suggested
+"fix" under 7 is to go back to 6. The branch was abandoned, and the wait is for
+Prisma to bump its `deepmerge-ts` pin rather than for a major version.
+
+**Majors are never taken automatically** either — the rule, and why, is in
+[`.github/dependabot.yml`](.github/dependabot.yml).
 
 The other chain that used to be here — `next` → `postcss` and `next` → `sharp` —
 is closed. It was held back because 16.3 deprecates the edge runtime that

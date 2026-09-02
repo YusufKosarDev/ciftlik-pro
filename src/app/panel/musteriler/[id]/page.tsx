@@ -27,8 +27,9 @@ export default async function MusteriDetayPage({
   ]);
 
   const { id } = await params;
-  // findFirst (findUnique degil) ki forTenant enjeksiyonu where'e tenantId ekleyebilsin;
-  // ayrica RLS (withTenant baglami) tekil erisimi DB'de de garanti eder.
+  // findFirst rather than findUnique, so the forTenant injection can add tenantId
+  // to the where; RLS (the withTenant context) also guarantees the single-row
+  // access at the database level.
   const customer = await withTenant(session.user.tenantId, (db) =>
     db.customer.findFirst({
       where: { id },
@@ -58,7 +59,7 @@ export default async function MusteriDetayPage({
           {canEdit && (
             <Link
               href={`/panel/musteriler/${customer.id}/duzenle`}
-              className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700"
+              className="rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-800"
             >
               {tc("edit")}
             </Link>
@@ -100,7 +101,7 @@ export default async function MusteriDetayPage({
                   <tr key={s.id} className="transition-colors hover:bg-muted">
                     <td className="px-4 py-3 text-muted-foreground">{formatDate(s.date, locale)}</td>
                     <td className="px-4 py-3 text-foreground">{s.item}</td>
-                    <td className="px-4 py-3 text-right font-medium text-green-600 dark:text-green-400">
+                    <td className="px-4 py-3 text-right font-medium text-green-700 dark:text-green-400">
                       {formatMoney(s.amount, locale)}
                     </td>
                   </tr>

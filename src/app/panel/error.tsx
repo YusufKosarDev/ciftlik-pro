@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { AlertTriangle, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-// Panel segmenti icin hata siniri (error boundary).
+// The error boundary for the panel segment.
 export default function Error({
   error,
   reset,

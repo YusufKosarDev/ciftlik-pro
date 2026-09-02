@@ -38,7 +38,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ customer }, { status: 201 });
   } catch (error) {
-    console.error("Musteri ekleme hatasi:", error);
+    console.error("Failed to add customer:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

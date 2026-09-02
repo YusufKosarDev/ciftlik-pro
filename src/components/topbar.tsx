@@ -8,7 +8,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { NotificationBell } from "@/components/notification-bell";
 import { LanguageSwitcher } from "@/components/language-switcher";
 
-// Aktif yola gore sayfa basligini bulur (en uzun eslesen on-ek).
+// Finds the page title from the active path (the longest matching prefix).
 function titleFor(pathname: string, navItems: NavItem[]): string {
   let best: NavItem | undefined;
   for (const item of navItems) {

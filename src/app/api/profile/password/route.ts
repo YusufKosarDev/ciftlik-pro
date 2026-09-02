@@ -7,7 +7,7 @@ import { logAudit } from "@/lib/audit";
 import { passwordChangeSchema } from "@/lib/validations/password";
 import { hashPassword, verifyPassword } from "@/lib/password-hash";
 
-// PUT /api/profile/password -> giris yapmis kullanicinin kendi parolasini degistirir.
+// PUT /api/profile/password -> the signed-in user changes their own password.
 export async function PUT(request: Request) {
   const te = await getTranslations("Errors");
   try {
@@ -16,8 +16,8 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: te("unauthorized") }, { status: 401 });
     }
 
-    // Demo hesabi salt-okunurdur; parolasini degistiremez. Aksi halde bir demo
-    // ziyaretcisi parolayi degistirip diger ziyaretcileri demodan kilitleyebilir.
+    // The demo account is read-only and cannot change its password. Otherwise one
+    // demo visitor could change it and lock every other visitor out of the demo.
     if (isDemoUser(session.user.email)) {
       return NextResponse.json(
         { error: te("demoReadOnlyPassword") },
@@ -60,7 +60,7 @@ export async function PUT(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Parola degistirme hatasi:", error);
+    console.error("Failed to change password:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

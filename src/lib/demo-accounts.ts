@@ -1,26 +1,26 @@
-// Vitrin (demo) hesaplari — TEK KAYNAK.
+// The showcase (demo) accounts — SINGLE SOURCE.
 //
-// Bu dosya BILEREK hicbir sey import etmez: ne Prisma, ne next-auth, ne
-// next/navigation, ne de bir ikon kutuphanesi. Sebep, uc ayri tuketicisinin
-// uc ayri calisma ortaminda olmasi:
+// This file DELIBERATELY imports nothing: no Prisma, no next-auth, no
+// next/navigation, not even an icon library. The reason is that its three
+// consumers live in three different runtimes:
 //
-//   src/lib/demo-data.ts        SUNUCU  — hesaplari olusturur (seed/cron)
-//   src/lib/authz.ts            SUNUCU  — salt-okunurlugu uygular (isDemoUser)
-//   src/app/(auth)/giris/page   ISTEMCI — rol secici dugmeleri
+//   src/lib/demo-data.ts        SERVER  — creates the accounts (seed/cron)
+//   src/lib/authz.ts            SERVER  — enforces read-only (isDemoUser)
+//   src/components/demo-role-buttons  CLIENT — the role picker buttons
 //
-// Once bu liste uc dosyaya da KOPYALANMISTI. Bir rol ya da e-posta degisince
-// ucunu birden guncellemek gerekiyordu; birini unutmak sessiz ve tehlikeli bir
-// hata uretirdi: authz.ts'e eklenmemis bir demo hesabi SALT-OKUNUR OLMAZ, yani
-// ziyaretci canli demonun verisini bozabilir ya da parolayi degistirip diger
-// ziyaretcileri kilitleyebilirdi. Kopyayi kaldirmak bu hatayi imkansiz kilar.
+// This list used to be COPIED into all three. Changing a role or an email meant
+// updating three files, and forgetting one produced a silent, dangerous bug: a
+// demo account missing from authz.ts is NOT READ-ONLY, so a visitor could corrupt
+// the live demo's data — or change the password and lock every other visitor out.
+// Removing the copies makes that mistake impossible.
 //
-// Rol adlari Prisma'nin `Role` enum'uyla eslesmeli. Bagimlilik eklememek icin
-// burada duz bir birlesim tipi kullaniliyor; eslesmenin DERLEME ZAMANINDA
-// dogrulanmasi demo-data.ts icinde yapiliyor (orada Prisma zaten import edili).
+// The role names must match Prisma's `Role` enum. A plain union is used here to
+// avoid taking on a dependency; the match is verified AT COMPILE TIME inside
+// demo-data.ts, where Prisma is already imported.
 
 export const DEMO_PASSWORD = "demo1234";
 
-/** Prisma `Role` enum'unun aynasi. Eslesme demo-data.ts'te dogrulanir. */
+/** A mirror of Prisma's `Role` enum. The match is verified in demo-data.ts. */
 export type DemoRole = "ADMIN" | "WORKER" | "VET" | "ACCOUNTANT";
 
 export type DemoAccount = {
@@ -28,30 +28,31 @@ export type DemoAccount = {
   readonly name: string;
   readonly role: DemoRole;
   /**
-   * Giris ekranindaki i18n anahtar oneki:
-   * `Login.demo<i18nKey>` (dugme etiketi) ve `Login.demo<i18nKey>Note` (aciklama).
+   * The i18n key prefix used by the role picker:
+   * `Login.demo<i18nKey>` (button label) and `Login.demo<i18nKey>Note` (the note).
    */
   readonly i18nKey: "Admin" | "Worker" | "Vet" | "Accountant";
 };
 
-// HER ROL ICIN BIR HESAP.
+// ONE ACCOUNT PER ROLE.
 //
-// NEDEN DORT: Projenin manset iddiasi "4 rollu RBAC". Tek bir ADMIN hesabiyla
-// ziyaretci butun modulleri gorup "her sey acik" izlenimi aliyordu; yani
-// iddianin kaniti demoda GORUNMUYORDU. Rol basina bir hesapla fark gozle
-// gorulur oluyor — VET 16 menu ogesinden 5'ini gorur, WORKER finans ve satis
-// bolumlerinin hicbirini goremez (bkz. src/lib/nav-permissions.ts navByRole).
+// WHY FOUR: the headline claim of this project is "four-role RBAC". With a single
+// ADMIN account a visitor saw every module and came away thinking everything is
+// open — the proof of the claim was NOT VISIBLE in the demo. One account per role
+// makes the difference something you can see: VET sees 5 of 16 menu items, WORKER
+// sees none of the finance or sales sections (see navByRole in
+// src/lib/nav-permissions.ts).
 //
-// PAROLA hepsinde ayni: bunlar herkese acik vitrin hesaplari, sir degil.
-// Salt-okunurluk e-posta tabanlidir ve ROLDEN BAGIMSIZDIR; yani WORKER demo
-// hesabi da hicbir sey yazamaz.
+// The PASSWORD is the same for all of them: these are public showcase accounts,
+// not a secret. Read-only enforcement is keyed on the email address and is
+// INDEPENDENT OF ROLE, so the WORKER demo account cannot write either.
 //
-// "demo-" oneki bilincli: prisma/seed.ts ayni tenant'a admin@/ahmet@/vet@
-// hesaplarini yaziyor ve User.email GLOBAL benzersiz. Onek olmadan CI'nin
-// e2e job'i (once db:seed, sonra db:seed-demo) P2002 ile duserdi.
+// The "demo-" prefix is deliberate: prisma/seed.ts writes admin@/ahmet@/vet@ into
+// the same tenant and User.email is GLOBALLY unique. Without the prefix, CI's e2e
+// job (db:seed first, then db:seed-demo) would fail with P2002.
 //
-// SIRA ONEMLI: ilk kayit ADMIN olmali (DEMO_EMAIL ondan turetiliyor) ve giris
-// ekranindaki dugme sirasi da bu diziden geliyor.
+// ORDER MATTERS: the first entry must be the ADMIN (DEMO_EMAIL is derived from
+// it), and the button order in the role picker comes from this array.
 export const DEMO_ACCOUNTS: readonly DemoAccount[] = [
   { email: "demo@ciftlik.com", name: "Demo Yönetici", role: "ADMIN", i18nKey: "Admin" },
   { email: "demo-worker@ciftlik.com", name: "Demo Çalışan", role: "WORKER", i18nKey: "Worker" },
@@ -60,12 +61,12 @@ export const DEMO_ACCOUNTS: readonly DemoAccount[] = [
 ];
 
 /**
- * ADMIN vitrin hesabi. Gorevler buna atanir (gorev atama yalnizca ADMIN
- * yetkisindedir) ve `npm run db:seed-demo` ciktisinda bu adres yazilir.
+ * The ADMIN showcase account. Tasks are assigned to it (task assignment is
+ * ADMIN-only) and this is the address printed by `npm run db:seed-demo`.
  */
 export const DEMO_EMAIL = DEMO_ACCOUNTS[0].email;
 
-/** Salt-okunurluk kontrolu icin hizli arama kumesi (kucuk harfli). */
+/** A fast lookup set for the read-only check (lower-cased). */
 export const DEMO_EMAILS: ReadonlySet<string> = new Set(
   DEMO_ACCOUNTS.map((a) => a.email.toLowerCase())
 );

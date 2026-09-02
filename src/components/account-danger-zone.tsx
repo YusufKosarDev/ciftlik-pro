@@ -7,8 +7,9 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
 
-// ADMIN hesap islemleri: tum tenant verisini disa aktar (KVKK) ve cifligi kalici
-// sil (hesap kapatma). Silme, ciftlik adi birebir yazilarak onaylanir.
+// ADMIN account actions: export all of the tenant's data (GDPR/KVKK) and
+// permanently delete the farm (account closure). Deletion is confirmed by typing
+// the farm's name exactly.
 export function AccountDangerZone({
   farmName,
   canDelete,
@@ -35,7 +36,7 @@ export function AccountDangerZone({
       setError(j.error ?? t("deleteFailed"));
       return;
     }
-    // Tüm veri silindi → oturumu kapat ve giriş ekranına dön.
+    // All data is gone -> sign out and return to the sign-in screen.
     await signOut({ callbackUrl: "/giris" });
   }
 
@@ -45,7 +46,7 @@ export function AccountDangerZone({
         <AlertTriangle className="h-4 w-4" /> {t("dangerZone")}
       </h2>
 
-      {/* Veri dışa aktarma (KVKK taşınabilirlik) */}
+      {/* Data export (GDPR/KVKK portability) */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-5">
         <div>
           <p className="text-sm font-medium text-foreground">{t("exportData")}</p>
@@ -58,7 +59,7 @@ export function AccountDangerZone({
         </a>
       </div>
 
-      {/* Çiftliği kalıcı silme */}
+      {/* Permanently delete the farm */}
       {canDelete ? (
         <div className="space-y-3">
           <div>

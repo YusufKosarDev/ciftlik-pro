@@ -8,8 +8,8 @@ import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 
-// Profil sayfasinda: hos geldin turunu sifirlar (onboardedAt = null) ve paneli
-// yeniler; boylece tur modali tekrar gosterilir.
+// On the profile page: resets the welcome tour (onboardedAt = null) and refreshes
+// the panel, so the tour modal is shown again.
 export function RestartTourButton() {
   const router = useRouter();
   const { update } = useSession();
@@ -28,7 +28,7 @@ export function RestartTourButton() {
       return;
     }
 
-    // Token'i tazele ki panel layout turu yeniden gostersin.
+    // Refresh the token so the panel layout shows the tour again.
     await update({ onboarded: false });
     setLoading(false);
 

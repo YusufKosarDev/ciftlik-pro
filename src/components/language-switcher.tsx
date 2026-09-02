@@ -6,8 +6,9 @@ import { useLocale, useTranslations } from "next-intl";
 import { setLocale } from "@/i18n/set-locale";
 import { cn } from "@/lib/cn";
 
-// Routing'siz dil degistirici: secimi NEXT_LOCALE cookie'sine yazar ve sunucu
-// bilesenlerini tazeler (router.refresh). URL degismez.
+// The routing-free language switcher: it writes the choice to the NEXT_LOCALE
+// cookie and refreshes the server components (router.refresh). The URL does not
+// change.
 export function LanguageSwitcher({ className }: { className?: string }) {
   const router = useRouter();
   const locale = useLocale();
@@ -38,7 +39,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
           className={cn(
             "rounded-md px-2 py-1 font-medium uppercase transition disabled:opacity-60",
             locale === code
-              ? "bg-green-600 text-white"
+              ? "bg-green-700 text-white"
               : "text-muted-foreground hover:bg-muted hover:text-foreground"
           )}
         >

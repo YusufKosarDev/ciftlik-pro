@@ -3,8 +3,9 @@ import { CartProvider } from "@/components/store/cart-provider";
 import { StoreHeader } from "@/components/store/store-header";
 import { resolveStorefront } from "@/lib/storefront";
 
-// Per-tenant vitrin duzeni: slug'i tenant'a cozumler. Sepet, slug'a ozel bir
-// localStorage anahtariyla tutulur (farkli ciftliklerin sepetleri karismaz).
+// The per-tenant storefront layout: resolves the slug to a tenant. The cart is
+// kept under a slug-specific localStorage key, so different farms' carts cannot
+// mix.
 export default async function StorefrontLayout({
   children,
   params,

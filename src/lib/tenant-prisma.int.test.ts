@@ -2,8 +2,9 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { prisma } from "./prisma";
 import { forTenant } from "./tenant-prisma";
 
-// Gercek DB gerektirir; CI birim isinde DB olmadigindan RUN_DB_TESTS ile gatelenir.
-// Yerelde: RUN_DB_TESTS=1 npx vitest run src/lib/tenant-prisma.int.test.ts
+// Needs a real database; CI's unit job has none, so it is gated behind
+// RUN_DB_TESTS.
+// Locally: RUN_DB_TESTS=1 npx vitest run src/lib/tenant-prisma.int.test.ts
 const run = Boolean(process.env.RUN_DB_TESTS);
 
 describe.skipIf(!run)("tenant izolasyonu (integration, gercek DB)", () => {
@@ -32,7 +33,8 @@ describe.skipIf(!run)("tenant izolasyonu (integration, gercek DB)", () => {
     const dbA = forTenant(A);
     const dbB = forTenant(B);
 
-    // tenantId yazma tarafinda acikca verilir (tip zorunlulugu + RLS WITH CHECK).
+    // tenantId is explicit on the write side (enforced by the type system, checked
+    // again by RLS WITH CHECK).
     const aAnimal = await dbA.animal.create({
       data: { tenantId: A, tagNumber: tagA, species: "CATTLE", gender: "FEMALE" },
     });
@@ -43,7 +45,7 @@ describe.skipIf(!run)("tenant izolasyonu (integration, gercek DB)", () => {
     expect(aAnimal.tenantId).toBe(A);
     expect(bAnimal.tenantId).toBe(B);
 
-    // findMany sadece kendi tenant'ının kaydını görür (izolasyon)
+    // findMany sees only its own tenant's record (isolation)
     const aList = await dbA.animal.findMany({
       where: { tagNumber: { in: [tagA, tagB] } },
     });
@@ -53,7 +55,7 @@ describe.skipIf(!run)("tenant izolasyonu (integration, gercek DB)", () => {
     expect(aList.map((x) => x.tagNumber)).toEqual([tagA]);
     expect(bList.map((x) => x.tagNumber)).toEqual([tagB]);
 
-    // count da kapsanır
+    // count is scoped too
     expect(
       await dbA.animal.count({ where: { tagNumber: { in: [tagA, tagB] } } })
     ).toBe(1);

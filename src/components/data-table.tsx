@@ -19,16 +19,17 @@ export type Column<T> = {
   key: string;
   header: string;
   cell: (row: T) => React.ReactNode;
-  // sortKey verilirse kolon basligi tiklanarak siralanabilir; bu anahtar URL'e
-  // (?sort) yazilir ve sunucu tarafinda orderBy'a cevrilir.
+  // With a sortKey the column header becomes clickable to sort; that key is written
+  // to the URL (?sort) and turned into an orderBy on the server.
   sortKey?: string;
   className?: string;
   headerClassName?: string;
 };
 
-// Sunucu-tarafi sayfalama/arama/siralama icin URL-gudumlu sunum tablosu.
-// Veri (`data`) zaten sunucuda sayfalanmis/filtrelenmis gelir; bu bilesen yalniz
-// gosterir ve etkilesimleri URL searchParams'a yansitir (router.replace).
+// A URL-driven presentation table for server-side pagination, search and sorting.
+// The `data` arrives already paginated and filtered from the server; this component
+// only displays it and reflects interactions into the URL's searchParams
+// (router.replace).
 export function DataTable<T extends { id: string }>({
   data,
   columns,
@@ -56,8 +57,8 @@ export function DataTable<T extends { id: string }>({
   const t = useTranslations("Table");
   const tCommon = useTranslations("Common");
 
-  // URL parametrelerini gunceller; bos/null degerler kaldirilir. scroll:false ile
-  // sayfa basina kaymayi onleriz.
+  // Updates the URL parameters, dropping empty and null values. scroll:false keeps
+  // the page from jumping back to the top.
   const updateParams = useCallback(
     (updates: Record<string, string | number | null>) => {
       const params = new URLSearchParams(searchParams.toString());
@@ -71,7 +72,7 @@ export function DataTable<T extends { id: string }>({
     [router, pathname, searchParams]
   );
 
-  // Arama: yerel girdi durumu + debounce ile URL'e yansitma.
+  // Search: local input state, reflected into the URL after a debounce.
   const [term, setTerm] = useState(list.q);
   useEffect(() => {
     const handle = setTimeout(() => {
@@ -93,7 +94,7 @@ export function DataTable<T extends { id: string }>({
     updateParams({ page: p <= 1 ? null : p });
   }
 
-  // Çoklu seçim durumu
+  // Multi-selection state
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [deleting, setDeleting] = useState(false);
 
@@ -119,14 +120,14 @@ export function DataTable<T extends { id: string }>({
       await onBulkDelete(selectedIds);
       setSelectedIds([]);
     } catch (err) {
-      console.error("Toplu silme hatası:", err);
+      console.error("Bulk delete failed:", err);
       alert(t("bulkDeleteFailed"));
     } finally {
       setDeleting(false);
     }
   };
 
-  // Kolon görünürlüğü durumu
+  // Column visibility state
   const [hiddenColumnKeys, setHiddenColumnKeys] = useState<Set<string>>(new Set());
   const [showColMenu, setShowColMenu] = useState(false);
 
@@ -142,7 +143,7 @@ export function DataTable<T extends { id: string }>({
   const renderedColumns = columns.filter((col) => !hiddenColumnKeys.has(col.key));
   const showSelectionColumn = enableSelection && data.length > 0;
 
-  // CSV İndirme fonksiyonu
+  // The CSV download
   const downloadCSV = () => {
     if (!data || data.length === 0) return;
     const exportCols = renderedColumns.filter((col) => col.key !== "actions");
@@ -157,7 +158,7 @@ export function DataTable<T extends { id: string }>({
           if (val instanceof Date) {
             val = val.toLocaleDateString();
           }
-          // Tırnak işaretlerini kaçış karakteriyle koru
+          // Escape the quote characters
           const escaped = String(val).replace(/"/g, '""');
           return `"${escaped}"`;
         })
@@ -176,7 +177,7 @@ export function DataTable<T extends { id: string }>({
 
   return (
     <div className="space-y-3">
-      {/* Üst İşlem Çubuğu (Arama + CSV + Sütunlar) */}
+      {/* Top action bar (search, CSV, columns) */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         {searchable && (
           <div className="relative max-w-xs flex-1 min-w-[200px]">
@@ -223,7 +224,7 @@ export function DataTable<T extends { id: string }>({
                             type="checkbox"
                             checked={!hiddenColumnKeys.has(col.key)}
                             onChange={() => toggleColumn(col.key)}
-                            className="rounded border-border text-green-600 focus:ring-green-500 h-3.5 w-3.5"
+                            className="rounded border-border text-green-700 focus:ring-green-500 h-3.5 w-3.5"
                           />
                           {col.header}
                         </label>
@@ -236,7 +237,7 @@ export function DataTable<T extends { id: string }>({
         </div>
       </div>
 
-      {/* Toplu İşlem Çubuğu */}
+      {/* Bulk action bar */}
       {selectedIds.length > 0 && onBulkDelete && (
         <div className="flex items-center justify-between rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 p-3 text-sm animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="flex items-center gap-2 text-red-700 dark:text-red-400 font-medium">
@@ -277,7 +278,7 @@ export function DataTable<T extends { id: string }>({
                         type="checkbox"
                         checked={selectedIds.length === data.length}
                         onChange={toggleSelectAll}
-                        className="rounded border-border text-green-600 focus:ring-green-500 h-4 w-4 cursor-pointer"
+                        className="rounded border-border text-green-700 focus:ring-green-500 h-4 w-4 cursor-pointer"
                       />
                     </th>
                   )}
@@ -327,7 +328,7 @@ export function DataTable<T extends { id: string }>({
                           type="checkbox"
                           checked={selectedIds.includes(row.id)}
                           onChange={() => toggleSelectRow(row.id)}
-                          className="rounded border-border text-green-600 focus:ring-green-500 h-4 w-4 cursor-pointer"
+                          className="rounded border-border text-green-700 focus:ring-green-500 h-4 w-4 cursor-pointer"
                         />
                       </td>
                     )}

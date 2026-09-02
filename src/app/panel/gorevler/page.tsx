@@ -29,7 +29,7 @@ export default async function GorevlerPage({
       }
     : {};
 
-  // Atanan kisiye gore siralama iliskili tablo uzerinden yapilir.
+  // Sorting by assignee goes through the related table.
   const orderBy = (
     sort === "assignedTo" ? { assignedTo: { name: dir } } : { [sort]: dir }
   ) as Prisma.TaskOrderByWithRelationInput;

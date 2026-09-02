@@ -31,7 +31,7 @@ function UsageRow({
       {!unlimited && (
         <div className="h-2 overflow-hidden rounded-full bg-muted">
           <div
-            className={`h-full rounded-full ${atLimit ? "bg-red-500" : "bg-green-600"}`}
+            className={`h-full rounded-full ${atLimit ? "bg-red-500" : "bg-green-700"}`}
             style={{ width: `${pct}%` }}
           />
         </div>
@@ -46,7 +46,7 @@ export default async function AbonelikPage() {
   if (!session?.user) {
     redirect("/giris");
   }
-  // Plan/abonelik tenant geneli bir ayardır: yalnızca ADMIN yönetebilir.
+  // The plan and subscription are a tenant-wide setting: ADMIN only.
   if (session.user.role !== "ADMIN") {
     redirect("/panel");
   }

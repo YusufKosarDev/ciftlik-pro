@@ -5,7 +5,7 @@ import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { cropSchema } from "@/lib/validations/crop";
 
-// PUT /api/fields/[id]/crops/[cropId] -> ekim kaydini gunceller
+// PUT /api/fields/[id]/crops/[cropId] -> updates a crop record
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string; cropId: string }> }
@@ -28,7 +28,7 @@ export async function PUT(
 
     const data = parsed.data;
     const result = await withTenant(authz.session.user.tenantId, async (db) => {
-      // Ekim kaydi bu tarlaya mi ait?
+      // Does this crop record belong to this field?
       const existing = await db.crop.findFirst({ where: { id: cropId } });
       if (!existing) return { notFound: true } as const;
       if (existing.fieldId !== id) return { wrongField: true } as const;
@@ -60,7 +60,7 @@ export async function PUT(
 
     return NextResponse.json({ crop });
   } catch (error) {
-    console.error("Ekim kaydi guncelleme hatasi:", error);
+    console.error("Failed to update crop record:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }
@@ -68,7 +68,7 @@ export async function PUT(
   }
 }
 
-// DELETE /api/fields/[id]/crops/[cropId] -> ekim kaydini siler
+// DELETE /api/fields/[id]/crops/[cropId] -> deletes a crop record
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string; cropId: string }> }
@@ -98,7 +98,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Ekim kaydi silme hatasi:", error);
+    console.error("Failed to delete crop record:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

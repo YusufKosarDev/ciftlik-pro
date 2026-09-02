@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 
-// Gerçek ödeme env-gated'dir: STRIPE_SECRET_KEY tanimliysa Stripe Checkout
-// kullanilir, yoksa magaza "odeme teslimatta" akisinda calismaya devam eder.
+// Real payment is env-gated: with STRIPE_SECRET_KEY set the storefront uses Stripe
+// Checkout, without it it carries on in the pay-on-delivery flow.
 let client: Stripe | null = null;
 
 export function isPaymentEnabled(): boolean {

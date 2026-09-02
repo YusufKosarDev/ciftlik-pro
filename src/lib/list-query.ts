@@ -1,12 +1,12 @@
-// Liste sayfalari icin sunucu-tarafi sayfalama/arama/siralama parametrelerini
-// URL searchParams'tan guvenle cozumler. Tum liste sayfalari ayni sozlesmeyi
-// kullanir: ?page (1 tabanli), ?q (arama), ?sort (kolon anahtari), ?dir (asc/desc).
+// Safely resolves the server-side pagination, search and sort parameters for list
+// pages out of the URL's searchParams. Every list page uses the same contract:
+// ?page (1-based), ?q (search), ?sort (column key), ?dir (asc/desc).
 
 export const DEFAULT_PAGE_SIZE = 10;
 
 export type SortDir = "asc" | "desc";
 
-// DataTable'a aktarilan, mevcut liste durumu (sunucudan hesaplanir).
+// The current list state handed to DataTable (computed on the server).
 export type ListState = {
   total: number; // Filtreye uyan toplam kayit
   page: number; // 1 tabanli mevcut sayfa
@@ -31,9 +31,9 @@ function first(v: string | string[] | undefined): string {
   return (Array.isArray(v) ? v[0] : v) ?? "";
 }
 
-// searchParams'i cozumler. `sort` yalnizca izin verilen anahtarlardan biriyse
-// kabul edilir (aksi halde defaultSort); boylece keyfi/sql-disi alan adlari
-// orderBy'a sizamaz.
+// Resolves searchParams. `sort` is accepted only when it is one of the allowed
+// keys (otherwise defaultSort), so an arbitrary field name cannot leak into
+// orderBy.
 export function parseListParams(
   params: RawParams,
   opts: {

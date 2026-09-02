@@ -46,8 +46,8 @@ export const navIcons: Record<string, React.ComponentType<{ className?: string }
   "/panel/denetim": ClipboardList,
 };
 
-// Menuyu mantiksal bolumlere ayiririz; her bolumde yalnizca rolun yetkili oldugu
-// (navItems icindeki) yollar gosterilir, bos bolumler gizlenir.
+// The menu is split into logical sections; each shows only the paths the role is
+// allowed (those in navItems), and empty sections are hidden.
 const sections: { titleKey: string; hrefs: string[] }[] = [
   { titleKey: "sectionGeneral", hrefs: ["/panel", "/panel/harita", "/panel/takvim"] },
   {
@@ -98,13 +98,13 @@ export function Sidebar({
         onClick={onNavigate}
         className="flex items-center gap-2.5 px-5 py-4 text-lg font-bold text-foreground"
       >
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-green-600 text-white shadow-sm">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-green-700 text-white shadow-sm">
           <Wheat className="h-5 w-5" />
         </span>
         Çiftlik Pro
       </Link>
 
-      {/* Navigasyon */}
+      {/* Navigation */}
       <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-2">
         {sections.map((section) => {
           const items = section.hrefs.filter((h) => allowed.has(h));
@@ -134,7 +134,7 @@ export function Sidebar({
                         <Icon
                           className={cn(
                             "h-[18px] w-[18px] shrink-0 transition",
-                            active ? "text-green-600 dark:text-green-400" : "text-muted-foreground group-hover:text-muted-foreground"
+                            active ? "text-green-700 dark:text-green-400" : "text-muted-foreground group-hover:text-muted-foreground"
                           )}
                         />
                       )}
@@ -148,7 +148,7 @@ export function Sidebar({
         })}
       </nav>
 
-      {/* Kullanici + cikis */}
+      {/* User and sign out */}
       <div className="border-t border-border p-3">
         <div className="flex items-center gap-3 rounded-lg px-2 py-2">
           <Link

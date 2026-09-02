@@ -1,12 +1,12 @@
 import { Resend } from "resend";
 
-// Resend uzerinden e-posta gonderimi. RESEND_API_KEY tanimli degilse
-// gonderim YAPILMAZ (no-op) — boylece yerel/CI/build ortamlari guvenli kalir
-// ve anahtar yalnizca uretimde gereklidir.
+// Sending email through Resend. With no RESEND_API_KEY set, nothing is sent (a
+// no-op) — which keeps local, CI and build environments safe and makes the key a
+// production-only requirement.
 
 const apiKey = process.env.RESEND_API_KEY;
-// Resend test gonderimi icin "onboarding@resend.dev" kullanilabilir;
-// uretimde dogrulanmis kendi alan adinizi ALERT_EMAIL_FROM ile verin.
+// "onboarding@resend.dev" works for a Resend test send; in production pass your
+// own verified domain through ALERT_EMAIL_FROM.
 const from = process.env.ALERT_EMAIL_FROM ?? "Çiftlik Pro <onboarding@resend.dev>";
 
 export type SendResult =
@@ -19,7 +19,7 @@ export async function sendEmail(
   html: string
 ): Promise<SendResult> {
   if (!apiKey) {
-    console.warn("RESEND_API_KEY tanimli degil; e-posta gonderimi atlandi.");
+    console.warn("RESEND_API_KEY is not set; email sending skipped.");
     return { skipped: true, reason: "no-api-key" };
   }
   if (to.length === 0) {

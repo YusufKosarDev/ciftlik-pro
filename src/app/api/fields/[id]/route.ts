@@ -50,7 +50,7 @@ export async function PUT(
 
     return NextResponse.json({ field });
   } catch (error) {
-    console.error("Tarla guncelleme hatasi:", error);
+    console.error("Failed to update field:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }
@@ -82,7 +82,7 @@ export async function DELETE(
     await logAudit(authz.session.user, "DELETE", "Field", id, existing.name);
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Tarla silme hatasi:", error);
+    console.error("Failed to delete field:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }
@@ -126,7 +126,7 @@ export async function PATCH(
 
     return NextResponse.json({ field });
   } catch (error) {
-    console.error("Tarla konum guncelleme hatasi:", error);
+    console.error("Failed to update field position:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

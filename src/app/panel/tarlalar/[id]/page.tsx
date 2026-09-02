@@ -69,7 +69,7 @@ export default async function TarlaDetayPage({
           {canEdit && (
             <Link
               href={`/panel/tarlalar/${field.id}/duzenle`}
-              className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700"
+              className="rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-800"
             >
               {tc("edit")}
             </Link>
@@ -84,7 +84,7 @@ export default async function TarlaDetayPage({
         <Row label={tc("notes")} value={field.notes ?? "-"} />
       </div>
 
-      {/* Ekonomik ozet */}
+      {/* Economic summary */}
       {field.crops.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-xl border border-border bg-card p-4">
@@ -93,11 +93,11 @@ export default async function TarlaDetayPage({
           </div>
           <div className="rounded-xl border border-border bg-card p-4">
             <p className="text-xs text-muted-foreground">{t("totalIncome")}</p>
-            <p className="mt-1 text-lg font-bold text-green-600">{formatMoney(eco.totalRevenue, locale)}</p>
+            <p className="mt-1 text-lg font-bold text-green-700">{formatMoney(eco.totalRevenue, locale)}</p>
           </div>
           <div className="rounded-xl border border-border bg-card p-4">
             <p className="text-xs text-muted-foreground">{t("netProfit")}</p>
-            <p className={`mt-1 text-lg font-bold ${eco.profit >= 0 ? "text-green-600" : "text-red-600"}`}>
+            <p className={`mt-1 text-lg font-bold ${eco.profit >= 0 ? "text-green-700" : "text-red-600"}`}>
               {formatMoney(eco.profit, locale)}
             </p>
           </div>
@@ -110,7 +110,7 @@ export default async function TarlaDetayPage({
         </div>
       )}
 
-      {/* Ekim Kayitlari */}
+      {/* Crop records */}
       <section className="space-y-4">
         <h2 className="text-lg font-bold text-foreground">{t("cropRecords")}</h2>
 
@@ -163,7 +163,7 @@ export default async function TarlaDetayPage({
                     </td>
                     <td
                       className={`px-4 py-2 text-right font-medium ${
-                        !hasEco ? "text-muted-foreground" : profit >= 0 ? "text-green-600" : "text-red-600"
+                        !hasEco ? "text-muted-foreground" : profit >= 0 ? "text-green-700" : "text-red-600"
                       }`}
                     >
                       {hasEco ? formatMoney(profit, locale) : "-"}
@@ -173,7 +173,7 @@ export default async function TarlaDetayPage({
                         <div className="flex items-center justify-end gap-3">
                           <Link
                             href={`/panel/tarlalar/${field.id}/ekim/${crop.id}/duzenle`}
-                            className="text-sm font-medium text-green-600 dark:text-green-400 hover:underline"
+                            className="text-sm font-medium text-green-700 dark:text-green-400 hover:underline"
                           >
                             {tc("edit")}
                           </Link>

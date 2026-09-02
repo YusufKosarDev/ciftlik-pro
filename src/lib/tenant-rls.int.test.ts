@@ -2,36 +2,39 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { PrismaClient } from "@prisma/client";
 import { prisma } from "./prisma";
 
-// Postgres RLS izolasyonunu NON-SUPERUSER bir baglantiyla dogrular. Superuser
-// RLS'i bypass ettiginden gercek korumayi yalnizca bu rol gosterir. Rol adi
-// prisma/rls-app-role.sql'de `ciftlik_app`'tir.
-// Yerelde (once: psql "$DIRECT_URL" -v app_pw='dev_app_pw' -f prisma/rls-app-role.sql):
+// Verifies Postgres RLS isolation over a NON-SUPERUSER connection. A superuser
+// bypasses RLS, so only this role demonstrates the real protection. The role is
+// named `ciftlik_app` in prisma/rls-app-role.sql.
+// Locally (first: psql "$DIRECT_URL" -v app_pw='dev_app_pw' -f prisma/rls-app-role.sql):
 //   RUN_DB_TESTS=1 APP_USER_DATABASE_URL="postgresql://ciftlik_app:dev_app_pw@localhost:5433/ciftlik_pro?schema=public" \
 //   npx vitest run src/lib/tenant-rls.int.test.ts
-// CI'da `integration` job'i bu iki degiskeni set eder (.github/workflows/ci.yml).
+// In CI the `integration` job sets both variables (.github/workflows/ci.yml).
 const run = Boolean(process.env.RUN_DB_TESTS);
 const APP_URL = process.env.APP_USER_DATABASE_URL;
 
 describe.skipIf(!run || !APP_URL)("RLS izolasyonu (app_user, gercek DB)", () => {
-  // PrismaClient'i collection sirasinda degil, suite calisirken olustur; aksi
-  // halde APP_URL tanimsizken (skip durumu) constructor patlar.
+  // Construct the PrismaClient when the suite runs, not during collection;
+  // otherwise the constructor throws while APP_URL is undefined (the skip case).
   let appPrisma: PrismaClient;
   const stamp = Date.now();
   const A = `rls-a-${stamp}`;
   const B = `rls-b-${stamp}`;
   let aId = "";
   let bId = "";
-  // Davet: RLS'e alinan son tenant tablosu (20260826120000_invitation_rls).
+  // Invitation: the last tenant table brought under RLS
+  // (20260826120000_invitation_rls).
   const inviteToken = `rls-token-${stamp}`;
   let inviteId = "";
-  // Siparis: B'ye ait: A baglamindan okunamamali/yazilamamali.
+  // Order: belongs to B, so it must be neither readable nor writable from A's
+  // context.
   let bOrderId = "";
-  // Vitrin: A'nin AKTIF urunu var (dizine girer), B'nin yalnizca PASIF urunu
-  // var (dizine girmez) — public_storefront_tenants'in active filtresi icin.
+  // Storefront: A has an ACTIVE product (so it enters the directory) and B has only
+  // an INACTIVE one (so it does not) — this exercises the active filter in
+  // public_storefront_tenants.
   let aProductId = "";
   let bProductId = "";
 
-  // Verilen tenant baglaminda (SET LOCAL app.tenant_id) calistirir.
+  // Runs in the given tenant's context (SET LOCAL app.tenant_id).
   async function asTenant<T>(
     tid: string,
     fn: (tx: Omit<PrismaClient, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">) => Promise<T>
@@ -44,7 +47,8 @@ describe.skipIf(!run || !APP_URL)("RLS izolasyonu (app_user, gercek DB)", () => 
 
   beforeAll(async () => {
     appPrisma = new PrismaClient({ datasources: { db: { url: APP_URL! } } });
-    // Kurulum SUPERUSER ile (RLS bypass) — iki tenant + ikisine birer hayvan.
+    // Setup runs as the SUPERUSER (bypassing RLS): two tenants, with one animal
+    // each.
     await prisma.tenant.createMany({
       data: [
         { id: A, name: "RLS A", slug: `rls-a-${stamp}` },
@@ -101,7 +105,8 @@ describe.skipIf(!run || !APP_URL)("RLS izolasyonu (app_user, gercek DB)", () => 
     expect(aSees.map((x) => x.id)).toContain(aId);
     expect(aSees.map((x) => x.id)).not.toContain(bId);
 
-    // A baglaminda B'nin kaydini id ile findUnique → RLS gizler → null (SIZINTI YOK)
+    // findUnique by id for B's record while in A's context -> RLS hides it -> null
+    // (NO LEAK)
     const leak = await asTenant(A, (tx) => tx.animal.findUnique({ where: { id: bId } }));
     expect(leak).toBeNull();
 
@@ -111,28 +116,30 @@ describe.skipIf(!run || !APP_URL)("RLS izolasyonu (app_user, gercek DB)", () => 
   });
 
   it("baglam ayarli degilse hicbir satir gorunmez (fail-closed)", async () => {
-    // app.tenant_id set edilmeden → current_setting NULL → 0 satir.
+    // With app.tenant_id unset -> current_setting is NULL -> 0 rows.
     const none = await appPrisma.animal.findMany();
     expect(none.length).toBe(0);
   });
 
   it("Invitation da RLS altindadir: baglamsiz dogrudan okuma 0 satir dondurur", async () => {
-    // Davet, tenantId tasiyan son RLS'siz tabloydu; artik politikaya tabi.
+    // Invitation was the last table carrying a tenantId without RLS; it is now
+    // subject to the policy.
     const none = await appPrisma.invitation.findMany();
     expect(none.length).toBe(0);
 
-    // Token bilinse bile dogrudan sorgu satiri gostermez.
+    // Even knowing the token, a direct query does not reveal the row.
     const direct = await appPrisma.invitation.findUnique({ where: { token: inviteToken } });
     expect(direct).toBeNull();
 
-    // B baglaminda A'nin daveti gorunmez (capraz tenant sizinti yok).
+    // A's invitation is invisible from B's context (no cross-tenant leak).
     const cross = await asTenant(B, (tx) => tx.invitation.findMany());
     expect(cross.map((x) => x.id)).not.toContain(inviteId);
   });
 
   it("public kabul akisi SECURITY DEFINER fonksiyonla calisir (token ile, baglamsiz)", async () => {
-    // Kabul akisi oturumsuzdur: app.tenant_id ayarlanamaz. invitation_by_token
-    // fonksiyon SAHIBININ yetkisiyle okur; login'deki auth_user_by_email deseni.
+    // The acceptance flow has no session, so app.tenant_id cannot be set.
+    // invitation_by_token reads with the function OWNER's privileges — the same
+    // pattern as auth_user_by_email at sign-in.
     const rows = await appPrisma.$queryRaw<
       Array<{ id: string; tenantId: string; email: string; role: string }>
     >`SELECT * FROM invitation_by_token(${inviteToken})`;
@@ -141,10 +148,10 @@ describe.skipIf(!run || !APP_URL)("RLS izolasyonu (app_user, gercek DB)", () => 
     expect(rows[0].id).toBe(inviteId);
     expect(rows[0].tenantId).toBe(A);
     expect(rows[0].role).toBe("WORKER");
-    // Fonksiyon token'in kendisini DONDURMEZ.
+    // The function DOES NOT return the token itself.
     expect(rows[0]).not.toHaveProperty("token");
 
-    // Gecersiz token hicbir sey dondurmez (enumerasyona yardim etmez).
+    // An invalid token returns nothing (it does not help enumeration).
     const miss = await appPrisma.$queryRaw<
       Array<{ id: string }>
     >`SELECT * FROM invitation_by_token(${`yok-${stamp}`})`;
@@ -152,14 +159,14 @@ describe.skipIf(!run || !APP_URL)("RLS izolasyonu (app_user, gercek DB)", () => 
   });
 
   it("baska tenant'in siparisi PATCH/DELETE edilemez", async () => {
-    // src/app/api/orders/[id]/route.ts once findFirst ile kaydi arar; A
-    // baglamindan B'nin siparisi gorunmezse uc 404 doner.
+    // src/app/api/orders/[id]/route.ts looks the record up with findFirst first; if
+    // B's order is invisible from A's context, the endpoint answers 404.
     const notVisible = await asTenant(A, (tx) => tx.order.findFirst({ where: { id: bOrderId } }));
     expect(notVisible).toBeNull();
 
-    // Guard kaldirilsa bile yazma DB seviyesinde durur: RLS satiri gizledigi
-    // icin updateMany/deleteMany 0 satir etkiler (hata firlatmadiklarindan
-    // sayiyi dogrudan olcebiliyoruz).
+    // Even with the guard removed the write stops at the database level: RLS hides
+    // the row, so updateMany and deleteMany affect 0 rows. They do not throw, which
+    // is why the count can be measured directly.
     const updated = await asTenant(A, (tx) =>
       tx.order.updateMany({ where: { id: bOrderId }, data: { status: "CANCELLED" } })
     );
@@ -168,37 +175,39 @@ describe.skipIf(!run || !APP_URL)("RLS izolasyonu (app_user, gercek DB)", () => 
     const deleted = await asTenant(A, (tx) => tx.order.deleteMany({ where: { id: bOrderId } }));
     expect(deleted.count).toBe(0);
 
-    // Baglamsiz (hic tenant ayarlanmadan) da erisilemez — fail-closed.
+    // It is unreachable with no context set at all — fail-closed.
     const noContext = await appPrisma.order.findFirst({ where: { id: bOrderId } });
     expect(noContext).toBeNull();
 
-    // Kayit hala yerinde: superuser baglantisiyla dogrula.
+    // The record is still there: confirm it over the superuser connection.
     const still = await prisma.order.findUnique({ where: { id: bOrderId } });
     expect(still).not.toBeNull();
     expect(still!.status).toBe("PENDING");
 
-    // Kendi tenant'i (B) elbette gorebilir ve guncelleyebilir.
+    // Its own tenant (B) can of course see and update it.
     const own = await asTenant(B, (tx) => tx.order.findFirst({ where: { id: bOrderId } }));
     expect(own?.id).toBe(bOrderId);
   });
 
   it("public_storefront_tenants() baglamsiz cagrildiginda dolu doner", async () => {
-    // Once RLS'in gercekten acik oldugunu goster: baglamsiz dogrudan okuma bos.
+    // First show RLS really is on: a direct read with no context comes back empty.
     const direct = await appPrisma.product.findMany();
     expect(direct.length).toBe(0);
 
-    // Fonksiyon SAHIBININ yetkisiyle okur; magaza dizini oturumsuz calisir.
+    // The function reads with its OWNER's privileges; the storefront directory runs
+    // without a session.
     const rows = await appPrisma.$queryRaw<
       Array<{ id: string; name: string; slug: string }>
     >`SELECT * FROM public_storefront_tenants()`;
 
     const ids = rows.map((r) => r.id);
-    // A'nin AKTIF urunu var → dizinde.
+    // A has an ACTIVE product -> it is in the directory.
     expect(ids).toContain(A);
-    // B'nin yalnizca PASIF urunu var → dizinde DEGIL.
+    // B has only an INACTIVE product -> it is NOT in the directory.
     expect(ids).not.toContain(B);
 
-    // Urun detayi sizmaz: donen satirda yalnizca vitrin kimligi vardir.
+    // No product detail leaks: the returned row carries only the storefront's
+    // identity.
     const a = rows.find((r) => r.id === A)!;
     expect(Object.keys(a).sort()).toEqual(["id", "name", "slug"]);
     expect(a.name).toBe("RLS A");

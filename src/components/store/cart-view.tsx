@@ -64,13 +64,13 @@ export function CartView({ slug }: { slug: string }) {
   if (done) {
     return (
       <div className="rounded-xl border border-border bg-card p-8 text-center">
-        <p className="text-lg font-semibold text-green-600 dark:text-green-400">
+        <p className="text-lg font-semibold text-green-700 dark:text-green-400">
           {t("orderPlacedTitle")}
         </p>
         <p className="mt-1 text-sm text-muted-foreground">
           {t("orderPlacedBody")}
         </p>
-        <Link href={`/magaza/${slug}`} className="mt-4 inline-block text-sm font-medium text-green-600 hover:underline dark:text-green-400">
+        <Link href={`/magaza/${slug}`} className="mt-4 inline-block text-sm font-medium text-green-700 hover:underline dark:text-green-400">
           {t("backToStore")}
         </Link>
       </div>
@@ -81,7 +81,7 @@ export function CartView({ slug }: { slug: string }) {
     return (
       <div className="rounded-xl border border-dashed border-border bg-card p-12 text-center">
         <p className="text-muted-foreground">{t("cartEmpty")}</p>
-        <Link href={`/magaza/${slug}`} className="mt-3 inline-block text-sm font-medium text-green-600 hover:underline dark:text-green-400">
+        <Link href={`/magaza/${slug}`} className="mt-3 inline-block text-sm font-medium text-green-700 hover:underline dark:text-green-400">
           {t("browseProducts")}
         </Link>
       </div>
@@ -90,7 +90,7 @@ export function CartView({ slug }: { slug: string }) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">
-      {/* Sepet kalemleri */}
+      {/* Cart line items */}
       <div className="space-y-3 lg:col-span-2">
         {items.map((i) => (
           <div
@@ -138,7 +138,7 @@ export function CartView({ slug }: { slug: string }) {
         ))}
       </div>
 
-      {/* Ozet + iletisim + onay */}
+      {/* Summary, contact details and confirmation */}
       <form onSubmit={checkout} className="h-fit space-y-4 rounded-xl border border-border bg-card p-5">
         <div className="flex items-center justify-between text-lg font-bold text-foreground">
           <span>{t("total")}</span>

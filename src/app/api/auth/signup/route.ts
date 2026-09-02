@@ -8,17 +8,18 @@ import { hashPassword } from "@/lib/password-hash";
 import { logAudit } from "@/lib/audit";
 
 // POST /api/auth/signup
-// HERKESE ACIK "ciftlik olustur" kaydi: yeni bir Tenant + ilk ADMIN (sahip)
-// tek transaction'da olusturur. Kimlik gerektirmez; hiz siniri uygulanir.
+// The PUBLIC "create a farm" sign-up: creates a new Tenant plus the first ADMIN
+// (the owner) in one transaction. It needs no identity; a rate limit applies.
 //
-// RLS uyumu: Tenant tablosu RLS disidir (insert serbest). User insert'i ise
-// WITH CHECK politikasina takilir; bu yuzden yeni tenant olusturulduktan SONRA
-// ayni transaction'da app.tenant_id ayarlanir, ardindan ADMIN yazilir. Boylece
-// uretimde non-superuser rolle de calisir.
+// RLS compatibility: the Tenant table is outside RLS, so that insert is free. The
+// User insert, however, is subject to the WITH CHECK policy — which is why
+// app.tenant_id is set in the same transaction AFTER the tenant is created, and
+// only then is the ADMIN written. That makes it work under the non-superuser role
+// in production too.
 export async function POST(request: Request) {
   const te = await getTranslations("Errors");
   try {
-    // Kotuye kullanim/bot kaydina karsi: IP basina 5 dakikada en fazla 5 kayit.
+    // Against abuse and bot sign-ups: at most 5 registrations per IP in 5 minutes.
     const rl = await rateLimit(`signup:${clientIp(request)}`, 5, 5 * 60 * 1000);
     if (!rl.success) {
       return NextResponse.json(
@@ -43,23 +44,25 @@ export async function POST(request: Request) {
     let result: { tenantId: string; userId: string };
     try {
       result = await prisma.$transaction(async (tx) => {
-        // Benzersiz slug bul: base, base-2, base-3, ...
+        // Find a unique slug: base, base-2, base-3, ...
         let slug = base;
         for (let n = 2; await tx.tenant.findUnique({ where: { slug } }); n++) {
           slug = `${base}-${n}`;
         }
         const tenant = await tx.tenant.create({ data: { name: farmName, slug } });
 
-        // Yeni tenant baglamini ayarla (RLS WITH CHECK icin), sonra ADMIN'i yaz.
+        // Establish the new tenant's context (for the RLS WITH CHECK), then write
+        // the ADMIN.
         await tx.$executeRaw`SELECT set_config('app.tenant_id', ${tenant.id}, true)`;
         const user = await tx.user.create({
-          // onboardedAt bos: yeni sahip hos geldin turunu gorur.
+          // onboardedAt is empty: the new owner sees the welcome tour.
           data: { tenantId: tenant.id, name, email, password: passwordHash, role: "ADMIN" },
         });
         return { tenantId: tenant.id, userId: user.id };
       });
     } catch (err) {
-      // E-posta global benzersizdir: baska bir tenant'ta zaten kayitliysa P2002.
+      // Email is globally unique: P2002 if it is already registered in another
+      // tenant.
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
         return NextResponse.json(
           { error: te("emailTaken") },
@@ -79,7 +82,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true }, { status: 201 });
   } catch (error) {
-    console.error("Kayit (signup) hatasi:", error);
+    console.error("Farm sign-up failed:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

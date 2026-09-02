@@ -1,5 +1,5 @@
-// Finansal raporlama: kategori bazli kirilim ve CSV uretimi.
-// Saf, test edilebilir; veritabanindan bagimsiz.
+// Financial reporting: the per-category breakdown and CSV generation.
+// Pure and testable; independent of the database.
 
 export type ReportTransaction = {
   type: "INCOME" | "EXPENSE";
@@ -11,7 +11,7 @@ export type ReportTransaction = {
 
 export type CategoryTotal = { category: string; total: number };
 
-// Gelir ve gideri kategoriye gore toplar, her birini azalan tutara gore sirar.
+// Totals income and expense by category, each sorted by descending amount.
 export function categoryBreakdown(transactions: ReportTransaction[]): {
   income: CategoryTotal[];
   expense: CategoryTotal[];
@@ -28,13 +28,14 @@ export function categoryBreakdown(transactions: ReportTransaction[]): {
   return { income: toSorted(acc.INCOME), expense: toSorted(acc.EXPENSE) };
 }
 
-// Tek bir CSV alanini guvenli hale getirir.
-// 1) Formul enjeksiyonu: Excel/LibreOffice, = + - @ (veya tab/CR) ile baslayan
-//    hucreleri formul olarak yorumlar. category/description kullanici girdisi
-//    oldugu icin basina tek tirnak ekleyip notrlestiriyoruz. (Tutar alani
-//    dogrulamada negatif olamadigi icin "-" ile baslamaz; bu yuzden sayisal
-//    sutunlar bozulmaz.)
-// 2) Kacis: virgul, tirnak veya yeni satir varsa alani tirnakla sarariz.
+// Makes one CSV field safe.
+// 1) Formula injection: Excel and LibreOffice treat a cell beginning with = + - @
+//    (or a tab/CR) as a formula. category and description are user input, so they
+//    are neutralised with a leading apostrophe. (The amount field cannot be
+//    negative after validation, so it never starts with "-" and the numeric
+//    columns are left intact.)
+// 2) Escaping: a field containing a comma, a quote or a newline is wrapped in
+//    quotes.
 function csvField(value: string): string {
   let v = value;
   if (/^[=+\-@\t\r]/.test(v)) {
@@ -56,7 +57,7 @@ function isoDate(date: Date): string {
 
 const TYPE_LABEL = { INCOME: "Gelir", EXPENSE: "Gider" } as const;
 
-// Islemleri CSV metnine cevirir (basliklarla birlikte).
+// Turns transactions into CSV text, headers included.
 export function toCsv(transactions: ReportTransaction[]): string {
   const header = ["Tarih", "Tur", "Kategori", "Tutar", "Aciklama"];
   const rows = transactions.map((t) => [

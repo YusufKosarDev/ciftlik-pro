@@ -1,18 +1,18 @@
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 
-// scrypt parametreleri: Guvenlik ve performans dengesi icin standard degerler.
-// N: CPU/RAM maliyeti, r: Blok boyutu, p: Paralellesme parametresi
+// scrypt parameters: standard values balancing security against performance.
+// N: CPU/memory cost, r: block size, p: parallelisation.
 const SCRYPT_N = 16384;
 const SCRYPT_R = 8;
 const SCRYPT_P = 1;
 const SCRYPT_KEYLEN = 64;
 
-// Duz metin parolayi scrypt ile asenkron olarak hash'ler.
-// Event loop'u engellemeden arka planda (thread pool) calisir.
+// Hashes a plaintext password with scrypt, asynchronously.
+// It runs on the thread pool, so the event loop is never blocked.
 export function hashPassword(plain: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    // 16 byte rasgele tuz (salt) uret
+    // Generate a 16-byte random salt
     const salt = crypto.randomBytes(16).toString("hex");
     crypto.scrypt(
       plain,
@@ -27,15 +27,15 @@ export function hashPassword(plain: string): Promise<string> {
   });
 }
 
-// Parolayi dogrular. Eski bcrypt hash'lerini de ($2a$ veya $2b$ ile baslayan)
-// geriye donuk uyumlu sekilde dogrulamaya devam eder.
+// Verifies a password. Legacy bcrypt hashes (those starting with $2a$ or $2b$)
+// keep verifying too, for backward compatibility.
 export function verifyPassword(plain: string, hash: string): Promise<boolean> {
-  // Geriye donuk uyumluluk: Eski parolanin dogrulanmasi
+  // Backward compatibility: verifying a legacy password
   if (hash.startsWith("$2a$") || hash.startsWith("$2b$")) {
     return bcrypt.compare(plain, hash);
   }
 
-  // Yeni scrypt formati: scrypt$saltHex$hashHex
+  // The current scrypt format: scrypt$saltHex$hashHex
   if (hash.startsWith("scrypt$")) {
     const parts = hash.split("$");
     if (parts.length !== 3) {
@@ -52,7 +52,7 @@ export function verifyPassword(plain: string, hash: string): Promise<boolean> {
           if (err) return resolve(false);
           const hashBuf = Buffer.from(originalHash, "hex");
           const derivedBuf = derivedKey;
-          // timingSafeEqual uzunluklar farkliysa hata firlatir.
+          // timingSafeEqual throws when the lengths differ.
           if (hashBuf.length !== derivedBuf.length) {
             return resolve(false);
           }

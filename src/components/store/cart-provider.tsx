@@ -22,8 +22,8 @@ type CartContextValue = {
 
 const CartContext = createContext<CartContextValue | null>(null);
 
-// Sepet per-tenant'tir: her vitrinin (slug) kendi anahtari olur ki farkli
-// ciftliklerin sepetleri karismasin.
+// The cart is per-tenant: each storefront (slug) gets its own key, so different
+// farms' carts cannot mix.
 export function CartProvider({
   children,
   storageKey = "ciftlik-cart",
@@ -33,25 +33,25 @@ export function CartProvider({
 }) {
   const [items, setItems] = useState<CartItem[]>([]);
 
-  // Sepeti mount sonrasi (ve anahtar degisince) localStorage'dan yukle.
+  // Load the cart from localStorage after mount, and whenever the key changes.
   useEffect(() => {
     try {
       const raw = localStorage.getItem(storageKey);
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setItems(raw ? JSON.parse(raw) : []);
     } catch {
-      // bozuk veri: yoksay
+      // corrupt data: ignore
     }
   }, [storageKey]);
 
-  // Durumu gunceller ve localStorage'a yazar.
+  // Updates the state and writes it to localStorage.
   const update = useCallback(
     (next: CartItem[]) => {
       setItems(next);
       try {
         localStorage.setItem(storageKey, JSON.stringify(next));
       } catch {
-        // kota/erisim hatasi: yoksay
+        // quota or access error: ignore
       }
     },
     [storageKey]

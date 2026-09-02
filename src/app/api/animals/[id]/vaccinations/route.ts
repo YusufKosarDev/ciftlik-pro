@@ -50,7 +50,7 @@ export async function POST(
 
     return NextResponse.json({ vaccination }, { status: 201 });
   } catch (error) {
-    console.error("Asi kaydi ekleme hatasi:", error);
+    console.error("Failed to add vaccination record:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

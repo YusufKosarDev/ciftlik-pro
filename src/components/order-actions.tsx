@@ -7,8 +7,8 @@ import { toast } from "sonner";
 import type { OrderStatus } from "@prisma/client";
 import { DeleteButton } from "@/components/delete-button";
 
-// Siparis durumunu gunceller (Onayla / Iptal) + silme. Yalnizca yetkili (admin
-// tarafi) tabloda gosterilir.
+// Updates an order's status (confirm / cancel) and deletes it. Shown only in the
+// authorised (admin-side) table.
 export function OrderActions({ id, status }: { id: string; status: OrderStatus }) {
   const t = useTranslations("Orders");
   const router = useRouter();
@@ -36,7 +36,7 @@ export function OrderActions({ id, status }: { id: string; status: OrderStatus }
         <button
           onClick={() => setStatus("CONFIRMED")}
           disabled={loading}
-          className="text-sm font-medium text-green-600 hover:underline disabled:opacity-50 dark:text-green-400"
+          className="text-sm font-medium text-green-700 hover:underline disabled:opacity-50 dark:text-green-400"
         >
           {t("confirm")}
         </button>

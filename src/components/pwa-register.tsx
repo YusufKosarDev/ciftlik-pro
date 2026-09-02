@@ -13,10 +13,10 @@ export function PwaRegister() {
         navigator.serviceWorker
           .register("/sw.js")
           .then((reg) => {
-            console.log("Service Worker başarıyla kaydedildi:", reg.scope);
+            console.log("Service worker registered:", reg.scope);
           })
           .catch((err) => {
-            console.error("Service Worker kaydı başarısız:", err);
+            console.error("Service worker registration failed:", err);
           });
       });
     }

@@ -9,10 +9,11 @@ import { hashPassword } from "@/lib/password-hash";
 import { findInvitationByToken, isInvitationUsable } from "@/lib/invitations";
 import { logAudit } from "@/lib/audit";
 
-// POST /api/invitations/[id]/accept -> HERKESE ACIK davet kabulu.
-// Davetli adini + parolasini belirler; ilgili tenant'a kullanici olarak eklenir.
-// Invitation RLS altindadir; oturum/tenant baglami olmadigi icin token okumasi
-// SECURITY DEFINER `invitation_by_token` uzerinden yapilir (bkz. src/lib/invitations.ts).
+// POST /api/invitations/[id]/accept -> PUBLIC invitation acceptance.
+// The invitee sets their own name and password and is added to the tenant as a
+// user. Invitation is under RLS, and there is no session or tenant context here,
+// so the token lookup goes through the SECURITY DEFINER function
+// `invitation_by_token` (see src/lib/invitations.ts).
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -45,7 +46,8 @@ export async function POST(
       );
     }
 
-    // Plan limiti (davet gonderildikten sonra dolmus olabilir). Hard block.
+    // Plan limit — it may have filled up since the invitation was sent. A hard
+    // block.
     const limit = await canAddRecord(invitation.tenantId, "users");
     if (!limit.allowed) {
       return NextResponse.json(
@@ -59,7 +61,8 @@ export async function POST(
 
     try {
       await prisma.$transaction(async (tx) => {
-        // Tenant baglamini ayarla (User RLS WITH CHECK icin), sonra kullaniciyi yaz.
+        // Establish the tenant context (for User's RLS WITH CHECK), then write the
+        // user.
         await tx.$executeRaw`SELECT set_config('app.tenant_id', ${invitation.tenantId}, true)`;
         await tx.user.create({
           data: {
@@ -71,14 +74,15 @@ export async function POST(
             onboardedAt: new Date(), // davetli "mevcut" sayilir; tur gosterilmez
           },
         });
-        // Davet tek kullanimlik: kabul edildi olarak isaretle.
+        // The invitation is single-use: mark it accepted.
         await tx.invitation.update({
           where: { id: invitation.id },
           data: { acceptedAt: new Date() },
         });
       });
     } catch (err) {
-      // E-posta global benzersiz: arada baska yerde kayit olduysa P2002.
+      // Email is globally unique: P2002 if they registered elsewhere in the
+      // meantime.
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
         return NextResponse.json(
           { error: te("emailTakenSignIn") },
@@ -98,7 +102,7 @@ export async function POST(
 
     return NextResponse.json({ ok: true, email: invitation.email }, { status: 201 });
   } catch (error) {
-    console.error("Davet kabul hatasi:", error);
+    console.error("Failed to accept invitation:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

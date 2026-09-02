@@ -1,5 +1,5 @@
-// Grafik tembel (dynamic) yuklenirken gosterilen iskelet. Asil grafikle ayni
-// dis yuksekligi korur; boylece yukleme sirasinda layout kaymasi olmaz.
+// The skeleton shown while a chart is lazily (dynamically) loaded. It keeps the
+// same outer height as the real chart, so nothing shifts during loading.
 export function ChartSkeleton({
   heightClass,
   title,

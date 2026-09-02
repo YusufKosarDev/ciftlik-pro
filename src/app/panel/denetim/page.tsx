@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { getLabels } from "@/lib/get-labels";
 import type { AuditAction } from "@prisma/client";
 
-// Denetim kaydi tarih + saat gosterir; bicim aktif dile gore secilir.
+// The audit log shows date and time; the format follows the active locale.
 function formatDateTime(date: Date, locale: string): string {
   return new Date(date).toLocaleString(locale === "tr" ? "tr-TR" : "en-US");
 }
@@ -26,7 +26,7 @@ export default async function DenetimPage() {
     getLocale(),
     getLabels(),
   ]);
-  // Yalnizca ADMIN denetim gunlugunu gorebilir.
+  // Only an ADMIN may see the audit log.
   if (session?.user.role !== "ADMIN") {
     redirect("/panel");
   }

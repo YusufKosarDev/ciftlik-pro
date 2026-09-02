@@ -12,7 +12,7 @@ import {
 import { useLabels } from "@/lib/use-labels";
 import type { StructureType } from "@prisma/client";
 
-// Ekin durumuna gore tarla renkleri.
+// Field colours by crop status.
 const statusColors: Record<CropMapStatus, { fill: string; stroke: string; text: string }> = {
   PLANTED: { fill: "#dbeafe", stroke: "#3b82f6", text: "#1e3a8a" }, // mavi
   GROWING: { fill: "#dcfce7", stroke: "#22c55e", text: "#166534" }, // yesil
@@ -27,7 +27,7 @@ const statusLabels: Record<CropMapStatus, string> = {
   NONE: "Ekim yok",
 };
 
-// Yapi turune gore ikon (haritada gosterilir).
+// The icon per structure type, shown on the map.
 const structureIcons: Record<StructureType, string> = {
   BARN: "🐄",
   COOP: "🐔",
@@ -67,20 +67,21 @@ export function FarmMap({
   const router = useRouter();
   const svgRef = useRef<SVGSVGElement>(null);
 
-  // Zoom ve Pan durumları
+  // Zoom and pan state
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
 
-  // Hover Tooltip bilgileri
+  // Hover tooltip data
   const [hoverInfo, setHoverInfo] = useState<
     | { kind: "field"; data: FieldRect; x: number; y: number }
     | { kind: "structure"; data: StructureRect; x: number; y: number }
     | null
   >(null);
 
-  // Duzenleme modunda draft* dolu; degilken null ve dogrudan prop'lardan render edilir.
+  // In edit mode draft* is populated; otherwise it is null and rendering comes
+  // straight from the props.
   const [draftFields, setDraftFields] = useState<FieldRect[] | null>(null);
   const [draftStructs, setDraftStructs] = useState<StructureRect[] | null>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
@@ -95,7 +96,8 @@ export function FarmMap({
   const renderFields = draftFields ?? fields;
   const renderStructs = draftStructs ?? structures;
 
-  // Zoom wheel event handler'ı passive: false olarak useEffect ile bind ediyoruz (Chrome uyumluluğu için)
+  // The zoom wheel handler is bound in a useEffect with passive: false, for Chrome
+  // compatibility
   useEffect(() => {
     const svg = svgRef.current;
     if (!svg || editing) return;
@@ -156,7 +158,7 @@ export function FarmMap({
     setPan({ x: 0, y: 0 });
   };
 
-  // Hover bilgi kartı işleyicileri
+  // Hover info card handlers
   const handleItemPointerEnter = (
     e: React.PointerEvent,
     hover: { kind: "field"; data: FieldRect } | { kind: "structure"; data: StructureRect }
@@ -216,7 +218,7 @@ export function FarmMap({
     if (!editing) return;
     e.stopPropagation();
     const p = clientToSvg(e.clientX, e.clientY);
-    // Zoom/pan oranlarına göre <g> içi koordinatı hesapla
+    // Compute the in-<g> coordinate from the zoom and pan factors
     const gX = (p.x - pan.x) / zoom;
     const gY = (p.y - pan.y) / zoom;
     setDrag({ id, kind, offsetX: gX - x, offsetY: gY - y });
@@ -344,7 +346,7 @@ export function FarmMap({
 
   return (
     <div className="space-y-3">
-      {/* Arac cubugu + renk aciklamasi */}
+      {/* Toolbar and colour legend */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
           {(Object.keys(statusLabels) as CropMapStatus[]).map((s) => (
@@ -391,7 +393,7 @@ export function FarmMap({
                 <button
                   onClick={saveLayout}
                   disabled={saving || movedCount === 0}
-                  className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-60"
+                  className="rounded-lg bg-green-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-green-800 disabled:opacity-60"
                 >
                   {saving ? "Kaydediliyor..." : "Kaydet"}
                 </button>
@@ -424,7 +426,7 @@ export function FarmMap({
           onPointerMove={onSvgPointerMove}
           onPointerUp={onSvgPointerUp}
         >
-          {/* Zoom/Pan Transform Grubu */}
+          {/* Zoom/pan transform group */}
           <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
             {renderFields.map((f) => {
               const c = statusColors[f.status];
@@ -476,7 +478,7 @@ export function FarmMap({
               );
             })}
 
-            {/* Yapilar (ahir/kumes/depo) */}
+            {/* Structures (barn/coop/store) */}
             {renderStructs.map((s) => (
               <g
                 key={s.id}
@@ -521,7 +523,7 @@ export function FarmMap({
           </g>
         </svg>
 
-        {/* Hover Bilgi Kartı (Tooltip) */}
+        {/* Hover info card (tooltip) */}
         {hoverInfo && !editing && (
           <div
             className="absolute z-30 pointer-events-none rounded-lg border border-border bg-card p-3 shadow-lg text-xs space-y-1 w-52 animate-in fade-in zoom-in-95 duration-100"
@@ -536,7 +538,7 @@ export function FarmMap({
                 <p className="text-muted-foreground">📍 Konum: {hoverInfo.data.location || "-"}</p>
                 <p className="text-muted-foreground">📐 Alan: {hoverInfo.data.area} dönüm</p>
                 <p className="text-muted-foreground">
-                  🌾 Durum: <span className="font-semibold text-green-600 dark:text-green-400">{statusLabels[hoverInfo.data.status as CropMapStatus]}</span>
+                  🌾 Durum: <span className="font-semibold text-green-700 dark:text-green-400">{statusLabels[hoverInfo.data.status as CropMapStatus]}</span>
                 </p>
                 {hoverInfo.data.notes && (
                   <p className="border-t border-border mt-1 pt-1 italic text-[10px] text-muted-foreground truncate">
@@ -560,7 +562,7 @@ export function FarmMap({
           </div>
         )}
 
-        {/* Zoom & Pan Buton Kontrolleri */}
+        {/* Zoom and pan button controls */}
         {!editing && (
           <div className="absolute bottom-4 right-4 flex flex-col gap-1.5 z-10">
             <button

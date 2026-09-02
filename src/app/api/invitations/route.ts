@@ -10,8 +10,9 @@ import { sendEmail } from "@/lib/email";
 
 const INVITE_TTL_DAYS = 7;
 
-// POST /api/invitations -> ADMIN tenant-ici personel daveti olusturur.
-// Davetli, donen token baglantisiyla (/davet/<token>) adini/parolasini belirler.
+// POST /api/invitations -> an ADMIN creates a staff invitation within the tenant.
+// The invitee sets their name and password through the returned token link
+// (/davet/<token>).
 export async function POST(request: Request) {
   const te = await getTranslations("Errors");
   try {
@@ -30,7 +31,8 @@ export async function POST(request: Request) {
     const { email, role } = parsed.data;
     const tenantId = authz.session.user.tenantId;
 
-    // Plan limiti (FREE: en fazla 3 personel). Limit doluysa davet de gonderilmez.
+    // Plan limit (FREE: at most 3 staff). When it is full, no invitation is sent
+    // either.
     const limit = await canAddRecord(tenantId, "users");
     if (!limit.allowed) {
       return NextResponse.json(
@@ -46,11 +48,12 @@ export async function POST(request: Request) {
     const expiresAt = new Date(Date.now() + INVITE_TTL_DAYS * 24 * 60 * 60 * 1000);
 
     const result = await withTenant(tenantId, async (db) => {
-      // Zaten bu tenant'in uyesi mi?
+      // Are they already a member of this tenant?
       const existingUser = await db.user.findFirst({ where: { email } });
       if (existingUser) return { conflict: true } as const;
 
-      // Ayni e-posta icin bekleyen davet varsa yenisiyle degistir (tekrar davet).
+      // If a pending invitation for the same email exists, replace it with the new
+      // one (re-invite).
       await db.invitation.deleteMany({ where: { email, acceptedAt: null } });
       const invitation = await db.invitation.create({
         data: { tenantId, email, role, token, invitedById: authz.session.user.id, expiresAt },
@@ -68,10 +71,12 @@ export async function POST(request: Request) {
     const origin = process.env.NEXT_PUBLIC_SITE_URL ?? new URL(request.url).origin;
     const acceptUrl = `${origin}/davet/${token}`;
 
-    // E-posta yapilandirildiysa daveti gonder (best-effort; yoksa link UI'da gosterilir).
-    // Dil, daveti OLUSTURAN yoneticinin secimidir: davetlinin dilini bilmiyoruz,
-    // ama ayni ekipte calisacaklar. (Gunluk ozet e-postasi farkli: cron'un bir
-    // ziyaretci dili yoktur, o Turkce kalir.)
+    // Send the invitation when email is configured (best-effort; otherwise the
+    // link is shown in the UI).
+    // The language is the one chosen by the administrator CREATING the invitation:
+    // we do not know the invitee's language, but they will work on the same team.
+    // (The daily digest email is different: the cron has no viewer whose language
+    // to read, so that one stays Turkish.)
     const ti = await getTranslations("Invite");
     await sendEmail(
       [email],
@@ -85,7 +90,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true, acceptUrl, expiresAt }, { status: 201 });
   } catch (error) {
-    console.error("Davet olusturma hatasi:", error);
+    console.error("Failed to create invitation:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

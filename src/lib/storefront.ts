@@ -1,9 +1,9 @@
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 
-// Path tabanli per-tenant vitrin: /magaza/[slug] -> tenant cozumleme.
-// Tenant tablosu RLS disidir; slug ile herkese acik (oturumsuz) okunur.
-// Tekrarlayan veritabani yukunu azaltmak icin 1 saatlik onbellege alinmistir.
+// Path-based per-tenant storefront: /magaza/[slug] -> resolve the tenant.
+// The Tenant table is outside RLS; it is read publicly by slug, with no session.
+// Cached for an hour to keep the repeated database load down.
 export const resolveStorefront = unstable_cache(
   async (slug: string) => {
     return prisma.tenant.findUnique({
@@ -18,16 +18,16 @@ export const resolveStorefront = unstable_cache(
   }
 );
 
-// Herkese acik magaza dizini: satista (active) en az bir urunu olan ciftlikler.
+// The public storefront directory: farms with at least one product on sale.
 //
-// NEDEN RAW: Dizin tasarim geregi kiracilar arasidir ve ziyaretci giris
-// yapmamistir, dolayisiyla app.tenant_id ayarlanamaz. Product tablosunda FORCE
-// RLS oldugundan non-superuser rol dogrudan sorguda 0 satir gorur. Bu yuzden
-// okuma, SECURITY DEFINER `public_storefront_tenants` fonksiyonuna tasindi;
-// login ve davet okumasiyla birebir ayni desen (bkz. src/lib/invitations.ts).
+// WHY RAW: the directory is cross-tenant by design and the visitor is not signed
+// in, so app.tenant_id cannot be set. Product is under FORCE RLS, so a
+// non-superuser role sees 0 rows from a direct query. The read therefore goes
+// through the SECURITY DEFINER function `public_storefront_tenants` — exactly the
+// pattern used for the sign-in and invitation lookups (see src/lib/invitations.ts).
 //
-// Fonksiyon URUN DETAYI DONDURMEZ; yalnizca vitrin kimligini (id, ad, slug)
-// verir ve siralamayi veritabaninda yapar.
+// The function RETURNS NO PRODUCT DETAIL; it yields only the storefront's identity
+// (id, name, slug) and does the ordering in the database.
 export type StorefrontTenant = {
   id: string;
   name: string;

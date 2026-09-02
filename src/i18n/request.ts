@@ -2,13 +2,13 @@ import { getRequestConfig } from "next-intl/server";
 import { cookies, headers } from "next/headers";
 import { resolveLocale } from "@/i18n/resolve-locale";
 
-// i18n routing KULLANMIYORUZ (URL'de /tr, /en yok). Dil once NEXT_LOCALE
-// cookie'sinden, o yoksa tarayicinin Accept-Language basligindan, hicbiri
-// bilgi vermiyorsa varsayilandan (tr) secilir. Secim mantigi saf ve birim
-// testli: src/i18n/resolve-locale.ts
+// We do NOT use i18n routing (there is no /tr or /en in the URL). The locale comes
+// from the NEXT_LOCALE cookie first, then the browser's Accept-Language header,
+// and finally the default (tr). The selection logic is pure and unit tested:
+// src/i18n/resolve-locale.ts
 //
-// Sayfalar zaten cookies() okundugu icin dinamik; baslik eklemek onbellek
-// davranisini degistirmez.
+// Pages are already dynamic because cookies() is read, so adding the header does
+// not change the caching behaviour.
 export { locales, defaultLocale, type Locale } from "@/i18n/resolve-locale";
 
 export default getRequestConfig(async () => {

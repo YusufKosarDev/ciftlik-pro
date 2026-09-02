@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Role } from "@prisma/client";
 
-// authz.ts; @/lib/auth (next-auth + prisma + bcrypt), next/server ve
-// next/navigation modullerini ice aktarir. Saf politika mantigini izole test
-// edebilmek icin bunlari hafifce mock'luyoruz. auth mock'u hoisted olmali.
+// authz.ts imports @/lib/auth (next-auth + prisma + bcrypt), next/server and
+// next/navigation. Those are lightly mocked here so the pure policy logic can be
+// tested in isolation. The auth mock has to be hoisted.
 const { authMock } = vi.hoisted(() => ({ authMock: vi.fn() }));
 
 vi.mock("@/lib/auth", () => ({ auth: authMock }));
@@ -20,9 +20,9 @@ vi.mock("next/navigation", () => ({
     throw new Error("REDIRECT:" + url);
   },
 }));
-// authorizeWrite hata mesajlarini Errors namespace'inden ceviriyor; getTranslations
-// gercek bir istek baglami ister. Testler mesaj METNINI degil durum kodunu
-// dogruladigi icin cevirmen anahtari aynen dondurur.
+// authorizeWrite translates its error messages through the Errors namespace, and
+// getTranslations wants a real request context. These tests assert the status code
+// rather than the message TEXT, so the translator simply returns the key.
 vi.mock("next-intl/server", () => ({
   getTranslations: async () => (key: string) => key,
 }));
@@ -39,8 +39,8 @@ import {
   type WriteModule,
 } from "@/lib/authz";
 
-// Vitrin hesaplarindan biri (ADMIN olani). Rolden bagimsiz reddedildigini
-// gostermek icin asagida listenin TAMAMI da ayrica taraniyor.
+// One of the showcase accounts (the ADMIN one). The WHOLE list is also swept
+// below, to show the refusal is independent of role.
 const DEMO_EMAIL = "demo@ciftlik.com";
 
 describe("canWrite — yazma izin matrisi", () => {
@@ -146,7 +146,7 @@ describe("authorizeWrite — API yetki kontrolu", () => {
   });
 
   it("demo hesabi yetkili rolde olsa bile 403 (salt-okunur)", async () => {
-    // ADMIN rolu yazabilir; ancak demo e-postasi yazma yapamamali.
+    // The ADMIN role may write; the demo email address still must not.
     authMock.mockResolvedValue({ user: { role: "ADMIN", email: DEMO_EMAIL } });
     const r = await authorizeWrite("animals");
     expect("error" in r).toBe(true);
@@ -160,10 +160,10 @@ describe("authorizeWrite — API yetki kontrolu", () => {
     if ("error" in r) expect(r.error?.status).toBe(403);
   });
 
-  // Vitrin artik rol basina bir hesap tasiyor. Her birinin KENDI rolunun
-  // yazabildigi bir modulde bile reddedildigini dogruluyoruz — koruma rolden
-  // degil e-postadan geliyor. Bu test olmadan, yeni bir demo hesabi eklenip
-  // isDemoUser listesine yazilmayi unutulsa kimse fark etmezdi.
+  // The showcase now carries one account per role. Each is checked to be refused
+  // even in a module its OWN role may write — the guard comes from the email
+  // address, not the role. Without this test, adding a demo account and forgetting
+  // to put it in the isDemoUser list would go unnoticed.
   it("TUM demo hesaplari, kendi rollerinin yazabildigi modulde bile reddedilir", async () => {
     const rolePerEmail: Record<string, { role: Role; module: WriteModule }> = {
       "demo@ciftlik.com": { role: "ADMIN", module: "tasks" },
@@ -172,11 +172,12 @@ describe("authorizeWrite — API yetki kontrolu", () => {
       "demo-muhasebe@ciftlik.com": { role: "ACCOUNTANT", module: "transactions" },
     };
 
-    // Liste ile test tablosu ayni kumede mi? (biri buyurse digeri de buymeli)
+    // Are the list and the test table the same set? (if one grows, so must the
+    // other)
     expect(Object.keys(rolePerEmail).sort()).toEqual([...DEMO_EMAILS].sort());
 
     for (const [email, { role, module }] of Object.entries(rolePerEmail)) {
-      // Kontrol: bu rol bu modulde normalde YAZABILIR olmali.
+      // Sanity check: this role should normally be ABLE to write in this module.
       expect(canWrite(role, module), `${role} ${module} yazabilmeli`).toBe(true);
       expect(isDemoUser(email), `${email} demo sayilmali`).toBe(true);
 
@@ -222,7 +223,7 @@ describe("requirePageView — hassas sayfa okuma korumasi", () => {
   });
 
   it("rol menude gormeyen yolu acmaya calisirsa panele yonlendirir", async () => {
-    // WORKER finansi gormez; dogrudan URL ile acmasi engellenir.
+    // WORKER cannot see finance; opening it by URL is blocked.
     authMock.mockResolvedValue({ user: { role: "WORKER" } });
     await expect(requirePageView("/panel/finans")).rejects.toThrow("REDIRECT:/panel");
   });

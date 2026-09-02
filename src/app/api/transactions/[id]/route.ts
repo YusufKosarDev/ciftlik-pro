@@ -56,7 +56,7 @@ export async function PUT(
 
     return NextResponse.json({ transaction });
   } catch (error) {
-    console.error("Islem guncelleme hatasi:", error);
+    console.error("Failed to update transaction:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }
@@ -94,7 +94,7 @@ export async function DELETE(
     );
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Islem silme hatasi:", error);
+    console.error("Failed to delete transaction:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

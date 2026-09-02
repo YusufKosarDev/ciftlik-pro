@@ -14,13 +14,14 @@ export function StoreHeader({ slug, farmName }: { slug: string; farmName: string
     <header className="border-b border-border bg-card">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 sm:px-6">
         <Link href={`/magaza/${slug}`} className="flex items-center gap-2.5 text-lg font-bold text-foreground">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-green-600 text-white">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-green-700 text-white">
             <Wheat className="h-5 w-5" />
           </span>
           {farmName}
         </Link>
         <div className="flex items-center gap-3">
-          {/* Ziyaretci dogrudan magazaya dusebilir; dili buradan da secebilmeli. */}
+          {/* A visitor can land straight on the storefront, so the language must be
+            selectable here too. */}
           <LanguageSwitcher />
           <Link
             href={`/magaza/${slug}/sepet`}
@@ -29,7 +30,7 @@ export function StoreHeader({ slug, farmName }: { slug: string; farmName: string
             <ShoppingCart className="h-4 w-4" />
             {t("cart")}
             {count > 0 && (
-              <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-green-600 px-1 text-xs font-semibold text-white">
+              <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-green-700 px-1 text-xs font-semibold text-white">
                 {count}
               </span>
             )}

@@ -5,9 +5,10 @@ import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant-prisma";
 import { logAudit } from "@/lib/audit";
 
-// DELETE /api/tenant -> ADMIN, kendi tenant'ini ve TUM verisini kalici siler
-// (hesap kapatma / KVKK silme hakki). Onay: govdedeki `confirm` ciftlik adina
-// birebir esit olmali. Demo ciftligi (default-tenant) korunur.
+// DELETE /api/tenant -> an ADMIN permanently deletes their own tenant and ALL of
+// its data (account closure / the GDPR-KVKK right to erasure). Confirmation: the
+// body's `confirm` must equal the farm's name exactly. The demo farm
+// (default-tenant) is protected.
 export async function DELETE(request: Request) {
   const te = await getTranslations("Errors");
   const session = await auth();
@@ -19,7 +20,7 @@ export async function DELETE(request: Request) {
   }
 
   const tenantId = session.user.tenantId;
-  // Vitrin/demo verisini korumak icin varsayilan tenant silinemez.
+  // The default tenant cannot be deleted, to protect the showcase demo data.
   if (tenantId === "default-tenant") {
     return NextResponse.json(
       { error: te("demoFarmProtected") },
@@ -43,8 +44,9 @@ export async function DELETE(request: Request) {
     );
   }
 
-  // Tum tenant verisini FK-guvenli sirayla sil (cocuk -> ebeveyn). Her deleteMany
-  // forTenant tarafindan tenantId ile kapsanir; RLS de DB-seviyesinde sinirlar.
+  // Delete all of the tenant's data in FK-safe order (children before parents).
+  // Every deleteMany is scoped by tenantId through forTenant, and RLS bounds it
+  // again at the database level.
   await withTenant(tenantId, async (db) => {
     await db.orderItem.deleteMany({});
     await db.order.deleteMany({});
@@ -69,13 +71,14 @@ export async function DELETE(request: Request) {
     await db.user.deleteMany({});
   });
 
-  // Tenant satiri RLS disidir; en son silinir.
+  // The Tenant row is outside RLS; it goes last.
   await prisma.tenant.delete({ where: { id: tenantId } });
 
-  // Denetim kaydi SILMEDEN SONRA ve TENANT'SIZ yazilir: yukaridaki
-  // `auditLog.deleteMany` bu tenant'in tum kayitlarini sildigi icin, tenant
-  // baglaminda yazilan bir kayit ya silinirdi ya da olmayan bir tenant'a
-  // baglanirdi. Hesap kapatma, LOGIN_FAILED gibi tenant'siz bir SISTEM olayidir.
+  // The audit record is written AFTER the wipe and WITHOUT a tenant: the
+  // `auditLog.deleteMany` above removes all of this tenant's rows, so a record
+  // written in the tenant context would either be deleted with them or point at a
+  // tenant that no longer exists. Account closure is a SYSTEM event with no
+  // tenant, like LOGIN_FAILED.
   await logAudit(
     { id: session.user.id, name: session.user.name, email: session.user.email },
     "DELETE",

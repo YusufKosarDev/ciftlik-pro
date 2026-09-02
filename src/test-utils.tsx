@@ -1,10 +1,11 @@
-/** Test yardimcilari: i18n (next-intl) saglayicili render. */
+/** Test helpers: render wrapped in the i18n (next-intl) provider. */
 import { render, type RenderOptions } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import messages from "../messages/tr.json";
 
-// Bilesenleri varsayilan (TR) mesaj katalogu ile sarip render eder. useTranslations
-// kullanan bilesenler testte saglayici olmadan patlar; bu yardimci onu cozer.
+// Renders components wrapped in the default (TR) message catalogue. Components
+// using useTranslations throw in a test without a provider; this helper solves
+// that.
 export function renderWithIntl(ui: React.ReactElement, options?: RenderOptions) {
   return render(ui, {
     wrapper: ({ children }) => (

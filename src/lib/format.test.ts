@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 
-// useFormat, next-intl useLocale'i kullanir; saf bicimlendiricileri izole test
-// edebilmek icin locale'i sabitliyoruz.
+// useFormat relies on next-intl's useLocale; the locale is pinned here so the pure
+// formatters can be tested in isolation.
 vi.mock("next-intl", () => ({ useLocale: () => "en" }));
 
 import { formatDate, formatMoney, useFormat } from "./format";
@@ -53,7 +53,7 @@ describe("formatMoney", () => {
 
 describe("useFormat", () => {
   it("aktif locale'e bagli bicimlendiriciler doner", () => {
-    // useLocale mock'u "en" donduruyor.
+    // The useLocale mock returns "en".
     const { formatDate: fd, formatMoney: fm } = useFormat();
     expect(fd("2026-03-09")).toBe(new Date("2026-03-09").toLocaleDateString("en-US"));
     expect(fm(1234.5)).toBe(

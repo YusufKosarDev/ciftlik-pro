@@ -2,8 +2,8 @@ import { z } from "zod";
 
 export const userRoles = ["ADMIN", "WORKER", "VET", "ACCOUNTANT"] as const;
 
-// Kullanici olusturma dogrulama semasi.
-// Admin, panel icinden yeni personel olustururken kullanir.
+// The validation schema for creating a user.
+// Used when an admin creates a new staff member from inside the panel.
 export const registerSchema = z.object({
   name: z
     .string()
@@ -24,7 +24,8 @@ export const registerSchema = z.object({
 
 export type RegisterInput = z.infer<typeof registerSchema>;
 
-// Public "ciftlik olustur" kaydi: yeni bir Tenant + ilk ADMIN (sahip) olusturur.
+// The public "create a farm" sign-up: creates a new Tenant plus the first ADMIN
+// (the owner).
 export const signupSchema = z.object({
   farmName: z
     .string()
@@ -49,7 +50,8 @@ export const signupSchema = z.object({
 
 export type SignupInput = z.infer<typeof signupSchema>;
 
-// Davet kabul: davetli kendi adini + parolasini belirler (e-posta davette sabit).
+// Invitation acceptance: the invitee sets their own name and password (the email
+// is fixed by the invitation).
 export const acceptInviteSchema = z.object({
   name: z
     .string()
@@ -64,7 +66,7 @@ export const acceptInviteSchema = z.object({
 
 export type AcceptInviteInput = z.infer<typeof acceptInviteSchema>;
 
-// Personel daveti olusturma (ADMIN): e-posta + rol.
+// Creating a staff invitation (ADMIN): an email address and a role.
 export const inviteSchema = z.object({
   email: z
     .string()
@@ -76,8 +78,9 @@ export const inviteSchema = z.object({
 
 export type InviteInput = z.infer<typeof inviteSchema>;
 
-// Tenant slug'i: ciftlik adindan URL-guvenli, kisa bir ad uretir.
-// Turkce karakterler sadelestirilir; harf/rakam disi her sey "-" olur.
+// The tenant slug: derives a short, URL-safe name from the farm's name.
+// Non-ASCII letters are folded down, and anything that is not a letter or a digit
+// becomes "-".
 export function slugify(input: string): string {
   const map: Record<string, string> = {
     ç: "c", ğ: "g", ı: "i", ö: "o", ş: "s", ü: "u", İ: "i",

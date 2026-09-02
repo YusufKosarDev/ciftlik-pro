@@ -6,9 +6,9 @@ import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
 import { logAudit } from "@/lib/audit";
 
-// POST /api/billing/downgrade -> ADMIN, tenant'ı FREE'ye düşürür.
-// Yalnızca DEMO modunda (gerçek Stripe yapılandırılmamışken) geçerlidir; gerçek
-// abonelikte iptal, Stripe müşteri portalından yapılır (kapsam dışı).
+// POST /api/billing/downgrade -> an ADMIN drops the tenant back to FREE.
+// It applies only in DEMO mode, with no real Stripe configured; cancelling a real
+// subscription happens in Stripe's customer portal, which is out of scope here.
 export async function POST() {
   const te = await getTranslations("Errors");
   const session = await auth();
@@ -18,7 +18,8 @@ export async function POST() {
   if (session.user.role !== "ADMIN") {
     return NextResponse.json({ error: te("adminOnlyChangePlan") }, { status: 403 });
   }
-  // Demo hesabi salt-okunurdur: vitrin ADMIN olsa da gercek plan degisikligi yaptiramaz.
+  // The demo account is read-only: even the showcase ADMIN cannot make a real plan
+  // change.
   if (isDemoUser(session.user.email)) {
     return NextResponse.json(
       { error: te("demoPlanLocked") },

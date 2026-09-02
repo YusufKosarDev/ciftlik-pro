@@ -5,8 +5,9 @@ import { logAudit } from "@/lib/audit";
 import { withTenant } from "@/lib/tenant-prisma";
 import { animalSchema } from "@/lib/validations/animal";
 
-// PUT /api/animals/[id] -> hayvani gunceller. Tum okuma/yazma tenant baglaminda
-// (RLS + forTenant); benzersizlik/soy kontrolleri TENANT-ICI yapilir.
+// PUT /api/animals/[id] -> updates an animal. Every read and write happens in the
+// tenant context (RLS + forTenant); the uniqueness and lineage checks are
+// therefore WITHIN THE TENANT.
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -35,7 +36,7 @@ export async function PUT(
         return { error: te("animalNotFound"), status: 404 } as const;
       }
 
-      // Kulak numarasi bu tenant'ta baska bir hayvanda kullaniliyor mu?
+      // Is this ear tag already used by another animal in this tenant?
       const tagOwner = await db.animal.findFirst({ where: { tagNumber: data.tagNumber } });
       if (tagOwner && tagOwner.id !== id) {
         return { error: te("tagUsedByAnother"), status: 409 } as const;
@@ -45,7 +46,7 @@ export async function PUT(
         return { error: te("animalCannotBeOwnMother"), status: 400 } as const;
       }
 
-      // Dongu engelle: secilen anne, bu hayvanin soyundan biri olamaz.
+      // Prevent a cycle: the chosen mother cannot be a descendant of this animal.
       if (data.motherId) {
         let cursor: string | null = data.motherId;
         const seen = new Set<string>();
@@ -79,7 +80,7 @@ export async function PUT(
         }
       }
 
-      // Tur degisiyorsa yavrularla tutarsizlik olmamali.
+      // If the species changes it must not contradict the offspring.
       if (data.species !== existing.species) {
         const mismatchedOffspring = await db.animal.count({
           where: { motherId: id, species: { not: data.species } },
@@ -124,7 +125,7 @@ export async function PUT(
 
     return NextResponse.json({ animal: outcome.animal });
   } catch (error) {
-    console.error("Hayvan guncelleme hatasi:", error);
+    console.error("Failed to update animal:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }
@@ -132,7 +133,7 @@ export async function PUT(
   }
 }
 
-// DELETE /api/animals/[id] -> hayvani siler
+// DELETE /api/animals/[id] -> deletes an animal
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -159,7 +160,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Hayvan silme hatasi:", error);
+    console.error("Failed to delete animal:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

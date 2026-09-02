@@ -170,6 +170,8 @@ alternatifler ve bilinen sınırlamalar (İngilizce) ·
 
 ## 🔐 Güvenlik & RBAC
 
+> Bir açık mı buldunuz? Lütfen özel olarak bildirin — [SECURITY.md](SECURITY.md) (İngilizce).
+
 Yetkilendirme tek merkezden yönetilir (`src/lib/authz.ts`) ve **iki katmanda**
 uygulanır: yazma uçları `authorizeWrite` ile, hassas/forma dayalı sayfalar ise
 `requirePageWrite` / `requirePageView` ile korunur. **Okuma** giriş yapmış her
@@ -233,12 +235,20 @@ bir zincirden geliyor:
 
 | Zincir | Neyle kapanır | Bu uygulamada erişilebilir mi? |
 | --- | --- | --- |
-| `@prisma/client` → `prisma` → `@prisma/config` → `deepmerge-ts` | Prisma 7 (majör) | **Hayır** — yalnızca Prisma CLI'ın `generate` ve `migrate` sırasındaki config yükleyicisinden geçiliyor; istek yolunda değil. |
+| `@prisma/client` → `prisma` → `@prisma/config` → `deepmerge-ts` | Henüz hiçbir sürüm — aşağıya bakın | **Hayır** — yalnızca Prisma CLI'ın `generate` ve `migrate` sırasındaki config yükleyicisinden geçiliyor; istek yolunda değil. |
 
-**Majörler hiçbir zaman otomatik alınmıyor** — kural ve gerekçesi
-[`.github/dependabot.yml`](.github/dependabot.yml) içinde. Bu zincirin ihtiyacı
-tam olarak bu: npm'in önerdiği tek "düzeltme" `prisma@6.12.0`'a **geri dönmek**,
-ki bu bir düzeltme değil.
+**Hiçbir Prisma sürümü bunu kapatmıyor; bu varsayılmadı, ölçüldü.** Prisma 7.10.0
+bir dalda kurulup denendi: açığı taşıyan `deepmerge-ts@7.1.5`'i hâlâ sabitliyor —
+yamalı 7.1.6 ve 8.x var, ama hiçbir Prisma sürümü onlara geçmemiş — **üstelik**
+bu projenin hiç kullanmadığı `mysql2` sürücüsünü de paketliyor ve onun da kendi
+high advisory'si var. Yani majör geçiş, sayıyı üçten dörde çıkarırken kırıcı bir
+yapılandırma göçü de istiyor (`directUrl` şemadan `prisma.config.ts`'e taşınıyor).
+npm'in 7 altında önerdiği "düzeltme" ise 6'ya geri dönmek. Dal terk edildi;
+beklenen şey majör bir sürüm değil, Prisma'nın `deepmerge-ts` sabitini
+güncellemesi.
+
+**Majörler de hiçbir zaman otomatik alınmıyor** — kural ve gerekçesi
+[`.github/dependabot.yml`](.github/dependabot.yml) içinde.
 
 Burada duran diğer zincir — `next` → `postcss` ve `next` → `sharp` — kapandı.
 Bekletiliyordu, çünkü 16.3 yetkilendirme kapısı olan `src/proxy.ts`'in üzerinde

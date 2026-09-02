@@ -1,6 +1,6 @@
-// Takvim gorunumu icin saf, test edilebilir mantik: ay parametresi cozumleme,
-// ay araligi, ay kaydirma, 6x7 grid uretimi ve olaylari gune gruplama.
-// (Veritabanindan ve React'tan bagimsiz.)
+// Pure, testable logic for the calendar view: resolving the month parameter, the
+// month range, shifting months, building the 6x7 grid and grouping events by day.
+// (Independent of the database and of React.)
 
 export type CalendarEventKind = "vaccination" | "task" | "harvest" | "birth";
 
@@ -18,7 +18,7 @@ export type CalendarDay = {
   isToday: boolean;
 };
 
-// Yerel saatle YYYY-MM-DD anahtari.
+// A YYYY-MM-DD key in local time.
 export function dayKey(date: Date): string {
   const d = new Date(date);
   const y = d.getFullYear();
@@ -27,7 +27,7 @@ export function dayKey(date: Date): string {
   return `${y}-${m}-${day}`;
 }
 
-// "YYYY-MM" -> { year, month(0-based) }. Gecersizse icinde bulunulan ay.
+// "YYYY-MM" -> { year, month (0-based) }. Falls back to the current month.
 export function parseMonthParam(
   param: string | undefined,
   now: Date = new Date()
@@ -41,12 +41,12 @@ export function parseMonthParam(
   return { year: now.getFullYear(), month: now.getMonth() };
 }
 
-// "YYYY-MM" bicimi.
+// "YYYY-MM" format.
 export function monthParam(year: number, month: number): string {
   return `${year}-${String(month + 1).padStart(2, "0")}`;
 }
 
-// Sorgu icin [start, end) ay araligi.
+// The [start, end) month range, for querying.
 export function monthRange(year: number, month: number): { start: Date; end: Date } {
   return {
     start: new Date(year, month, 1),
@@ -54,24 +54,25 @@ export function monthRange(year: number, month: number): { start: Date; end: Dat
   };
 }
 
-// delta ay kaydirir (negatif/pozitif) ve normalize "YYYY-MM" doner.
+// Shifts by delta months (negative or positive) and returns a normalised "YYYY-MM".
 export function shiftMonth(year: number, month: number, delta: number): string {
   const d = new Date(year, month + delta, 1);
   return monthParam(d.getFullYear(), d.getMonth());
 }
 
-// NOT: Ay basligi burada URETILMEZ. Takvim sayfasi Intl ile aktif dile gore
-// bicimlendirir (src/app/panel/takvim/page.tsx); burada sabit bir Turkce ay
-// dizisi tutmak, dil degistiginde sessizce Turkce metin sizdirirdi.
+// NOTE: the month heading is NOT produced here. The calendar page formats it with
+// Intl in the active locale (src/app/panel/takvim/page.tsx); keeping a hard-coded
+// Turkish month array here would silently leak Turkish text after a language
+// change.
 
-// Pazartesi baslangicli 6x7 grid (her zaman 42 gun).
+// A Monday-first 6x7 grid (always 42 days).
 export function monthGrid(
   year: number,
   month: number,
   now: Date = new Date()
 ): CalendarDay[][] {
   const first = new Date(year, month, 1);
-  // Pazartesi=0 olacak sekilde offset (getDay: 0=Pazar..6=Cumartesi)
+  // Offset so that Monday is 0 (getDay: 0=Sunday .. 6=Saturday)
   const offset = (first.getDay() + 6) % 7;
   const start = new Date(year, month, 1 - offset);
   const todayKey = dayKey(now);
@@ -94,7 +95,7 @@ export function monthGrid(
   return weeks;
 }
 
-// Olaylari gun anahtarina gore gruplar.
+// Groups events by their day key.
 export function groupByDay(events: CalendarEvent[]): Map<string, CalendarEvent[]> {
   const map = new Map<string, CalendarEvent[]>();
   for (const e of events) {

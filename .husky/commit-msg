@@ -1,6 +1,6 @@
-# Husky 9: shebang ve preamble yok; .husky/_/h bu dosyayi `sh -e` ile calistirir
-# ve commit mesaj dosyasinin yolunu $1 olarak gecirir.
+# Husky 9: no shebang and no preamble; .husky/_/h runs this file with `sh -e` and
+# passes the commit message file's path as $1.
 #
-# Desen listesi bilincli olarak burada DEGIL: tek dogruluk kaynagi asagidaki
-# betiktir. Ayni kontrol CI'da da ayni betikle calisir.
+# The pattern list is deliberately NOT here: the single source of truth is the
+# script below. CI runs the same check through the same script.
 sh "$(git rev-parse --show-toplevel)/scripts/check-commit-messages.sh" --message-file "$1"

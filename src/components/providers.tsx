@@ -4,9 +4,9 @@ import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
 
-// Client tarafinda useSession / signIn / signOut kullanabilmek icin
-// uygulamayi SessionProvider ile sariyoruz. ThemeProvider (next-themes) dark
-// mode'u <html class="dark"> ile yonetir. Toaster global bildirimler icin.
+// The app is wrapped in SessionProvider so useSession / signIn / signOut work on
+// the client. ThemeProvider (next-themes) drives dark mode through
+// <html class="dark">. Toaster handles the global notifications.
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>

@@ -28,9 +28,9 @@ export default async function StokPage({
       }
     : {};
 
-  // Kritik sayim kolon-kolon karsilastirma gerektirir (quantity <= criticalLevel);
-  // Prisma standart where ile yapamaz, bu yuzden DB-tarafi COUNT (tum kayitlari
-  // bellege cekmeden) kullaniyoruz.
+  // Counting the critical items needs a column-to-column comparison
+  // (quantity <= criticalLevel), which Prisma cannot express in a standard where —
+  // hence a database-side COUNT, without pulling every record into memory.
   const session = await auth();
   const canEdit = session ? canWrite(session.user.role, "inventory") : false;
   const { items, total, criticalRows } = await withTenant(session!.user.tenantId, async (db) => {
@@ -42,7 +42,7 @@ export default async function StokPage({
         take,
       }),
       db.inventoryItem.count({ where }),
-      // RLS baglaminda calistigindan bu raw COUNT da tenant-kapsamli olur.
+      // It runs inside the RLS context, so this raw COUNT is tenant-scoped too.
       db.$queryRaw<{ count: number }[]>`
         SELECT COUNT(*)::int AS count FROM "InventoryItem" WHERE "quantity" <= "criticalLevel"`,
     ]);

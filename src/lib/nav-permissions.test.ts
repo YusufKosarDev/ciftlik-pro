@@ -55,14 +55,14 @@ describe("canViewPanelPath", () => {
   });
 
   it("kisisel/ortak sayfalari bolum kisitina tabi tutmaz", () => {
-    // Profil kisiseldir; abonelik sayfasi kendi icinde ADMIN kontrolu yapar.
+    // The profile is personal; the billing page does its own ADMIN check.
     expect(canViewPanelPath("WORKER", "/panel/profil")).toBe(true);
     expect(canViewPanelPath("VET", "/panel/abonelik")).toBe(true);
   });
 
   it("bilinmeyen bir bolumu engellemez (fail-open)", () => {
-    // Menude tanimli olmayan yeni bir sayfa sessizce erisilemez olmamali;
-    // yetkilendirme sunucu tarafinda ayrica uygulanir.
+    // A new page that is not in any menu must not become silently unreachable;
+    // authorization is enforced again on the server.
     expect(canViewPanelPath("WORKER", "/panel/yeni-modul")).toBe(true);
   });
 

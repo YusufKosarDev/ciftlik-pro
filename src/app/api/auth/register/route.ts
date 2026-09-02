@@ -10,16 +10,16 @@ import { rateLimit, clientIp } from "@/lib/rate-limit";
 import { hashPassword } from "@/lib/password-hash";
 
 // POST /api/auth/register
-// Yeni kullanici kaydi olusturur (sadece ADMIN).
+// Creates a new user account (ADMIN only).
 export async function POST(request: Request) {
   const te = await getTranslations("Errors");
   try {
-    // 0) Sadece ADMIN yeni kullanici olusturabilir
+    // 0) Only an ADMIN may create a user
     const authz = await authorizeWrite("users");
     if ("error" in authz) return authz.error;
 
-    // Hiz siniri: kazara/kotuye toplu olusturmayi onlemek icin IP basina
-    // 5 dakikada en fazla 10 kayit.
+    // Rate limit: at most 10 registrations per IP in 5 minutes, to prevent
+    // accidental or malicious bulk creation.
     const rl = await rateLimit(`register:${clientIp(request)}`, 10, 5 * 60 * 1000);
     if (!rl.success) {
       return NextResponse.json(
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
 
     const body = await request.json();
 
-    // 1) Gelen veriyi dogrula
+    // 1) Validate the incoming data
     const parsed = registerSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     const { name, email, password, role } = parsed.data;
     const tenantId = authz.session.user.tenantId;
 
-    // Plan limiti (FREE: en fazla 3 personel). Hard block.
+    // Plan limit (FREE: at most 3 staff members). A hard block.
     const limit = await canAddRecord(tenantId, "users");
     if (!limit.allowed) {
       return NextResponse.json(
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // 2) E-posta zaten kayitli mi? (aktif tenant icinde)
+    // 2) Is the email already registered? (within the active tenant)
     const existing = await withTenant(tenantId, (db) =>
       db.user.findFirst({ where: { email } })
     );
@@ -65,22 +65,23 @@ export async function POST(request: Request) {
       );
     }
 
-    // 3) Parolayi hash'le (duz metin asla saklanmaz)
+    // 3) Hash the password (plaintext is never stored)
     const passwordHash = await hashPassword(password);
 
-    // 4) Kullaniciyi olustur. Yeni kullanici, kaydi olusturan ADMIN'in tenant'ina
-    // baglanir (tenantId acikca verilir; withTenant RLS baglamini ayarlar).
+    // 4) Create the user. They are attached to the tenant of the ADMIN creating
+    // the record (tenantId is explicit; withTenant establishes the RLS context).
     let user;
     try {
       user = await withTenant(tenantId, (db) =>
         db.user.create({
           data: { tenantId, name, email, password: passwordHash, role },
-          // Parolayi asla geri dondurmuyoruz
+          // The password is never returned
           select: { id: true, name: true, email: true, role: true, createdAt: true },
         })
       );
     } catch (err) {
-      // E-posta global benzersiz: baska bir tenant'ta zaten kayitliysa P2002.
+      // Email is globally unique: P2002 if it is already registered in another
+      // tenant.
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
         return NextResponse.json(
           { error: te("emailTaken") },
@@ -94,7 +95,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ user }, { status: 201 });
   } catch (error) {
-    console.error("Kayit hatasi:", error);
+    console.error("User registration failed:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

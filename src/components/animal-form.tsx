@@ -17,9 +17,9 @@ const labelClass = "mb-1 block text-sm font-medium text-foreground";
 type MotherOption = { id: string; tagNumber: string; name: string | null };
 
 type Props = {
-  // Duzenleme modunda mevcut hayvan; ekleme modunda undefined.
+  // The existing animal in edit mode; undefined when creating.
   animal?: Animal;
-  // Anne secimi icin aday hayvanlar (disiler; duzenlemede kendisi haric).
+  // Candidate mothers (females; excluding this animal itself when editing).
   mothers?: MotherOption[];
 };
 

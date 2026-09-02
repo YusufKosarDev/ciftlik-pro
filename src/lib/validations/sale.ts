@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { requiredDateString } from "@/lib/validations/date";
 
-// Satis kaydi dogrulama semasi. Tutar zorunlu ve pozitif; miktar opsiyoneldir.
+// The validation schema for a sale. The amount is required and positive; the
+// quantity is optional.
 export const saleSchema = z.object({
   item: z
     .string()
@@ -9,7 +10,8 @@ export const saleSchema = z.object({
     .min(1, "Satilan urun/hayvan zorunludur")
     .max(120, "En fazla 120 karakter olabilir"),
   customerId: z.string().trim().optional().or(z.literal("")),
-  // Bos string -> undefined; aksi halde pozitif sayiya cevrilir.
+  // An empty string becomes undefined; anything else is coerced to a positive
+  // number.
   quantity: z.preprocess(
     (v) => (v === "" || v == null ? undefined : v),
     z.coerce.number({ message: "Gecerli bir miktar giriniz" }).positive("Miktar 0'dan buyuk olmalidir").max(1000000000).optional()

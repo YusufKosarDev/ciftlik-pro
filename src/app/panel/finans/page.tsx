@@ -33,7 +33,7 @@ function BreakdownList({
           {rows.map((r) => (
             <li key={r.category} className="flex justify-between">
               <span className="text-foreground">{r.category}</span>
-              <span className={`font-medium ${tone === "green" ? "text-green-600" : "text-red-600"}`}>
+              <span className={`font-medium ${tone === "green" ? "text-green-700" : "text-red-600"}`}>
                 {formatMoney(r.total, locale)}
               </span>
             </li>
@@ -49,8 +49,8 @@ export default async function FinansPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  // Finans hassas veridir: yalnizca menusunde finans gorunen roller
-  // (ADMIN, ACCOUNTANT) bu sayfayi acabilir. Digerleri panele yonlenir.
+  // Finance is sensitive data: only roles that have finance in their menu (ADMIN,
+  // ACCOUNTANT) may open this page. Everyone else is redirected to the dashboard.
   const session = await requirePageView("/panel/finans");
   const t = await getTranslations("Finance");
   const locale = await getLocale();
@@ -70,8 +70,9 @@ export default async function FinansPage({
       }
     : {};
 
-  // Tablo: aranan/sayfalanan kayitlar. Ozet ve kategori kirilimi ise TUM
-  // islemler uzerinden DB'de gruplanir (belleğe cekmeden) — arama/sayfadan bagimsiz.
+  // The table shows the searched and paginated records. The summary and the
+  // category breakdown are grouped in the database over ALL transactions, without
+  // pulling them into memory, so they are independent of the search and the page.
   const { transactions, total, grouped } = await withTenant(session.user.tenantId, async (db) => {
     const [transactions, total, grouped] = await Promise.all([
       db.transaction.findMany({
@@ -111,7 +112,7 @@ export default async function FinansPage({
           <span>💰</span> {t("title")}
         </h1>
         <div className="flex items-center gap-2">
-          {/* Dosya indirme ucnoktasi; sayfa navigasyonu degil, bu yuzden <a download>. */}
+          {/* A file download endpoint, not a page navigation — hence <a download>. */}
           <a
             href="/api/transactions/export"
             download
@@ -127,11 +128,11 @@ export default async function FinansPage({
         </div>
       </div>
 
-      {/* Ozet kartlari */}
+      {/* Summary cards */}
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-xl border border-border bg-card p-5">
           <p className="text-sm text-muted-foreground">{t("income")}</p>
-          <p className="mt-1 text-xl font-bold text-green-600">
+          <p className="mt-1 text-xl font-bold text-green-700">
             {formatMoney(totalIncome, locale)}
           </p>
         </div>
@@ -145,7 +146,7 @@ export default async function FinansPage({
           <p className="text-sm text-muted-foreground">{t("title")} Net Bakiye</p>
           <p
             className={`mt-1 text-xl font-bold ${
-              balance >= 0 ? "text-green-600" : "text-red-600"
+              balance >= 0 ? "text-green-700" : "text-red-600"
             }`}
           >
             {formatMoney(balance, locale)}
@@ -153,7 +154,7 @@ export default async function FinansPage({
         </div>
       </div>
 
-      {/* Kategori kirilimi */}
+      {/* Category breakdown */}
       {grouped.length > 0 && (
         <div className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">

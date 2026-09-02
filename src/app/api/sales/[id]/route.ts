@@ -6,7 +6,8 @@ import { logAudit } from "@/lib/audit";
 import { saleSchema } from "@/lib/validations/sale";
 import { saleDescription } from "@/lib/sale-description";
 
-// PUT /api/sales/[id] -> satisi gunceller ve bagli gelir islemini senkronlar.
+// PUT /api/sales/[id] -> updates a sale and keeps its linked income transaction in
+// sync.
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -51,7 +52,8 @@ export async function PUT(
         description: saleDescription(data.item, customerName),
       };
 
-      // Bagli gelir islemini guncelle; yoksa yeniden olustur (eski/legacy kayit).
+      // Update the linked income transaction; recreate it if missing (a legacy
+      // record).
       let transactionId = existing.transactionId;
       if (transactionId) {
         await db.transaction.updateMany({ where: { id: transactionId }, data: txData });
@@ -87,7 +89,7 @@ export async function PUT(
 
     return NextResponse.json({ sale });
   } catch (error) {
-    console.error("Satis guncelleme hatasi:", error);
+    console.error("Failed to update sale:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }
@@ -95,7 +97,7 @@ export async function PUT(
   }
 }
 
-// DELETE /api/sales/[id] -> satisi ve bagli gelir islemini siler.
+// DELETE /api/sales/[id] -> deletes a sale and its linked income transaction.
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -111,7 +113,7 @@ export async function DELETE(
       if (!existing) return null;
       await db.sale.delete({ where: { id } });
       if (existing.transactionId) {
-        // deleteMany: islem zaten silinmisse hata firlatmaz.
+        // deleteMany: it does not throw if the transaction is already gone.
         await db.transaction.deleteMany({ where: { id: existing.transactionId } });
       }
       return existing;
@@ -124,7 +126,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Satis silme hatasi:", error);
+    console.error("Failed to delete sale:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }
