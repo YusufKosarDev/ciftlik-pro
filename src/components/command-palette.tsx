@@ -11,8 +11,9 @@ export type CommandItem = Command & {
   Icon?: React.ComponentType<{ className?: string }>;
 };
 
-// Cmd/Ctrl+K ile acilan hizli gezinme/eylem paleti. Filtreleme mantigi saf
-// (lib/command-filter); burada yalnizca UI + klavye gezinmesi var.
+// The quick navigation and action palette opened with Cmd/Ctrl+K. The filtering
+// logic is pure (lib/command-filter); only the UI and keyboard navigation live
+// here.
 export function CommandPalette({
   open,
   onOpenChange,
@@ -29,7 +30,7 @@ export function CommandPalette({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // Global kisayol: Cmd/Ctrl+K paleti acar/kapatir.
+  // The global shortcut: Cmd/Ctrl+K opens and closes the palette.
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -41,9 +42,9 @@ export function CommandPalette({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onOpenChange]);
 
-  // Acilinca girdiye odaklan. Palet her acilista parent tarafindan `key` ile
-  // yeniden mount edildiginden query/active zaten sifirdan baslar (effect'te
-  // setState yok).
+  // Focus the input on open. The parent remounts the palette through `key` every
+  // time it opens, so query and active already start from scratch — no setState in
+  // an effect.
   useEffect(() => {
     const id = requestAnimationFrame(() => inputRef.current?.focus());
     return () => cancelAnimationFrame(id);
@@ -75,8 +76,9 @@ export function CommandPalette({
     }
   }
 
-  // Gruplari korumak icin filtrelenmis listeyi sirayla gezerken grup basligini
-  // degisince yazariz; aktif index filtrelenmis duz dizi uzerinden ilerler.
+  // To keep the groups, the group heading is emitted whenever it changes as the
+  // filtered list is walked in order; the active index moves over the flat filtered
+  // array.
   let lastGroup = "";
 
   return (

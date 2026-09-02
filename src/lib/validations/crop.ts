@@ -3,8 +3,8 @@ import { requiredDateString, optionalDateString } from "@/lib/validations/date";
 
 export const cropStatuses = ["PLANTED", "GROWING", "HARVESTED"] as const;
 
-// Form bos birakilirsa "" gelir; bunu undefined'a cevirip opsiyonel,
-// negatif olmayan bir sayi olarak dogrularir.
+// A field left blank in the form arrives as ""; this turns it into undefined and
+// validates it as an optional, non-negative number.
 function optionalNonNegativeNumber(label: string) {
   return z.preprocess(
     (v) => (v === "" || v === null || v === undefined ? undefined : v),
@@ -16,7 +16,7 @@ function optionalNonNegativeNumber(label: string) {
   );
 }
 
-// Ekim kaydi dogrulama semasi.
+// The validation schema for a crop record.
 export const cropSchema = z.object({
   name: z
     .string()
@@ -26,13 +26,13 @@ export const cropSchema = z.object({
   plantedDate: requiredDateString("Ekim tarihi zorunludur"),
   harvestDate: optionalDateString(),
   status: z.enum(cropStatuses).default("PLANTED"),
-  // Ekonomik alanlar opsiyonel; bos string undefined sayilir.
+  // The economic fields are optional; an empty string counts as undefined.
   cost: optionalNonNegativeNumber("Gider"),
   revenue: optionalNonNegativeNumber("Gelir"),
   yieldAmount: optionalNonNegativeNumber("Verim"),
   notes: z.string().trim().max(500).optional().or(z.literal("")),
 }).refine(
-  // Hasat tarihi doluysa ekim tarihinden once olamaz.
+  // When a harvest date is given it cannot precede the planting date.
   (d) => !d.harvestDate || new Date(d.harvestDate) >= new Date(d.plantedDate),
   { message: "Hasat tarihi ekim tarihinden once olamaz", path: ["harvestDate"] }
 );

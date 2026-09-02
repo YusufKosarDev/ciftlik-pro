@@ -162,22 +162,23 @@ export function OnboardingModal({
   const isLast = step === steps.length - 1;
   const current = steps[step];
 
-  // Turu kapat: sunucuya tamamlandi bilgisini gonderir (best-effort) ve modali kapatir.
+  // Close the tour: tells the server it is complete (best-effort) and closes the
+  // modal.
   const finish = useCallback(async () => {
     setSaving(true);
     try {
       await fetch("/api/profile/onboarding", { method: "POST" });
-      // Oturum token'indaki onboarding durumunu tazele (ekstra DB sorgusu olmadan
-      // panel layout artik modali gostermez).
+      // Refresh the onboarding state in the session token, so the panel layout stops
+      // showing the modal without an extra database query.
       await update({ onboarded: true });
     } catch {
-      // Sessizce gec: tur tekrar gosterilse de kullaniciyi engellemeyelim.
+      // Fail quietly: showing the tour again is better than blocking the user.
     }
     setOpen(false);
     router.refresh();
   }, [router, update]);
 
-  // Esc ile kapatma + arka plan kaydirmayi engelleme.
+  // Close on Esc, and prevent background scrolling.
   useEffect(() => {
     if (!open) return;
     function onKey(e: KeyboardEvent) {
@@ -208,8 +209,9 @@ export function OnboardingModal({
             type="button"
             onClick={finish}
             aria-label={t("close")}
-            // Ekran goruntusu/GIF script'leri modali dilden BAGIMSIZ kapatabilsin diye
-            // (aria-label artik cevriliyor; metne dayali secici EN kosusunda kirilirdi).
+            // So the screenshot and GIF scripts can close the modal INDEPENDENTLY of
+            // language (aria-label is translated now, and a text-based selector would
+            // break on the English run).
             data-testid="onboarding-close"
             className="absolute right-4 top-4 rounded-lg p-1 text-white/80 transition hover:bg-card/20 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
           >

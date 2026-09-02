@@ -1,10 +1,10 @@
 import type { Role } from "@prisma/client";
 
-// Rol -> gorebilecegi panel bolumleri. EDGE-GUVENLI: bu dosya yalnizca tip
-// import eder; next-auth, next/navigation veya Prisma runtime'i CEKMEZ. Boylece
-// hem proxy (edge) hem sunucu bilesenleri ayni kaynagi kullanabilir.
+// Role -> the panel sections it can see. EDGE-SAFE: this file imports types only;
+// it pulls in NO next-auth, next/navigation or Prisma runtime. That is what lets
+// the proxy (edge) and the server components share one source.
 //
-// authz.ts bunlari yeniden export eder; mevcut cagiranlar degismez.
+// authz.ts re-exports these, so existing callers are unaffected.
 export const navByRole: Record<Role, string[]> = {
   ADMIN: [
     "/panel",
@@ -49,18 +49,18 @@ export const navByRole: Record<Role, string[]> = {
   ],
 };
 
-// Bir rolun menude gorebilecegi yollarin kumesi.
+// The set of paths a role can see in its menu.
 export function navHrefsFor(role: Role): Set<string> {
   return new Set(navByRole[role]);
 }
 
-// Her kullaniciya acik olan, bolum kisitina tabi OLMAYAN panel yollari.
-// (Profil kisiseldir; abonelik sayfasi kendi icinde ADMIN kontrolu yapar.)
+// Panel paths open to every user, NOT subject to the section restriction.
+// (The profile is personal; the billing page does its own ADMIN check.)
 const ALWAYS_ALLOWED = new Set(["/panel/profil", "/panel/abonelik"]);
 
 /**
- * Bir panel yolunun ust bolumunu bulur: "/panel/finans/12/duzenle" -> "/panel/finans".
- * "/panel" ve "/panel/" icin "/panel" doner.
+ * Finds a panel path's parent section: "/panel/finans/12/duzenle" -> "/panel/finans".
+ * Returns "/panel" for both "/panel" and "/panel/".
  */
 export function panelSectionOf(pathname: string): string {
   const rest = pathname.slice("/panel".length).replace(/^\/+/, "");
@@ -70,20 +70,20 @@ export function panelSectionOf(pathname: string): string {
 }
 
 /**
- * Rol bu panel yolunu acabilir mi?
+ * May this role open this panel path?
  *
- * Bolum bazinda calisir: bir rol "/panel/finans"i goremiyorsa
- * "/panel/finans/yeni" ve "/panel/finans/<id>/duzenle" de kapalidir.
- * Tanimadigimiz bir bolum (menude olmayan yeni bir sayfa) ENGELLENMEZ —
- * yetkilendirme sunucu tarafinda ayrica uygulanir ve burada fail-open olmak,
- * yeni bir sayfayi sessizce erisilemez kilmaktan iyidir.
+ * It works per section: if a role cannot see "/panel/finans", then
+ * "/panel/finans/yeni" and "/panel/finans/<id>/duzenle" are closed too.
+ * A section we do not recognise — a new page that is not in any menu — is NOT
+ * blocked. Authorization is enforced again on the server, and failing open here
+ * is better than making a new page silently unreachable.
  */
 export function canViewPanelPath(role: Role, pathname: string): boolean {
   if (ALWAYS_ALLOWED.has(pathname)) return true;
   const section = panelSectionOf(pathname);
   const allowed = navHrefsFor(role);
   if (allowed.has(section)) return true;
-  // Bolum hicbir rolun menusunde yoksa bilinmeyen/yeni bir sayfadir: gecir.
+  // If the section is in no role's menu it is an unknown or new page: let it pass.
   const knownSections = new Set(Object.values(navByRole).flat());
   return !knownSections.has(section);
 }

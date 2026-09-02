@@ -38,7 +38,7 @@ export function NotificationBell() {
           setData(json);
         }
       } catch (err) {
-        console.error("Bildirimler yüklenemedi:", err);
+        console.error("Could not load notifications:", err);
       }
     }
 

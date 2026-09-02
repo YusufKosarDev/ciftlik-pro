@@ -14,8 +14,8 @@ export default async function SatisPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  // Satis ticari/finansal veridir: yalnizca menusunde gorunen roller (ADMIN,
-  // ACCOUNTANT) acabilir.
+  // Sales are commercial and financial data: only the roles that have it in their
+  // menu (ADMIN, ACCOUNTANT) may open this page.
   const session = await requirePageView("/panel/satis");
   const t = await getTranslations("Sales");
   const tc = await getTranslations("Common");
@@ -36,7 +36,7 @@ export default async function SatisPage({
       }
     : {};
 
-  // Musteri adina gore siralama iliskili tablo uzerinden yapilir.
+  // Sorting by customer name goes through the related table.
   const orderBy = (
     sort === "customer" ? { customer: { name: dir } } : { [sort]: dir }
   ) as Prisma.SaleOrderByWithRelationInput;
@@ -51,7 +51,7 @@ export default async function SatisPage({
         include: { customer: { select: { name: true } } },
       }),
       db.sale.count({ where }),
-      // Tum zamanlarin toplam satis tutari (arama/sayfadan bagimsiz).
+      // The all-time sales total, independent of the search and the page.
       db.sale.aggregate({ _sum: { amount: true } }),
     ]);
     return { sales, total, totalAgg };

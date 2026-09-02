@@ -15,8 +15,9 @@ import {
 import type { MonthlyFinance } from "@/lib/finance";
 import { ChartFrame, chartAxis, chartGrid, chartTooltip } from "@/components/chart-frame";
 
-// Recharts iceren asil grafik. Wrapper tarafindan tembel (dynamic) yuklenir;
-// boylece recharts paketi yalnizca grafik ekranda ihtiyac duyuldugunda in/calisir.
+// The real chart, the one that contains Recharts. It is loaded lazily (dynamic) by
+// the wrapper, so the recharts bundle is only downloaded and run when the chart is
+// actually needed on screen.
 export function MonthlyFinanceChartImpl({ data }: { data: MonthlyFinance[] }) {
   const t = useTranslations("Finance");
   const { formatMoney } = useFormat();

@@ -1,7 +1,7 @@
-// Çiftlik uyarilarini (kritik stok, geciken gorev, yaklasan asi) tek yerde
-// toplayan saf mantik. Hem dashboard hem de gunluk e-posta bildirimi (cron)
-// ayni kurallari kullanabilir; bu yuzden veritabanindan bagimsiz, test
-// edilebilir tutulmustur.
+// Pure logic gathering the farm's alerts (critical stock, overdue tasks, upcoming
+// vaccinations) in one place. The dashboard and the daily email digest (cron) both
+// use the same rules, which is why this is kept database-independent and
+// testable.
 
 export type InventoryLike = {
   name: string;
@@ -35,10 +35,10 @@ export type Alerts = {
   total: number;
 };
 
-// Yaklasan asi penceresi (gun).
+// The upcoming-vaccination window, in days.
 export const VACCINATION_WINDOW_DAYS = 30;
 
-// Verilen ham veriden uyarilari toplar. `now` disaridan verilebilir (test icin).
+// Collects the alerts from the given raw data. `now` can be injected, for tests.
 export function collectAlerts(
   input: AlertInput,
   now: Date = new Date(),
@@ -75,7 +75,7 @@ function formatDate(date: Date | null): string {
   return new Date(date).toLocaleDateString("tr-TR");
 }
 
-// Uyarilari basit bir HTML e-posta govdesine cevirir.
+// Renders the alerts into a simple HTML email body.
 export function renderAlertsHtml(alerts: Alerts): string {
   const sections: string[] = [];
 

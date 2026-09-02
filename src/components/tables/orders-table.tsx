@@ -12,7 +12,8 @@ import type { ListState } from "@/lib/list-query";
 
 import { useFormat } from "@/lib/format";
 
-// Liste, siparisin kalemlerini (urun adi + miktar) da iceren bir tip kullanir.
+// The list uses a type that also carries the order's line items (product name and
+// quantity).
 export type OrderRow = Order & { items: { productName: string; quantity: number }[] };
 
 const statusTone = {

@@ -7,8 +7,9 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
 
-// ADMIN hesap islemleri: tum tenant verisini disa aktar (KVKK) ve cifligi kalici
-// sil (hesap kapatma). Silme, ciftlik adi birebir yazilarak onaylanir.
+// ADMIN account actions: export all of the tenant's data (GDPR/KVKK) and
+// permanently delete the farm (account closure). Deletion is confirmed by typing
+// the farm's name exactly.
 export function AccountDangerZone({
   farmName,
   canDelete,
@@ -35,7 +36,7 @@ export function AccountDangerZone({
       setError(j.error ?? t("deleteFailed"));
       return;
     }
-    // Tüm veri silindi → oturumu kapat ve giriş ekranına dön.
+    // All data is gone -> sign out and return to the sign-in screen.
     await signOut({ callbackUrl: "/giris" });
   }
 

@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-// Musteri dogrulama semasi. Yalnizca ad zorunlu; iletisim alanlari opsiyonel.
+// The customer validation schema. Only the name is required; the contact fields
+// are optional.
 export const customerSchema = z.object({
   name: z
     .string()

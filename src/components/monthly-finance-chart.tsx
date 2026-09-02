@@ -10,9 +10,9 @@ function MonthlyFinanceLoading() {
   return <ChartSkeleton heightClass="h-72" title={t("chartTitle")} />;
 }
 
-// Recharts agir bir paket. Grafigi yalnizca istemcide ve tembel yukluyoruz
-// (ssr:false); boylece sayfanin ilk JS yuku kucuk kalir, grafik mount olunca
-// recharts indirilir. Yuklenirken ayni yukseklikte iskelet gosterilir.
+// Recharts is a heavy package. The chart is loaded on the client only and lazily
+// (ssr:false), so the page's initial JS payload stays small and recharts is fetched
+// when the chart mounts. A skeleton of the same height is shown meanwhile.
 const MonthlyFinanceChartImpl = dynamic(
   () => import("./monthly-finance-chart-impl").then((m) => m.MonthlyFinanceChartImpl),
   { ssr: false, loading: MonthlyFinanceLoading }

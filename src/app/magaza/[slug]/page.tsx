@@ -19,8 +19,9 @@ export async function generateMetadata({
   };
 }
 
-// Per-tenant katalog. Herkese acik; yalnizca bu tenant'in aktif urunleri listelenir
-// (withTenant -> RLS/where kapsami baska ciftligin urununu gostermez).
+// The per-tenant catalogue. Public, and it lists only this tenant's active
+// products (withTenant -> the RLS and where scope cannot show another farm's
+// product).
 export default async function StorefrontPage({
   params,
 }: {

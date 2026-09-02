@@ -12,19 +12,21 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-// Magaza dizini: her ciftligin (tenant) kendi vitrini /magaza/[slug] altindadir.
-// Tenant tablosu RLS disidir; dizin herkese acik okunur.
+// The storefront directory: every farm (tenant) has its own storefront under
+// /magaza/[slug]. The Tenant table is outside RLS, and the directory is read
+// publicly.
 //
-// OPT-IN: Yalnizca satista (active) EN AZ BIR urunu olan ciftlikler listelenir.
-// Kayit olan her tenant'i otomatik listelemek iki sorun uretiyordu: (1) yeni
-// kaydolan herkes hicbir sey satmadan herkese acik dizine dusuyordu, (2) demo
-// ortaminda bos vitrinler birikiyordu. Urun eklemek dogal bir "yayinla"
-// sinyalidir; katalogu doldurmak listeye girmek icin yeterlidir.
-// NOT: Okuma, SECURITY DEFINER `public_storefront_tenants` fonksiyonuna tasindi
-// (bkz. migration 20260830120000_public_storefront_function). Ziyaretci giris
-// yapmadigindan tenant baglami ayarlanamaz; Product'ta FORCE RLS oldugu icin
-// dogrudan sorgu, uretimdeki non-superuser rolle 0 satir dondururdu. Fonksiyon
-// yalnizca ad ve slug doner — urun detayi sizmaz.
+// OPT-IN: only farms with AT LEAST ONE product on sale (active) are listed.
+// Listing every registered tenant automatically caused two problems: (1) anyone
+// who signed up landed in a public directory without selling anything, and (2)
+// empty storefronts piled up in the demo environment. Adding a product is a
+// natural "publish" signal; filling the catalogue is enough to get listed.
+// NOTE: the read moved to the SECURITY DEFINER function
+// `public_storefront_tenants` (see migration
+// 20260830120000_public_storefront_function). The visitor is not signed in, so no
+// tenant context can be set, and Product is under FORCE RLS — a direct query would
+// return 0 rows under the non-superuser role in production. The function returns
+// only the name and slug; no product detail leaks.
 export default async function MagazaDizinPage() {
   const t = await getTranslations("Store");
   const farms = await listStorefrontTenants();

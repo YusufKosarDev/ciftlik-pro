@@ -49,8 +49,8 @@ export default async function FinansPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  // Finans hassas veridir: yalnizca menusunde finans gorunen roller
-  // (ADMIN, ACCOUNTANT) bu sayfayi acabilir. Digerleri panele yonlenir.
+  // Finance is sensitive data: only roles that have finance in their menu (ADMIN,
+  // ACCOUNTANT) may open this page. Everyone else is redirected to the dashboard.
   const session = await requirePageView("/panel/finans");
   const t = await getTranslations("Finance");
   const locale = await getLocale();
@@ -70,8 +70,9 @@ export default async function FinansPage({
       }
     : {};
 
-  // Tablo: aranan/sayfalanan kayitlar. Ozet ve kategori kirilimi ise TUM
-  // islemler uzerinden DB'de gruplanir (belleğe cekmeden) — arama/sayfadan bagimsiz.
+  // The table shows the searched and paginated records. The summary and the
+  // category breakdown are grouped in the database over ALL transactions, without
+  // pulling them into memory, so they are independent of the search and the page.
   const { transactions, total, grouped } = await withTenant(session.user.tenantId, async (db) => {
     const [transactions, total, grouped] = await Promise.all([
       db.transaction.findMany({

@@ -6,8 +6,9 @@ import { logAudit } from "@/lib/audit";
 import { saleSchema } from "@/lib/validations/sale";
 import { saleDescription } from "@/lib/sale-description";
 
-// POST /api/sales -> yeni satis olusturur ve ona bagli bir gelir (INCOME)
-// islemi yaratir (tek transaction'da). Boylece satislar finansa otomatik yansir.
+// POST /api/sales -> creates a sale and, in the same transaction, the linked
+// income (INCOME) transaction. That is what makes sales appear in finance
+// automatically.
 export async function POST(request: Request) {
   const te = await getTranslations("Errors");
   try {
@@ -26,7 +27,8 @@ export async function POST(request: Request) {
     const data = parsed.data;
 
     const result = await withTenant(authz.session.user.tenantId, async (db) => {
-      // Musteri (opsiyonel): verildiyse mevcut olmali; adi islem aciklamasinda kullanilir.
+      // Customer (optional): if given it must exist; its name goes into the
+      // transaction's description.
       let customerName: string | null = null;
       if (data.customerId) {
         const customer = await db.customer.findFirst({
@@ -72,7 +74,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ sale }, { status: 201 });
   } catch (error) {
-    console.error("Satis ekleme hatasi:", error);
+    console.error("Failed to add sale:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

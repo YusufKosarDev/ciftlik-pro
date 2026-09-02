@@ -5,7 +5,7 @@ import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { productSchema } from "@/lib/validations/product";
 
-// PUT /api/products/[id] -> urunu gunceller
+// PUT /api/products/[id] -> updates a product
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -49,7 +49,7 @@ export async function PUT(
 
     return NextResponse.json({ product });
   } catch (error) {
-    console.error("Urun guncelleme hatasi:", error);
+    console.error("Failed to update product:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }
@@ -57,8 +57,8 @@ export async function PUT(
   }
 }
 
-// DELETE /api/products/[id] -> urunu siler. Bagli siparislerin productId'si null
-// olur (onDelete: SetNull); siparis snapshot'lari korunur.
+// DELETE /api/products/[id] -> deletes a product. The productId on related orders
+// becomes null (onDelete: SetNull); the order snapshots are preserved.
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -83,7 +83,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Urun silme hatasi:", error);
+    console.error("Failed to delete product:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

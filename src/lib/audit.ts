@@ -1,14 +1,15 @@
 import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant-prisma";
 
-// Denetim gunlugu yardimcisi. Yazma islemlerinden SONRA cagrilir.
-// "Best-effort": kayit basarisiz olsa bile asil islemi bozmamak icin
-// hata firlatmaz, yalnizca loglar.
+// Audit log helper. Called AFTER the write it records.
+// "Best-effort": it never throws, so a failed audit row cannot break the operation
+// it describes; it only logs.
 //
-// Cok-kiracilik: AuditLog'da RLS var. actor.tenantId varsa kayit o tenant'in
-// baglaminda (withTenant) yazilir. Tenant'siz sistem olaylari (orn. LOGIN_FAILED,
-// auth oncesi) tenantId=null ile yazilir; AuditLog RLS politikasi NULL yazimina
-// izin verir (bkz. tenant_audit_policy migration'i).
+// Multi-tenancy: AuditLog is under RLS. When actor.tenantId is present the row is
+// written in that tenant's context (withTenant). System events with no tenant
+// (LOGIN_FAILED, for instance, which happens before auth) are written with
+// tenantId=null; the AuditLog RLS policy permits a NULL write (see the
+// tenant_audit_policy migration).
 
 type Actor = {
   id?: string | null;
@@ -35,29 +36,29 @@ export async function logAudit(
   };
   try {
     if (actor?.tenantId) {
-      // Tenant baglaminda yaz; tenantId acikca verilir, RLS WITH CHECK gecer.
+      // Written in the tenant context; tenantId is explicit, so RLS WITH CHECK passes.
       const tenantId = actor.tenantId;
       await withTenant(tenantId, (db) => db.auditLog.create({ data: { ...data, tenantId } }));
     } else {
-      // Tenant'siz sistem kaydi (orn. LOGIN_FAILED).
+      // A system record with no tenant (LOGIN_FAILED, for instance).
       //
-      // NEDEN createMany: `create` her zaman INSERT ... RETURNING uretir ve
-      // Postgres, RETURNING bulunan bir INSERT'te donen satira SELECT
-      // politikasini da uygular. AuditLog politikasinin USING ifadesi
-      // ("tenantId" = current_setting('app.tenant_id', true)) tenantId NULL
-      // iken eslesmez, dolayisiyla non-superuser rolle kayit yazilamazdi.
-      // createMany RETURNING uretmez; WITH CHECK zaten NULL'a izin veriyor
-      // (bkz. migration 20260618163000_tenant_audit_policy).
+      // WHY createMany: `create` always emits INSERT ... RETURNING, and on an
+      // INSERT with RETURNING Postgres also applies the SELECT policy to the row
+      // it returns. The AuditLog policy's USING clause
+      // ("tenantId" = current_setting('app.tenant_id', true)) does not match when
+      // tenantId is NULL, so the row could not be written under a non-superuser
+      // role. createMany emits no RETURNING, and WITH CHECK already allows NULL
+      // (see migration 20260618163000_tenant_audit_policy).
       await prisma.auditLog.createMany({ data: [{ ...data, tenantId: null }] });
     }
   } catch (error) {
-    console.error("Denetim kaydi olusturulamadi:", error);
+    console.error("Could not write audit record:", error);
   }
 }
 
-// Toplu islemler icin: N kayit icin N ayri INSERT yerine TEK createMany.
-// (Toplu silmede her kayit icin logAudit cagirmak 200 hayvanda 200 ayri
-// yazma demekti.) logAudit ile ayni "best-effort" sozlesmesi: hata firlatmaz.
+// For bulk operations: ONE createMany instead of N separate INSERTs for N rows.
+// (Calling logAudit per record during a bulk delete meant 200 separate writes for
+// 200 animals.) Same "best-effort" contract as logAudit: it never throws.
 export async function logAuditMany(
   actor: Actor | undefined,
   action: Action,
@@ -90,6 +91,6 @@ export async function logAuditMany(
       });
     }
   } catch (error) {
-    console.error("Toplu denetim kaydi olusturulamadi:", error);
+    console.error("Could not write bulk audit records:", error);
   }
 }

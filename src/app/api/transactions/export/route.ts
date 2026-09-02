@@ -2,8 +2,9 @@ import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { toCsv } from "@/lib/finance-report";
 
-// GET /api/transactions/export -> tum islemleri CSV olarak indirir.
-// Finans hassas veridir: ADMIN/ACCOUNTANT ile sinirli (transactions yetkisi).
+// GET /api/transactions/export -> downloads every transaction as CSV.
+// Finance is sensitive data, so this is limited to ADMIN and ACCOUNTANT (the
+// transactions permission).
 export async function GET() {
   const authz = await authorizeWrite("transactions");
   if ("error" in authz) return authz.error;
@@ -15,7 +16,7 @@ export async function GET() {
     })
   );
 
-  // UTF-8 BOM -> Excel Turkce karakterleri dogru okur.
+  // A UTF-8 BOM, so Excel reads the non-ASCII characters correctly.
   const csv = "﻿" + toCsv(transactions);
 
   return new Response(csv, {

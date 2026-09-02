@@ -12,7 +12,7 @@ import {
 import { useLabels } from "@/lib/use-labels";
 import type { StructureType } from "@prisma/client";
 
-// Ekin durumuna gore tarla renkleri.
+// Field colours by crop status.
 const statusColors: Record<CropMapStatus, { fill: string; stroke: string; text: string }> = {
   PLANTED: { fill: "#dbeafe", stroke: "#3b82f6", text: "#1e3a8a" }, // mavi
   GROWING: { fill: "#dcfce7", stroke: "#22c55e", text: "#166534" }, // yesil
@@ -27,7 +27,7 @@ const statusLabels: Record<CropMapStatus, string> = {
   NONE: "Ekim yok",
 };
 
-// Yapi turune gore ikon (haritada gosterilir).
+// The icon per structure type, shown on the map.
 const structureIcons: Record<StructureType, string> = {
   BARN: "🐄",
   COOP: "🐔",
@@ -67,20 +67,21 @@ export function FarmMap({
   const router = useRouter();
   const svgRef = useRef<SVGSVGElement>(null);
 
-  // Zoom ve Pan durumları
+  // Zoom and pan state
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
 
-  // Hover Tooltip bilgileri
+  // Hover tooltip data
   const [hoverInfo, setHoverInfo] = useState<
     | { kind: "field"; data: FieldRect; x: number; y: number }
     | { kind: "structure"; data: StructureRect; x: number; y: number }
     | null
   >(null);
 
-  // Duzenleme modunda draft* dolu; degilken null ve dogrudan prop'lardan render edilir.
+  // In edit mode draft* is populated; otherwise it is null and rendering comes
+  // straight from the props.
   const [draftFields, setDraftFields] = useState<FieldRect[] | null>(null);
   const [draftStructs, setDraftStructs] = useState<StructureRect[] | null>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
@@ -95,7 +96,8 @@ export function FarmMap({
   const renderFields = draftFields ?? fields;
   const renderStructs = draftStructs ?? structures;
 
-  // Zoom wheel event handler'ı passive: false olarak useEffect ile bind ediyoruz (Chrome uyumluluğu için)
+  // The zoom wheel handler is bound in a useEffect with passive: false, for Chrome
+  // compatibility
   useEffect(() => {
     const svg = svgRef.current;
     if (!svg || editing) return;
@@ -156,7 +158,7 @@ export function FarmMap({
     setPan({ x: 0, y: 0 });
   };
 
-  // Hover bilgi kartı işleyicileri
+  // Hover info card handlers
   const handleItemPointerEnter = (
     e: React.PointerEvent,
     hover: { kind: "field"; data: FieldRect } | { kind: "structure"; data: StructureRect }
@@ -216,7 +218,7 @@ export function FarmMap({
     if (!editing) return;
     e.stopPropagation();
     const p = clientToSvg(e.clientX, e.clientY);
-    // Zoom/pan oranlarına göre <g> içi koordinatı hesapla
+    // Compute the in-<g> coordinate from the zoom and pan factors
     const gX = (p.x - pan.x) / zoom;
     const gY = (p.y - pan.y) / zoom;
     setDrag({ id, kind, offsetX: gX - x, offsetY: gY - y });

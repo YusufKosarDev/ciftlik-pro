@@ -1,7 +1,7 @@
-// Date'i input[type=date] icin "YYYY-MM-DD" formatina cevirir.
-// toISOString() UTC'ye cevirdigi icin yerel saat diliminde gece yarisina
-// yakin saklanmis tarihlerde gun kayabiliyordu; bu yuzden yerel tarih
-// bilesenlerini (getFullYear/getMonth/getDate) kullaniyoruz.
+// Formats a Date as "YYYY-MM-DD" for input[type=date].
+// toISOString() converts to UTC, which could shift the day for dates stored near
+// midnight in the local time zone; the local date components
+// (getFullYear/getMonth/getDate) are used instead.
 export function toDateInputValue(date: Date | null | undefined): string {
   if (!date) return "";
   const d = new Date(date);

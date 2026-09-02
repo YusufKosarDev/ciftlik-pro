@@ -1,13 +1,15 @@
-// Aktif dilin secimi — SAF mantik (istek nesnesine bagimli degil, birim testli).
+// Choosing the active locale — PURE logic (no dependency on the request object,
+// and unit tested).
 //
-// Oncelik sirasi:
-//   1. NEXT_LOCALE cookie'si  -> kullanicinin ACIK secimi; her zaman kazanir.
-//   2. Accept-Language basligi -> tarayicinin tercihi; ilk ziyaret icin.
-//   3. defaultLocale (tr)      -> hicbiri bilgi vermiyorsa.
+// Priority:
+//   1. The NEXT_LOCALE cookie   -> the user's EXPLICIT choice; always wins.
+//   2. The Accept-Language header -> the browser's preference, for a first visit.
+//   3. defaultLocale (tr)        -> when neither says anything.
 //
-// NEDEN baslik da okunuyor: canli demoya gelen Ingilizce konusan bir ziyaretci,
-// once Turkce bir ekranla karsilasip dil degistiriciyi bulmak zorunda kalmasin.
-// Cookie yazildigi anda baslik devre disi kalir, yani secim kalicidir.
+// WHY the header is read at all: an English-speaking visitor arriving at the live
+// demo should not have to meet a Turkish screen first and go hunting for the
+// language switcher. The moment a cookie is written the header stops mattering, so
+// the choice sticks.
 
 export const locales = ["tr", "en"] as const;
 export const defaultLocale = "tr";
@@ -17,9 +19,9 @@ export function isLocale(value: string | undefined | null): value is Locale {
   return locales.includes(value as Locale);
 }
 
-// "tr-TR,tr;q=0.9,en-US;q=0.8" -> kalite sirasina gore ilk DESTEKLENEN dil.
-// Bolge eki yok sayilir (tr-TR -> tr). Bozuk q degerleri 0 sayilir, yani
-// gecerli girisler onlerine gecer.
+// "tr-TR,tr;q=0.9,en-US;q=0.8" -> the first SUPPORTED language by quality order.
+// The region suffix is ignored (tr-TR -> tr). A malformed q counts as 0, so valid
+// entries take precedence over it.
 function fromAcceptLanguage(header: string | undefined | null): Locale | undefined {
   if (!header) return undefined;
 
@@ -35,7 +37,7 @@ function fromAcceptLanguage(header: string | undefined | null): Locale | undefin
       return {
         base: tag.trim().toLowerCase().split("-")[0],
         quality: Number.isFinite(quality) ? quality : 0,
-        // Esit kalitede baslikta once gelen kazansin (stabil siralama).
+        // On equal quality the one listed first wins (a stable sort).
         index,
       };
     })

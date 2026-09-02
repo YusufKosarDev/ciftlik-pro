@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ task }, { status: 201 });
   } catch (error) {
-    console.error("Gorev ekleme hatasi:", error);
+    console.error("Failed to add task:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

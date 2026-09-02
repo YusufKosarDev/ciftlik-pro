@@ -8,8 +8,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("doneMetaTitle") };
 }
 
-// Stripe odemesi sonrasi donulen sayfa. (Sepet, odemeye yonlendirilirken
-// temizlenmistir.) Siparis durumu webhook ile guncellenir.
+// The page returned to after a Stripe payment. (The cart was cleared on the way
+// to checkout.) The order's status is updated by the webhook.
 export default async function SiparisTamamPage({
   params,
 }: {

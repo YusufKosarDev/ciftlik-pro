@@ -51,7 +51,7 @@ export async function PUT(
 
     return NextResponse.json({ item });
   } catch (error) {
-    console.error("Stok guncelleme hatasi:", error);
+    console.error("Failed to update inventory item:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }
@@ -83,7 +83,7 @@ export async function DELETE(
     await logAudit(authz.session.user, "DELETE", "InventoryItem", id, existing.name);
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Stok silme hatasi:", error);
+    console.error("Failed to delete inventory item:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

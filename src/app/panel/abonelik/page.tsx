@@ -46,7 +46,7 @@ export default async function AbonelikPage() {
   if (!session?.user) {
     redirect("/giris");
   }
-  // Plan/abonelik tenant geneli bir ayardır: yalnızca ADMIN yönetebilir.
+  // The plan and subscription are a tenant-wide setting: ADMIN only.
   if (session.user.role !== "ADMIN") {
     redirect("/panel");
   }

@@ -2,18 +2,19 @@
 
 import type { ReactNode } from "react";
 
-// Tum grafiklerin ortak kabugu ve tema-bagli Recharts ayarlari.
+// The shared shell for every chart, plus the theme-dependent Recharts settings.
 //
-// NEDEN: Grafikler daha once sabit renkler (#f0f0f0 izgara, #16a34a seri)
-// kullaniyordu; koyu temada izgara neredeyse gorunmez, eksen yazilari okunmaz
-// oluyordu. Renkler artik globals.css'teki --chart-* token'larindan geliyor ve
-// tema degisince grafikler de doniyor.
+// WHY: the charts used to use fixed colours (#f0f0f0 for the grid, #16a34a for the
+// series). In dark mode the grid was nearly invisible and the axis labels
+// unreadable. The colours now come from the --chart-* tokens in globals.css, so
+// the charts turn with the theme.
 //
-// AYRICA: Eski kabuk `h-64` bir kutu icinde `<ResponsiveContainer height="82%">`
-// kullaniyordu. Yuzde yukseklik, baslik ve padding hesaba katilmadigi icin
-// olcum sirasinda -1 dondurup konsolu su uyariyla dolduruyordu:
+// ALSO: the old shell used `<ResponsiveContainer height="82%">` inside an `h-64`
+// box. A percentage height did not account for the title and the padding, so
+// measurement returned -1 and filled the console with:
 //   "The width(-1) and height(-1) of chart should be greater than 0"
-// Flex kolon + `min-h-0 flex-1` ile grafik alani gercek kalan yuksekligi alir.
+// A flex column with `min-h-0 flex-1` gives the chart area the real remaining
+// height instead.
 
 export function ChartFrame({
   heightClass,
@@ -34,7 +35,7 @@ export function ChartFrame({
   );
 }
 
-// Eksen (cizgi + etiket) tema renklerine baglanir.
+// The axes (line and labels) are bound to the theme colours.
 export const chartAxis = {
   fontSize: 12,
   stroke: "var(--chart-axis)",
@@ -46,7 +47,8 @@ export const chartGrid = {
   stroke: "var(--chart-grid)",
 } as const;
 
-// Tooltip varsayilani beyaz zeminlidir; koyu temada kart yuzeyini kullanir.
+// The tooltip defaults to a white background; in dark mode it uses the card
+// surface instead.
 export const chartTooltip = {
   contentStyle: {
     background: "var(--card)",
@@ -58,7 +60,8 @@ export const chartTooltip = {
   itemStyle: { color: "var(--foreground)" },
 } as const;
 
-// Kategorik palet (donut). Token'lar globals.css'te light/dark icin ayri tanimli.
+// The categorical palette (donut). The tokens are defined separately for light and
+// dark in globals.css.
 export const CHART_CATEGORICAL = [
   "var(--chart-1)",
   "var(--chart-2)",

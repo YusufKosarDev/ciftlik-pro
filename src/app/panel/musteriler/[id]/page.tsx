@@ -27,8 +27,9 @@ export default async function MusteriDetayPage({
   ]);
 
   const { id } = await params;
-  // findFirst (findUnique degil) ki forTenant enjeksiyonu where'e tenantId ekleyebilsin;
-  // ayrica RLS (withTenant baglami) tekil erisimi DB'de de garanti eder.
+  // findFirst rather than findUnique, so the forTenant injection can add tenantId
+  // to the where; RLS (the withTenant context) also guarantees the single-row
+  // access at the database level.
   const customer = await withTenant(session.user.tenantId, (db) =>
     db.customer.findFirst({
       where: { id },

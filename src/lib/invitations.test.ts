@@ -1,8 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { isInvitationUsable, type InvitationByToken } from "./invitations";
 
-// Davetin kabul edilebilirlik kurali: tek kullanimlik + suresi dolmamis.
-// Bu kural hem public davet sayfasinda hem kabul ucunda ayni yerden okunur.
+// The rule for whether an invitation can still be accepted: single-use and not
+// expired. Both the public invitation page and the acceptance endpoint read that
+// rule from this one place.
 const base: InvitationByToken = {
   id: "inv-1",
   tenantId: "tenant-1",

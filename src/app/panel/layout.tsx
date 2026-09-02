@@ -6,7 +6,7 @@ import { OnboardingModal } from "@/components/onboarding-modal";
 import { getLabels } from "@/lib/get-labels";
 import { navHrefsFor } from "@/lib/authz";
 
-// Menu yolu -> ceviri anahtari (sira = goruntuleme sirasi).
+// Menu path -> translation key (the order here is the display order).
 const navKeys: Record<string, string> = {
   "/panel": "panel",
   "/panel/harita": "map",
@@ -33,15 +33,15 @@ export default async function PanelLayout({
 }) {
   const session = await auth();
 
-  // Asıl koruma proxy'de; burada ayrıca session verisine erişiyoruz.
+  // The real guard is in the proxy; here we additionally read the session data.
   if (!session?.user) {
     redirect("/giris");
   }
 
-  // Tüm olası menü öğeleri; her rol yalnızca yetkili olduğu yolları görür.
+  // Every possible menu item; each role sees only the paths it is allowed.
   const t = await getTranslations("Nav");
-  // Rol etiketi cevrilmis kaynaktan gelir (sabit Turkce labels.ts yerine);
-  // boylece sidebar EN'e gecince de dogru gorunur.
+  // The role label comes from the translated source rather than a hard-coded
+  // Turkish labels.ts, so the sidebar stays correct after switching to English.
   const { roleLabels } = await getLabels();
   const allNavItems = Object.entries(navKeys).map(([href, key]) => ({
     href,
@@ -50,9 +50,10 @@ export default async function PanelLayout({
   const allowed = navHrefsFor(session.user.role);
   const navItems = allNavItems.filter((item) => allowed.has(item.href));
 
-  // Hos geldin turu: kullanici turu henuz tamamlamadiysa modal gosterilir.
-  // Durum JWT'den okunur (her gezinmede ekstra DB sorgusu yok); tur tamamlaninca
-  // OnboardingModal useSession().update ile token'i tazeler.
+  // The welcome tour: the modal is shown when the user has not completed it yet.
+  // The state is read from the JWT, so there is no extra database query on every
+  // navigation; when the tour finishes, OnboardingModal refreshes the token with
+  // useSession().update.
   const showOnboarding = !session.user.onboarded;
 
   return (

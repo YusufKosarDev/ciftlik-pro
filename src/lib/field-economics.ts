@@ -1,5 +1,5 @@
-// Bir tarlanin ekim kayitlarindan ekonomik ozet ureten saf mantik.
-// (Veritabanindan bagimsiz, test edilebilir.)
+// Pure logic producing an economic summary from a field's crop records.
+// (Database-independent and testable.)
 
 export type CropEconomicsLike = {
   cost: number | null;

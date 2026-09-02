@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { useLabels } from "@/lib/use-labels";
 import type { ListState } from "@/lib/list-query";
 
-// Personel listesi parolayi icermez; yalnizca gosterilen alanlar.
+// The staff list carries no password; only the fields that are displayed.
 export type UserRow = {
   id: string;
   name: string;

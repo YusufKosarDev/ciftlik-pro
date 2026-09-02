@@ -16,11 +16,12 @@ import type {
   Role,
 } from "@prisma/client";
 
-// Enum etiketleri icin i18n hook'u (client). `speciesLabels[value]` seklinde,
-// alisildik map arayuzunu dondurur; boylece tablo/form cagri yerleri sade kalir.
-// Sunucu bilesenleri icin `@/lib/get-labels` (async) kullanilir.
+// The i18n hook for enum labels, for client components. It returns the familiar
+// map interface — `speciesLabels[value]` — so the table and form call sites stay
+// plain. Server components use `@/lib/get-labels` (async) instead.
 export function useLabels() {
-  // Dinamik (enum'dan turetilmis) anahtarlar icin gevsek imza; degerler katalogda mevcut.
+  // A loose signature for the dynamic (enum-derived) keys; the values exist in the
+  // catalogue.
   const t = useTranslations("Labels") as unknown as (key: string) => string;
   const map = <T extends string>(group: string, keys: readonly T[]) =>
     Object.fromEntries(keys.map((k) => [k, t(`${group}.${k}`)])) as Record<T, string>;

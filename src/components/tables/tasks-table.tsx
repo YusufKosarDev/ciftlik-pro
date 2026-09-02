@@ -12,7 +12,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { useLabels } from "@/lib/use-labels";
 import type { ListState } from "@/lib/list-query";
 
-// Listeleme sayfasi atanan kisinin adini da iceren bir gorev tipi kullanir.
+// The list page uses a task type that also carries the assignee's name.
 export type TaskRow = Task & { assignedTo: { name: string } | null };
 
 const statusTone = {

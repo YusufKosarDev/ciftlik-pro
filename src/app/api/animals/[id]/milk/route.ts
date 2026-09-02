@@ -49,7 +49,7 @@ export async function POST(
 
     return NextResponse.json({ yield: yield_ }, { status: 201 });
   } catch (error) {
-    console.error("Sut verimi ekleme hatasi:", error);
+    console.error("Failed to add milk yield record:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

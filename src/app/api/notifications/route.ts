@@ -73,7 +73,7 @@ export async function GET() {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Bildirim listeleme hatasi:", error);
+    console.error("Failed to list notifications:", error);
     return NextResponse.json(
       { error: te("serverError") },
       { status: 500 }

@@ -5,7 +5,7 @@ import { authorizeWrite } from "@/lib/authz";
 import { logAudit, logAuditMany } from "@/lib/audit";
 import { inventorySchema } from "@/lib/validations/inventory";
 
-// POST /api/inventory -> yeni stok kalemi olusturur
+// POST /api/inventory -> creates an inventory item
 export async function POST(request: Request) {
   const te = await getTranslations("Errors");
   try {
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ item }, { status: 201 });
   } catch (error) {
-    console.error("Stok ekleme hatasi:", error);
+    console.error("Failed to add inventory item:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
   }
 }
 
-// DELETE /api/inventory -> toplu stok kalemi siler
+// DELETE /api/inventory -> bulk-deletes inventory items
 export async function DELETE(request: Request) {
   const te = await getTranslations("Errors");
   try {
@@ -62,7 +62,7 @@ export async function DELETE(request: Request) {
     }
 
     const result = await withTenant(authz.session.user.tenantId, async (db) => {
-      // Bu tenant altindaki gecerli stok kalemlerini bul
+      // Find the valid inventory items belonging to this tenant
       const existing = await db.inventoryItem.findMany({
         where: { id: { in: ids } },
         select: { id: true, name: true },
@@ -78,8 +78,8 @@ export async function DELETE(request: Request) {
       return existing;
     });
 
-    // Tek createMany (bkz. audit.ts logAuditMany): toplu silmede kayit basina
-    // ayri INSERT yerine tek yazma.
+    // One createMany (see logAuditMany in audit.ts): a single write instead of one
+    // INSERT per record during a bulk delete.
     await logAuditMany(
       authz.session.user,
       "DELETE",
@@ -89,7 +89,7 @@ export async function DELETE(request: Request) {
 
     return NextResponse.json({ success: true, count: result.length });
   } catch (error) {
-    console.error("Toplu stok silme hatasi:", error);
+    console.error("Bulk inventory delete failed:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

@@ -6,17 +6,17 @@ import { withTenant } from "@/lib/tenant-prisma";
 import { canAddRecord } from "@/lib/plan";
 import { animalSchema } from "@/lib/validations/animal";
 
-// POST /api/animals -> yeni hayvan olusturur
+// POST /api/animals -> creates an animal
 export async function POST(request: Request) {
   const te = await getTranslations("Errors");
   try {
-    // 1) Yetki kontrolu: sadece ADMIN/WORKER hayvan ekleyebilir
+    // 1) Authorization: only ADMIN and WORKER may add an animal
     const authz = await authorizeWrite("animals");
     if ("error" in authz) return authz.error;
 
     const body = await request.json();
 
-    // 2) Dogrulama
+    // 2) Validation
     const parsed = animalSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
 
     const data = parsed.data;
 
-    // 3) Plan limiti (FREE: en fazla 25 aktif hayvan). Hard block.
+    // 3) Plan limit (FREE: at most 25 active animals). A hard block.
     const limit = await canAddRecord(authz.session.user.tenantId, "animals");
     if (!limit.allowed) {
       return NextResponse.json(
@@ -39,16 +39,17 @@ export async function POST(request: Request) {
       );
     }
 
-    // Tum okuma/yazma tenant baglaminda (RLS + forTenant): benzersizlik ve anne
-    // dogrulamasi artik TENANT-ICI yapilir.
+    // Every read and write happens in the tenant context (RLS + forTenant), so the
+    // uniqueness and mother checks are WITHIN THE TENANT.
     const outcome = await withTenant(authz.session.user.tenantId, async (db) => {
-      // Kulak numarasi bu tenant'ta zaten kayitli mi? (findFirst: forTenant enjekte eder)
+      // Is this ear tag already registered in this tenant? (findFirst, so forTenant
+      // can inject the filter)
       const existing = await db.animal.findFirst({ where: { tagNumber: data.tagNumber } });
       if (existing) {
         return { error: te("tagTaken"), status: 409 } as const;
       }
 
-      // Anne dogrulamasi: mevcut mu, disi mi, ayni turden mi?
+      // Mother checks: does she exist, is she female, is she the same species?
       if (data.motherId) {
         const mother = await db.animal.findFirst({
           where: { id: data.motherId },
@@ -97,7 +98,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ animal: outcome.animal }, { status: 201 });
   } catch (error) {
-    console.error("Hayvan ekleme hatasi:", error);
+    console.error("Failed to add animal:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }
@@ -105,7 +106,7 @@ export async function POST(request: Request) {
   }
 }
 
-// DELETE /api/animals -> toplu hayvan siler
+// DELETE /api/animals -> bulk-deletes animals
 export async function DELETE(request: Request) {
   const te = await getTranslations("Errors");
   try {
@@ -119,7 +120,7 @@ export async function DELETE(request: Request) {
     }
 
     const result = await withTenant(authz.session.user.tenantId, async (db) => {
-      // Bu tenant altindaki gecerli hayvanlari bul
+      // Find the valid animals belonging to this tenant
       const existing = await db.animal.findMany({
         where: { id: { in: ids } },
         select: { id: true, tagNumber: true },
@@ -135,8 +136,8 @@ export async function DELETE(request: Request) {
       return existing;
     });
 
-    // Tek createMany: onceden her silinen kayit icin ayri bir INSERT yapiliyordu
-    // (200 hayvanlik toplu silme = 200 ayri yazma).
+    // One createMany: this previously did a separate INSERT per deleted record
+    // (a bulk delete of 200 animals meant 200 separate writes).
     await logAuditMany(
       authz.session.user,
       "DELETE",
@@ -146,7 +147,7 @@ export async function DELETE(request: Request) {
 
     return NextResponse.json({ success: true, count: result.length });
   } catch (error) {
-    console.error("Toplu hayvan silme hatasi:", error);
+    console.error("Bulk animal delete failed:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

@@ -28,7 +28,7 @@ export async function DELETE(
     await logAudit(authz.session.user, "DELETE", "BreedingRecord", id, existing.sireTag ?? "üreme kaydı");
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Ureme kaydi silme hatasi:", error);
+    console.error("Failed to delete breeding record:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

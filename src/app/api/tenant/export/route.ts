@@ -4,8 +4,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant-prisma";
 
-// GET /api/tenant/export -> ADMIN, tenant'inin TUM verisini JSON olarak indirir
-// (KVKK/GDPR tasinabilirlik). Parolalar disarida birakilir.
+// GET /api/tenant/export -> an ADMIN downloads ALL of their tenant's data as JSON
+// (GDPR/KVKK portability). Passwords are left out.
 export async function GET() {
   const te = await getTranslations("Errors");
   const session = await auth();
@@ -41,7 +41,7 @@ export async function GET() {
       invitations,
       auditLog,
     ] = await Promise.all([
-      // Parola hash'i KASTEN haric.
+      // The password hash is DELIBERATELY excluded.
       db.user.findMany({
         select: { id: true, name: true, email: true, role: true, onboardedAt: true, createdAt: true },
       }),

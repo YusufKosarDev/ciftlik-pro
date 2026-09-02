@@ -17,7 +17,8 @@ import { DeleteButton } from "@/components/delete-button";
 import { milkStats, dailyMilkSeries } from "@/lib/milk-stats";
 import { weightStats, weightSeries } from "@/lib/weight-stats";
 
-// getTranslations'in dondurdugu cevirmenin sade tipi (yardimci fonksiyonlara gecer).
+// A plain type for the translator getTranslations returns (passed to the helpers
+// below).
 type Translator = (key: string, values?: Record<string, string | number>) => string;
 
 const breedingStatusStyles: Record<string, string> = {
@@ -33,8 +34,8 @@ const statusStyles: Record<string, string> = {
   DECEASED: "bg-muted text-muted-foreground",
 };
 
-// Dogum tarihinden yasi hesaplar (yil/ay). Metin cevirmenden gelir; bicim
-// ("2 yas 3 ay" / "2 yr 3 mo") katalogda tanimli.
+// Computes an age in years and months from the birth date. The text comes from the
+// translator; the format ("2 yas 3 ay" / "2 yr 3 mo") is defined in the catalogue.
 function calcAge(birthDate: Date | null, t: Translator): string {
   if (!birthDate) return "-";
   const now = new Date();
@@ -51,7 +52,7 @@ function calcAge(birthDate: Date | null, t: Translator): string {
   return t("ageYearsMonths", { years, months: remMonths });
 }
 
-// Sonraki asi tarihine gore uyari rozeti dondurur.
+// Returns a warning badge based on the next vaccination date.
 function nextVaccineBadge(nextDate: Date | null, t: Translator, locale: string): React.ReactNode {
   if (!nextDate) return "-";
   const next = new Date(nextDate);
@@ -121,7 +122,8 @@ export default async function HayvanDetayPage({
     notFound();
   }
 
-  // Rol bazli yetkiler: hayvan duzenleme, tibbi kayit (saglik/asi), sut verimi
+  // Per-role permissions: editing the animal, medical records (health and
+  // vaccination), and milk yield
   const role = session?.user.role;
   const canEditAnimal = role ? canWrite(role, "animals") : false;
   const canMedical = role ? canWrite(role, "animalMedical") : false;
@@ -129,11 +131,11 @@ export default async function HayvanDetayPage({
   const canBreeding = role ? canWrite(role, "breeding") : false;
   const canWeight = role ? canWrite(role, "weight") : false;
 
-  // Agirlik ozeti + grafik serisi (saf mantik src/lib/weight-stats)
+  // Weight summary and chart series (pure logic in src/lib/weight-stats)
   const wStats = weightStats(animal.weightRecords);
   const wSeries = weightSeries(animal.weightRecords);
 
-  // Sut verimi ozeti + gunluk grafik serisi (saf mantik src/lib/milk-stats)
+  // Milk yield summary and daily chart series (pure logic in src/lib/milk-stats)
   const stats = milkStats(animal.milkYields);
   const milkSeries = dailyMilkSeries(animal.milkYields, 14);
 
@@ -165,10 +167,11 @@ export default async function HayvanDetayPage({
       </div>
 
       {animal.imageUrl && (
-        // Gorsel keyfi bir dis https URL'i oldugundan next/image kullanmiyoruz
-        // (keyfi host'lari optimize etmek remotePatterns: hostname '**' gerektirir
-        // ve optimizer'i acik-proxy/SSRF yuzeyine acar). Bunun yerine plain img'i
-        // lazy yukluyoruz; konteyner sabit yukseklikli oldugundan layout shift olmaz.
+        // The image is an arbitrary external https URL, so next/image is not used:
+        // optimising arbitrary hosts requires remotePatterns with hostname '**',
+        // which turns the optimizer into an open-proxy and SSRF surface. A plain
+        // lazy-loaded img is used instead; the container has a fixed height, so
+        // there is no layout shift.
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={animal.imageUrl}

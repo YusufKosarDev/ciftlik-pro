@@ -5,7 +5,7 @@ import { logAudit } from "@/lib/audit";
 import { withTenant } from "@/lib/tenant-prisma";
 import { customerSchema } from "@/lib/validations/customer";
 
-// PUT /api/customers/[id] -> musteriyi gunceller
+// PUT /api/customers/[id] -> updates a customer
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -47,7 +47,7 @@ export async function PUT(
 
     return NextResponse.json({ customer });
   } catch (error) {
-    console.error("Musteri guncelleme hatasi:", error);
+    console.error("Failed to update customer:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }
@@ -55,8 +55,8 @@ export async function PUT(
   }
 }
 
-// DELETE /api/customers/[id] -> musteriyi siler. Bagli satislarin customerId'si
-// null olur (onDelete: SetNull); satis kayitlari silinmez.
+// DELETE /api/customers/[id] -> deletes a customer. The customerId on their sales
+// becomes null (onDelete: SetNull); the sales records themselves are kept.
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -81,7 +81,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Musteri silme hatasi:", error);
+    console.error("Failed to delete customer:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

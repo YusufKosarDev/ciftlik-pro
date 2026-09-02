@@ -19,16 +19,17 @@ export type Column<T> = {
   key: string;
   header: string;
   cell: (row: T) => React.ReactNode;
-  // sortKey verilirse kolon basligi tiklanarak siralanabilir; bu anahtar URL'e
-  // (?sort) yazilir ve sunucu tarafinda orderBy'a cevrilir.
+  // With a sortKey the column header becomes clickable to sort; that key is written
+  // to the URL (?sort) and turned into an orderBy on the server.
   sortKey?: string;
   className?: string;
   headerClassName?: string;
 };
 
-// Sunucu-tarafi sayfalama/arama/siralama icin URL-gudumlu sunum tablosu.
-// Veri (`data`) zaten sunucuda sayfalanmis/filtrelenmis gelir; bu bilesen yalniz
-// gosterir ve etkilesimleri URL searchParams'a yansitir (router.replace).
+// A URL-driven presentation table for server-side pagination, search and sorting.
+// The `data` arrives already paginated and filtered from the server; this component
+// only displays it and reflects interactions into the URL's searchParams
+// (router.replace).
 export function DataTable<T extends { id: string }>({
   data,
   columns,
@@ -56,8 +57,8 @@ export function DataTable<T extends { id: string }>({
   const t = useTranslations("Table");
   const tCommon = useTranslations("Common");
 
-  // URL parametrelerini gunceller; bos/null degerler kaldirilir. scroll:false ile
-  // sayfa basina kaymayi onleriz.
+  // Updates the URL parameters, dropping empty and null values. scroll:false keeps
+  // the page from jumping back to the top.
   const updateParams = useCallback(
     (updates: Record<string, string | number | null>) => {
       const params = new URLSearchParams(searchParams.toString());
@@ -71,7 +72,7 @@ export function DataTable<T extends { id: string }>({
     [router, pathname, searchParams]
   );
 
-  // Arama: yerel girdi durumu + debounce ile URL'e yansitma.
+  // Search: local input state, reflected into the URL after a debounce.
   const [term, setTerm] = useState(list.q);
   useEffect(() => {
     const handle = setTimeout(() => {
@@ -93,7 +94,7 @@ export function DataTable<T extends { id: string }>({
     updateParams({ page: p <= 1 ? null : p });
   }
 
-  // Çoklu seçim durumu
+  // Multi-selection state
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [deleting, setDeleting] = useState(false);
 
@@ -119,14 +120,14 @@ export function DataTable<T extends { id: string }>({
       await onBulkDelete(selectedIds);
       setSelectedIds([]);
     } catch (err) {
-      console.error("Toplu silme hatası:", err);
+      console.error("Bulk delete failed:", err);
       alert(t("bulkDeleteFailed"));
     } finally {
       setDeleting(false);
     }
   };
 
-  // Kolon görünürlüğü durumu
+  // Column visibility state
   const [hiddenColumnKeys, setHiddenColumnKeys] = useState<Set<string>>(new Set());
   const [showColMenu, setShowColMenu] = useState(false);
 
@@ -142,7 +143,7 @@ export function DataTable<T extends { id: string }>({
   const renderedColumns = columns.filter((col) => !hiddenColumnKeys.has(col.key));
   const showSelectionColumn = enableSelection && data.length > 0;
 
-  // CSV İndirme fonksiyonu
+  // The CSV download
   const downloadCSV = () => {
     if (!data || data.length === 0) return;
     const exportCols = renderedColumns.filter((col) => col.key !== "actions");
@@ -157,7 +158,7 @@ export function DataTable<T extends { id: string }>({
           if (val instanceof Date) {
             val = val.toLocaleDateString();
           }
-          // Tırnak işaretlerini kaçış karakteriyle koru
+          // Escape the quote characters
           const escaped = String(val).replace(/"/g, '""');
           return `"${escaped}"`;
         })

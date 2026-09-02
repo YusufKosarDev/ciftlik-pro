@@ -51,7 +51,7 @@ export async function POST(
 
     return NextResponse.json({ record }, { status: 201 });
   } catch (error) {
-    console.error("Saglik kaydi ekleme hatasi:", error);
+    console.error("Failed to add health record:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

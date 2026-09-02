@@ -2,8 +2,8 @@ import type { Plan } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant-prisma";
 
-// Plan limitleri (Faz 3 — faturalandırma). PRO sınırsızdır.
-// FREE: en fazla 25 AKTIF hayvan ve 3 kullanıcı.
+// Plan limits (phase 3 — billing). PRO is unlimited.
+// FREE: at most 25 ACTIVE animals and 3 users.
 export const PLAN_LIMITS: Record<Plan, { animals: number; users: number }> = {
   FREE: { animals: 25, users: 3 },
   PRO: { animals: Infinity, users: Infinity },
@@ -16,12 +16,12 @@ export const resourceLabels: Record<LimitedResource, string> = {
   users: "personel",
 };
 
-// Saf kontrol (test edilebilir): mevcut sayı, plan limitinin altında mı?
+// The pure check (testable): is the current count below the plan's limit?
 export function isWithinLimit(plan: Plan, resource: LimitedResource, current: number): boolean {
   return current < PLAN_LIMITS[plan][resource];
 }
 
-// Bir tenant'ın belirli kaynaktaki mevcut kullanımı (RLS kapsamında sayılır).
+// A tenant's current usage of one resource (counted inside the RLS scope).
 export async function countResource(tenantId: string, resource: LimitedResource): Promise<number> {
   return withTenant(tenantId, (db) =>
     resource === "animals"
@@ -30,7 +30,7 @@ export async function countResource(tenantId: string, resource: LimitedResource)
   );
 }
 
-// Yeni bir kayıt eklenebilir mi? Plan + mevcut kullanımı birlikte değerlendirir.
+// May another record be added? Weighs the plan and the current usage together.
 export async function canAddRecord(
   tenantId: string,
   resource: LimitedResource

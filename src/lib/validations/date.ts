@@ -1,14 +1,14 @@
 import { z } from "zod";
 
-// Form'dan tarih "YYYY-MM-DD" string'i olarak gelir. Bu yardimcilar,
-// bozuk bir tarih degeri (orn. "abc") veritabanina ulasip 500 hatasi
-// uretmeden once, dogrulama asamasinda 400 ile yakalanmasini saglar.
+// Dates arrive from the form as "YYYY-MM-DD" strings. These helpers make sure a
+// malformed value ("abc", say) is caught with a 400 during validation, rather than
+// reaching the database and producing a 500.
 
 const isValidDate = (value: string) => !Number.isNaN(new Date(value).getTime());
 
 const INVALID_DATE_MESSAGE = "Gecerli bir tarih giriniz";
 
-// Zorunlu tarih alani: bos olamaz ve gecerli bir tarih olmalidir.
+// A required date field: it cannot be empty and must be a valid date.
 export const requiredDateString = (requiredMessage = "Tarih zorunludur") =>
   z
     .string()
@@ -16,7 +16,7 @@ export const requiredDateString = (requiredMessage = "Tarih zorunludur") =>
     .min(1, requiredMessage)
     .refine(isValidDate, INVALID_DATE_MESSAGE);
 
-// Istege bagli tarih alani: bos birakilabilir, ama doluysa gecerli olmalidir.
+// An optional date field: it may be left empty, but must be valid when filled in.
 export const optionalDateString = () =>
   z
     .string()

@@ -12,7 +12,8 @@ import type { ListState } from "@/lib/list-query";
 
 import { useFormat } from "@/lib/format";
 
-// Liste, satisa bagli musterinin adini da iceren bir tip kullanir.
+// The list uses a type that also carries the name of the customer linked to the
+// sale.
 export type SaleRow = Sale & { customer: { name: string } | null };
 
 export function SalesTable({

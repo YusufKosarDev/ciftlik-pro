@@ -1,12 +1,12 @@
 import type { CropStatus, StructureType } from "@prisma/client";
 
-// 2D ciftlik haritasi icin saf (yan etkisiz) yerlesim/olcekleme yardimcilari.
-// UI'dan bagimsizdir; bu sayede kolayca birim testi yazilabilir.
+// Pure (side-effect free) layout and scaling helpers for the 2D farm map.
+// Independent of the UI, which is what makes them easy to unit test.
 
-// Haritanin sanal koordinat sistemi (viewBox ile container'a olceklenir).
+// The map's virtual coordinate system (scaled to the container via viewBox).
 export const FARM_CANVAS = { width: 1000, height: 700 } as const;
 
-// Tarlanin temsili durumu: ekin durumu ya da hic ekim yoksa "NONE".
+// A field's representative status: the crop's status, or "NONE" when unplanted.
 export type CropMapStatus = CropStatus | "NONE";
 
 export type FieldMapInput = {
@@ -32,8 +32,8 @@ export type FieldRect = {
   status: CropMapStatus;
 };
 
-// Alan (donum) -> kare kenar uzunlugu (sanal birim).
-// Kok olcekli (alan buyudukce kenar daha yavas buyur) ve sinirlandirilmistir.
+// Area (decares) -> square side length (virtual units).
+// Square-root scaled — the side grows more slowly as the area grows — and clamped.
 export function areaToSide(area: number): number {
   const MIN = 60;
   const MAX = 220;
@@ -42,7 +42,7 @@ export function areaToSide(area: number): number {
   return Math.max(MIN, Math.min(MAX, Math.round(Math.sqrt(area) * SCALE)));
 }
 
-// Konumu (posX/posY) olmayan tarlalar icin otomatik izgara yerlesimi.
+// Automatic grid placement for fields with no position (posX/posY).
 export function autoLayoutPosition(
   index: number,
   side: number,
@@ -58,7 +58,7 @@ export function autoLayoutPosition(
   return { x, y };
 }
 
-// En guncel ekim kaydina gore tarlanin temsili durumu.
+// The field's representative status, taken from its most recent crop record.
 export function representativeCropStatus(
   crops: { status: CropStatus; plantedDate: Date | string }[]
 ): CropMapStatus {
@@ -69,9 +69,9 @@ export function representativeCropStatus(
   return latest.status;
 }
 
-// Tarlalari haritada konumlandirilmis dikdortgenlere cevirir.
-// Konumu olanlar oldugu yerde, olmayanlar otomatik izgaraya yerlesir;
-// hepsi tuval sinirlari icine kelepcelenir (clamp).
+// Turns fields into positioned rectangles on the map.
+// Those with a position stay where they are, those without fall into the automatic
+// grid; all of them are clamped inside the canvas bounds.
 export function layoutFields(
   fields: FieldMapInput[],
   canvas: { width: number; height: number } = FARM_CANVAS
@@ -95,7 +95,7 @@ export function layoutFields(
   });
 }
 
-// --- Yapilar (ahir/kumes/depo) ---
+// --- Structures (barn/coop/store) ---
 
 export const STRUCTURE_DEFAULT = { width: 120, height: 90 } as const;
 
@@ -121,7 +121,8 @@ export type StructureRect = {
   height: number;
 };
 
-// Konumu olmayan yapilar icin alt seritte (tarlalardan ayrik) otomatik yerlesim.
+// Automatic placement for structures with no position, in a lower band kept
+// separate from the fields.
 export function autoLayoutStructurePosition(
   index: number,
   width: number,
@@ -138,7 +139,7 @@ export function autoLayoutStructurePosition(
   return { x, y };
 }
 
-// Yapilari haritada konumlandirilmis dikdortgenlere cevirir.
+// Turns structures into positioned rectangles on the map.
 export function layoutStructures(
   items: StructureMapInput[],
   canvas: { width: number; height: number } = FARM_CANVAS

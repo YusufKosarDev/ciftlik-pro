@@ -5,14 +5,15 @@ import { useTheme } from "next-themes";
 import { useTranslations } from "next-intl";
 import { Sun, Moon } from "lucide-react";
 
-// Acik/koyu tema gecis dugmesi. next-themes hidrasyon sonrasi tema bilindiginden
-// mounted olana kadar notr bir yer tutucu gosteririz (hidrasyon uyumsuzlugu olmaz).
+// The light/dark theme toggle. With next-themes the theme is only known after
+// hydration, so a neutral placeholder is shown until mount — which avoids a
+// hydration mismatch.
 export function ThemeToggle() {
   const t = useTranslations("Common");
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  // next-themes'in SSR-guvenli kalibi: tema yalnizca istemcide bilindiginden
-  // mount sonrasi isaretleriz (hidrasyon uyumsuzlugunu onler).
+  // The SSR-safe next-themes pattern: the theme is known only on the client, so the
+  // flag is set after mount (which prevents a hydration mismatch).
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), []);
 

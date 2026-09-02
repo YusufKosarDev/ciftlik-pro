@@ -46,8 +46,8 @@ export const navIcons: Record<string, React.ComponentType<{ className?: string }
   "/panel/denetim": ClipboardList,
 };
 
-// Menuyu mantiksal bolumlere ayiririz; her bolumde yalnizca rolun yetkili oldugu
-// (navItems icindeki) yollar gosterilir, bos bolumler gizlenir.
+// The menu is split into logical sections; each shows only the paths the role is
+// allowed (those in navItems), and empty sections are hidden.
 const sections: { titleKey: string; hrefs: string[] }[] = [
   { titleKey: "sectionGeneral", hrefs: ["/panel", "/panel/harita", "/panel/takvim"] },
   {

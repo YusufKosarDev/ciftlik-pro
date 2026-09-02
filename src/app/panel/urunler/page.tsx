@@ -46,7 +46,8 @@ export default async function UrunlerPage({
     return { products, total };
   });
 
-  // Bu tenant'in vitrin slug'i (kendi magazasina derin baglanti icin). Tenant RLS disi.
+  // This tenant's storefront slug, for a deep link to its own shop. Tenant is
+  // outside RLS.
   const tenant = await prisma.tenant.findUnique({
     where: { id: session.user.tenantId },
     select: { slug: true },

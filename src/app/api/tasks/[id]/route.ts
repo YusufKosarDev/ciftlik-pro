@@ -50,7 +50,7 @@ export async function PUT(
 
     return NextResponse.json({ task });
   } catch (error) {
-    console.error("Gorev guncelleme hatasi:", error);
+    console.error("Failed to update task:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }
@@ -82,7 +82,7 @@ export async function DELETE(
     await logAudit(authz.session.user, "DELETE", "Task", id, existing.title);
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Gorev silme hatasi:", error);
+    console.error("Failed to delete task:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

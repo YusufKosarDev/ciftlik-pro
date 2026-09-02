@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 
-// Not: bu testler SAF, senkron bellek-ici uygulamayi hedefler. Paylasilan
-// (Postgres) yol veritabani gerektirir ve entegrasyon testiyle dogrulanir
+// Note: these tests target the PURE, synchronous in-memory implementation. The
+// shared (Postgres) path needs a database and is verified by an integration test
 // (rate-limit.int.test.ts).
 import { rateLimitMemory as rateLimit, resetRateLimitMemory as resetRateLimit, clientIp } from "./rate-limit";
 
@@ -34,7 +34,7 @@ describe("rateLimit", () => {
     const t = 3_000_000;
     rateLimit("k", 1, 60_000, t);
     expect(rateLimit("k", 1, 60_000, t).success).toBe(false);
-    // Pencere suresi gectikten sonra tekrar izinli.
+    // Allowed again once the window has passed.
     expect(rateLimit("k", 1, 60_000, t + 60_001).success).toBe(true);
   });
 
@@ -49,19 +49,19 @@ describe("rateLimit", () => {
 describe("sweep — bellek korumasi (MAX_KEYS)", () => {
   it("MAX_KEYS asilinca suresi gecmis girisleri temizler ve boyutu sinirlar", () => {
     const base = 50_000_000;
-    // Suresi kisa olan birkac giris: ileride 'dolmus' sayilacak.
+    // A few short-lived entries: they count as expired later on.
     for (let i = 0; i < 5; i++) rateLimit(`exp-${i}`, 1, 1_000, base);
 
-    // exp-* artik dolmus (resetAt = base + 1000 <= later).
+    // exp-* has now expired (resetAt = base + 1000 <= later).
     const later = base + 2_000;
-    // MAX_KEYS (10.000) asilacak kadar aktif giris ekle.
+    // Add enough live entries to exceed MAX_KEYS (10,000).
     for (let i = 0; i < 10_001; i++) rateLimit(`act-${i}`, 1, 60_000, later);
 
-    // Yeni bir anahtar sweep'i tetikler (store.size > MAX_KEYS).
+    // A new key triggers the sweep (store.size > MAX_KEYS).
     const r = rateLimit("trigger", 1, 60_000, later);
     expect(r.success).toBe(true);
 
-    // Dolmus bir anahtar temizlendigi icin yeniden tam pencereyle baslar.
+    // An expired key was swept, so it starts again with a full window.
     const reused = rateLimit("exp-0", 1, 60_000, later);
     expect(reused.success).toBe(true);
   });

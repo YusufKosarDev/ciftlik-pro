@@ -28,7 +28,7 @@ export default async function ProfilPage() {
   const t = await getTranslations("Profile");
   const { roleLabels } = await getLabels();
 
-  // Hesap (tenant) islemleri yalnizca ADMIN'e gosterilir.
+  // Account (tenant) actions are shown only to an ADMIN.
   const isAdmin = session.user.role === "ADMIN";
   const tenant = isAdmin
     ? await prisma.tenant.findUnique({

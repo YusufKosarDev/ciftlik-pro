@@ -2,11 +2,11 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { prisma } from "./prisma";
 import { rateLimit, resetRateLimit, pruneRateLimits } from "./rate-limit";
 
-// Paylasilan (Postgres) hiz sinirlayicinin GERCEK veritabaninda dogrulanmasi.
-// Bellek-ici yedegin aksine bu yol tum sunucu ornekleri arasinda ortaktir;
-// serverless'ta korumanin ornek sayisina bolunmemesinin sebebi budur.
+// Verifying the shared (Postgres) rate limiter against a REAL database.
+// Unlike the in-memory fallback, this path is common to every server instance,
+// which is why the protection is not divided by the instance count on serverless.
 //
-// Yerelde:
+// Locally:
 //   RUN_DB_TESTS=1 npx vitest run src/lib/rate-limit.int.test.ts
 const run = Boolean(process.env.RUN_DB_TESTS);
 
@@ -48,8 +48,8 @@ describe.skipIf(!run)("hiz siniri (paylasilan Postgres sayaci)", () => {
   });
 
   it("es zamanli istekleri kacirmaz (atomik artirma)", async () => {
-    // 10 istek ayni anda: oku-sonra-yaz olsaydi bir kismi ayni sayiyi okuyup
-    // sayaci eksik artirirdi. Tek UPSERT ile hepsi sayilir.
+    // 10 concurrent requests: with a read-then-write some of them would read the
+    // same value and under-count the counter. A single UPSERT counts them all.
     const limit = 4;
     const results = await Promise.all(
       Array.from({ length: 10 }, () => rateLimit(key, limit, 60_000))
@@ -63,7 +63,7 @@ describe.skipIf(!run)("hiz siniri (paylasilan Postgres sayaci)", () => {
   });
 
   it("pencere gecince sifirlanir", async () => {
-    // 1 ms'lik pencere: ilk istekten sonra pencere hemen gecmis sayilir.
+    // A 1 ms window: after the first request the window is immediately past.
     expect((await rateLimit(key, 1, 1)).success).toBe(true);
     await new Promise((r) => setTimeout(r, 25));
     expect((await rateLimit(key, 1, 1)).success).toBe(true);

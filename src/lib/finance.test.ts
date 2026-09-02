@@ -10,13 +10,14 @@ describe("buildMonthlyFinance", () => {
   it("ay etiketi aktif dile gore uretilir", () => {
     const tr = buildMonthlyFinance([], "tr").map((m) => m.month);
     const en = buildMonthlyFinance([], "en").map((m) => m.month);
-    // Etiket "<kisa ay> <yil>" bicimindedir ve dile gore FARKLI olmalidir
-    // (grafik ekseninde Ingilizce arayuzde Turkce ay adi gorunmesin).
+    // The label reads "<short month> <year>" and must DIFFER by locale, so an
+    // English interface never shows a Turkish month name on the chart axis.
     expect(tr).toHaveLength(6);
     expect(en).toHaveLength(6);
     expect(tr.every((label) => /^\S+ \d{4}$/.test(label))).toBe(true);
     expect(en.every((label) => /^\S+ \d{4}$/.test(label))).toBe(true);
-    // Yil ayni, ay adi dile bagli: en az bir ayda ayrisirlar.
+    // The year is the same and the month name is locale-dependent, so they diverge
+    // on at least one month.
     expect(tr.some((label, i) => label !== en[i])).toBe(true);
   });
 
@@ -35,7 +36,7 @@ describe("buildMonthlyFinance", () => {
       { type: "INCOME", amount: 500, date: now },
       { type: "EXPENSE", amount: 300, date: now },
     ]);
-    // Son eleman icinde bulunulan ay
+    // The last element is the current month
     const current = result[result.length - 1];
     expect(current.gelir).toBe(1500);
     expect(current.gider).toBe(300);

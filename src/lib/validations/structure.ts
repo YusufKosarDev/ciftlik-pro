@@ -2,8 +2,9 @@ import { z } from "zod";
 
 export const structureTypes = ["BARN", "COOP", "STORAGE", "OTHER"] as const;
 
-// Yapi (ahir/kumes/depo) dogrulama semasi.
-// Konum (posX/posY/width/height) form'dan degil, haritadan yonetilir.
+// The validation schema for a structure (barn/coop/store).
+// The position (posX/posY/width/height) is managed from the map, not from this
+// form.
 export const structureSchema = z.object({
   name: z
     .string()

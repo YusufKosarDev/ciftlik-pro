@@ -1,5 +1,5 @@
-// Süt verimi kayitlarindan ozet istatistik ve gunluk grafik serisi ureten
-// saf, test edilebilir mantik (veritabanindan bagimsiz).
+// Pure, testable logic producing summary statistics and a daily chart series from
+// milk yield records (independent of the database).
 
 export type MilkYieldLike = { date: Date; amount: number };
 
@@ -10,7 +10,7 @@ export type MilkStats = {
   last7Average: number; // son 7 gun icindeki kayitlarin ortalamasi (kayit basina)
 };
 
-// Yerel saatle YYYY-MM-DD anahtari (gun gruplamasi icin).
+// A YYYY-MM-DD key in local time, for grouping by day.
 function dayKey(date: Date): string {
   const d = new Date(date);
   const y = d.getFullYear();
@@ -43,8 +43,8 @@ export type MilkDailyPoint = {
   amount: number; // o gunun toplam litresi
 };
 
-// Son `days` gunun gunluk toplam verimini (eskiden yeniye) uretir.
-// Kaydi olmayan gunler 0 olarak yer alir; bu sayede grafik bosluksuz cizilir.
+// Produces the daily total yield for the last `days` days, oldest first.
+// Days with no record appear as 0, so the chart is drawn without gaps.
 export function dailyMilkSeries(
   yields: MilkYieldLike[],
   days: number = 14,

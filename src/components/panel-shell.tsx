@@ -7,7 +7,8 @@ import { Topbar } from "@/components/topbar";
 import { CommandPalette, type CommandItem } from "@/components/command-palette";
 import { Plus } from "lucide-react";
 
-// "Oluştur" kisayollari: ilgili modulun menude (yetkili) olmasi kosuluyla gosterilir.
+// The "create" shortcuts, shown only when the relevant module is in the menu (that
+// is, permitted).
 const createDefs: { need: string; labelKey: string; href: string }[] = [
   { need: "/panel/hayvanlar", labelKey: "newAnimal", href: "/panel/hayvanlar/yeni" },
   { need: "/panel/tarlalar", labelKey: "newField", href: "/panel/tarlalar/yeni" },
@@ -20,9 +21,10 @@ const createDefs: { need: string; labelKey: string; href: string }[] = [
   { need: "/panel/yapilar", labelKey: "newStructure", href: "/panel/yapilar/yeni" },
 ];
 
-// Panel duzeni: solda sabit sidebar (masaustu) / cekmece (mobil) + ust bar +
-// icerik. Mobil cekmece ve komut paleti durumu burada (client) tutulur; layout
-// sunucu bileseni oldugundan veri prop olarak gelir.
+// The panel layout: a fixed sidebar on the left (desktop) or a drawer (mobile),
+// plus the top bar and the content. The drawer and command palette state is kept
+// here on the client; the layout is a server component, so the data arrives as
+// props.
 export function PanelShell({
   navItems,
   userName,
@@ -38,7 +40,7 @@ export function PanelShell({
   const [cmdOpen, setCmdOpen] = useState(false);
   const tc = useTranslations("Command");
 
-  // Komut listesi: once "Oluştur" eylemleri, sonra "Git" (sayfalar).
+  // The command list: the "create" actions first, then "go to" (the pages).
   const commands = useMemo<CommandItem[]>(() => {
     const allowed = new Set(navItems.map((i) => i.href));
     const creates: CommandItem[] = createDefs

@@ -5,15 +5,15 @@ import { useTranslations } from "next-intl";
 import type { MilkDailyPoint } from "@/lib/milk-stats";
 import { ChartSkeleton } from "@/components/chart-skeleton";
 
-// Yukleme iskeleti de cevrilir. `loading` bir React bileseni olarak render
-// edildiginden hook kullanabilir; onceden sabit Turkce metin gecildigi icin
-// EN'e gecildiginde iskelet Turkce kaliyordu.
+// The loading skeleton is translated too. `loading` is rendered as a React
+// component, so it may use hooks; it previously received hard-coded Turkish text,
+// which left the skeleton in Turkish after switching to English.
 function MilkChartLoading() {
   const t = useTranslations("Animals");
   return <ChartSkeleton heightClass="h-64" title={t("milkChartLabel")} />;
 }
 
-// Recharts tembel (ssr:false) yuklenir; ilk JS yuku kucuk kalir.
+// Recharts is loaded lazily (ssr:false), which keeps the initial JS payload small.
 const MilkYieldChartImpl = dynamic(
   () => import("./milk-yield-chart-impl").then((m) => m.MilkYieldChartImpl),
   { ssr: false, loading: MilkChartLoading }

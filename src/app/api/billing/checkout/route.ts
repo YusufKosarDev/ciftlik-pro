@@ -6,9 +6,10 @@ import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
 import { logAudit } from "@/lib/audit";
 
-// POST /api/billing/checkout -> ADMIN, tenant'ı PRO'ya yükseltir.
-// Env-gated: Stripe + STRIPE_PRO_PRICE_ID varsa gerçek abonelik Checkout'u açar
-// (plan webhook ile güncellenir). Yoksa (demo) planı doğrudan PRO yapar.
+// POST /api/billing/checkout -> an ADMIN upgrades the tenant to PRO.
+// Env-gated: with Stripe and STRIPE_PRO_PRICE_ID present it opens a real
+// subscription Checkout (the plan is then updated by the webhook). Without them
+// (demo mode) it sets the plan to PRO directly.
 export async function POST(request: Request) {
   const te = await getTranslations("Errors");
   const session = await auth();
@@ -18,8 +19,8 @@ export async function POST(request: Request) {
   if (session.user.role !== "ADMIN") {
     return NextResponse.json({ error: te("adminOnlyUpgradePlan") }, { status: 403 });
   }
-  // Demo hesabi salt-okunurdur: vitrin ADMIN olsa da gercek plan degisikligi
-  // (demo modunda dogrudan DB yazimi) yaptiramaz.
+  // The demo account is read-only: even the showcase ADMIN cannot make a real plan
+  // change (which in demo mode would be a direct database write).
   if (isDemoUser(session.user.email)) {
     return NextResponse.json(
       { error: te("demoPlanLocked") },
@@ -36,14 +37,14 @@ export async function POST(request: Request) {
     const checkout = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [{ price: priceId, quantity: 1 }],
-      // Webhook'ta planı doğru tenant'a yazmak için.
+      // So the webhook can write the plan to the right tenant.
       metadata: { tenantId, kind: "subscription" },
       subscription_data: { metadata: { tenantId } },
       success_url: `${origin}/panel/abonelik?ok=1`,
       cancel_url: `${origin}/panel/abonelik`,
     });
-    // Planı henüz değiştirmedik (bunu webhook yapar); yine de "kim, ne zaman
-    // ödeme akışını başlattı" izi denetim kaydına girer.
+    // The plan is not changed yet — the webhook does that — but who started the
+    // payment flow, and when, still goes into the audit log.
     await logAudit(
       session.user,
       "UPDATE",
@@ -54,7 +55,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, checkoutUrl: checkout.url });
   }
 
-  // Demo modu (ödeme yapılandırılmamış): planı doğrudan yükselt.
+  // Demo mode (no payment configured): upgrade the plan directly.
   await prisma.tenant.update({ where: { id: tenantId }, data: { plan: "PRO" } });
   await logAudit(session.user, "UPDATE", "Tenant", tenantId, "plan: FREE → PRO");
   return NextResponse.json({ ok: true, upgraded: true });

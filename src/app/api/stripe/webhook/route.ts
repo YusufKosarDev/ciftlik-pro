@@ -6,12 +6,13 @@ import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant-prisma";
 import { logAudit } from "@/lib/audit";
 
-// Webhook'ta oturum yoktur; denetim kaydinin aktoru otomasyonun kendisidir.
+// There is no session in a webhook; the audit record's actor is the automation.
 const STRIPE_ACTOR = "Stripe (webhook)";
 
-// POST /api/stripe/webhook -> Stripe odeme bildirimleri. Imza STRIPE_WEBHOOK_SECRET
-// ile dogrulanir. checkout.session.completed gelince ilgili siparis PAID + CONFIRMED
-// olarak isaretlenir. Ham govde imza dogrulamasi icin text() ile okunur.
+// POST /api/stripe/webhook -> Stripe payment notifications. The signature is
+// verified against STRIPE_WEBHOOK_SECRET. On checkout.session.completed the
+// matching order is marked PAID + CONFIRMED. The raw body is read with text(),
+// because signature verification needs it unparsed.
 export async function POST(request: Request) {
   const te = await getTranslations("Errors");
   const stripe = getStripe();
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
   try {
     event = stripe.webhooks.constructEvent(raw, signature, secret);
   } catch (err) {
-    console.error("Stripe webhook imza dogrulamasi basarisiz:", err);
+    console.error("Stripe webhook signature verification failed:", err);
     return NextResponse.json({ error: te("invalidSignature") }, { status: 400 });
   }
 
@@ -39,7 +40,7 @@ export async function POST(request: Request) {
     const tenantId = session.metadata?.tenantId;
 
     if (session.mode === "subscription" && tenantId) {
-      // Abonelik basladi -> tenant PRO. Tenant RLS disidir.
+      // A subscription started -> the tenant goes PRO. Tenant is outside RLS.
       await prisma.tenant.update({ where: { id: tenantId }, data: { plan: "PRO" } });
       await logAudit(
         { tenantId, name: STRIPE_ACTOR },
@@ -49,19 +50,20 @@ export async function POST(request: Request) {
         "abonelik basladi — plan: PRO"
       );
     } else {
-      // Magaza siparisi odemesi.
+      // A storefront order payment.
       const orderId = session.metadata?.orderId;
       if (orderId && tenantId) {
-        // Order RLS'e tabidir: siparis, olusturulurken metadata'ya yazilan tenant
-        // baglaminda guncellenir. updateMany idempotenttir (bulunmazsa hata yok).
+        // Order is subject to RLS: it is updated in the tenant context written
+        // into the metadata when the order was created. updateMany is idempotent —
+        // no error if nothing matches.
         const updated = await withTenant(tenantId, (db) =>
           db.order.updateMany({
             where: { id: orderId },
             data: { paymentStatus: "PAID", status: "CONFIRMED" },
           })
         );
-        // count === 0: siparis bu tenant baglaminda bulunamadi (yanlis/eskimis
-        // metadata). Guncelleme olmadiysa denetim kaydi da yazilmaz.
+        // count === 0: the order was not found in this tenant context (wrong or
+        // stale metadata). With no update there is no audit record either.
         if (updated.count > 0) {
           await logAudit(
             { tenantId, name: STRIPE_ACTOR },
@@ -75,7 +77,7 @@ export async function POST(request: Request) {
     }
   }
 
-  // Abonelik iptal/sona erdi -> tenant FREE'ye doner.
+  // The subscription was cancelled or expired -> the tenant returns to FREE.
   if (event.type === "customer.subscription.deleted") {
     const sub = event.data.object as Stripe.Subscription;
     const tenantId = sub.metadata?.tenantId;

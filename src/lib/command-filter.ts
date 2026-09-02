@@ -1,6 +1,6 @@
-// Komut paleti (Cmd/Ctrl+K) icin saf filtreleme mantigi. UI'dan ayri tutulur ki
-// test edilebilsin. Etiket + anahtar kelimeler uzerinde Turkce-duyarli, kucuk
-// harfe indirgenmis alt-dize eslemesi yapar.
+// Pure filtering logic for the command palette (Cmd/Ctrl+K). Kept apart from the
+// UI so it can be tested. It does a lower-cased substring match over the label and
+// the keywords.
 
 export type Command = {
   id: string;
@@ -10,9 +10,9 @@ export type Command = {
   keywords?: string; // Aramayi kolaylastiran ek kelimeler
 };
 
-// Generic: cagiranin tipini (orn. ikon iceren CommandItem) korur.
-// Arama kutusu icin invariant toLowerCase kullaniriz (ASCII buyuk harf yazimi da
-// eslessin; Turkce locale "I"->"ı" surprizi olmasin).
+// Generic, so the caller's type (a CommandItem carrying an icon, say) is
+// preserved. The search box uses an invariant toLowerCase, so ASCII capitals still
+// match and the Turkish locale's "I" -> "ı" surprise cannot bite.
 export function filterCommands<T extends Command>(commands: T[], query: string): T[] {
   const q = query.trim().toLowerCase();
   if (!q) return commands;

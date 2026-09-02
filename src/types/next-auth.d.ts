@@ -1,8 +1,8 @@
 import type { Role } from "@prisma/client";
 import type { DefaultSession } from "next-auth";
 
-// Auth.js'in varsayilan tiplerini genisletiyoruz:
-// oturumda kullanicinin id ve rol bilgisi de tip guvenli sekilde bulunsun.
+// Extending Auth.js's default types, so the session carries the user's id and role
+// in a type-safe way.
 
 declare module "next-auth" {
   interface Session {

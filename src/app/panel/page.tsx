@@ -21,7 +21,7 @@ function resolveDelta(
   };
 }
 
-// Uyari kutusu bileseni
+// The alert box component
 function AlertCard({
   title,
   icon,
@@ -57,13 +57,13 @@ export default async function PanelPage() {
   const now = new Date();
   const in30Days = new Date();
   in30Days.setDate(in30Days.getDate() + 30);
-  // Grafik yalnizca son 6 ayi gosterir; bu yuzden tum islemleri degil,
-  // sadece bu pencereyi cekiyoruz. Toplamlar ise aggregate ile hesaplanir.
+  // The chart only shows the last 6 months, so only that window is fetched rather
+  // than every transaction. The totals are computed with aggregate instead.
   const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
-  // Bu ayin baslangici — "bu ay" trend deltalari icin.
+  // The start of this month, for the "this month" trend deltas.
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  // Tum ozet verilerini tek seferde paralel cekiyoruz
+  // All the summary data is fetched in parallel, in one go
   const [
     animalCount,
     fieldCount,
@@ -80,9 +80,9 @@ export default async function PanelPage() {
     Promise.all([
       db.animal.count({ where: { status: "ACTIVE" } }),
       db.field.count(),
-      // Tum zamanlarin gelir/gider toplamlari (kayitlari belleğe cekmeden)
+      // All-time income and expense totals, without pulling the records into memory
       db.transaction.groupBy({ by: ["type"], _sum: { amount: true } }),
-      // Grafik icin yalnizca son 6 ayin islemleri
+      // Only the last 6 months of transactions, for the chart
       db.transaction.findMany({
         where: { date: { gte: sixMonthsAgo } },
         select: { type: true, amount: true, date: true },
@@ -103,7 +103,8 @@ export default async function PanelPage() {
         include: { animal: { select: { tagNumber: true, name: true } } },
         orderBy: { nextDate: "asc" },
       }),
-      // Trend deltalari: bu ay eklenen hayvan/tarla ve bu ayin gelir/gider toplami
+      // Trend deltas: animals and fields added this month, and this month's income
+      // and expense totals
       db.animal.count({ where: { createdAt: { gte: monthStart } } }),
       db.field.count({ where: { createdAt: { gte: monthStart } } }),
       db.transaction.groupBy({
@@ -120,7 +121,7 @@ export default async function PanelPage() {
     totalsByType.find((t) => t.type === "EXPENSE")?._sum.amount ?? 0;
   const balance = totalIncome - totalExpense;
 
-  // Bu ayin net tutari (gelir - gider) — Net Bakiye kartinin deltasi.
+  // This month's net amount (income - expense) — the delta on the Net Balance card.
   const monthIncome =
     monthTotalsByType.find((t) => t.type === "INCOME")?._sum.amount ?? 0;
   const monthExpense =

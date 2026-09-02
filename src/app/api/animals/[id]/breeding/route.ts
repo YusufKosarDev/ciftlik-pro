@@ -57,7 +57,7 @@ export async function POST(
 
     return NextResponse.json({ record }, { status: 201 });
   } catch (error) {
-    console.error("Ureme kaydi ekleme hatasi:", error);
+    console.error("Failed to add breeding record:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

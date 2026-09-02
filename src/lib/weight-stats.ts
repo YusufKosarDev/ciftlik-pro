@@ -1,5 +1,5 @@
-// Agirlik (tartim) kayitlarindan ozet ve grafik serisi ureten saf, test
-// edilebilir mantik (veritabanindan bagimsiz).
+// Pure, testable logic producing a summary and a chart series from weight
+// (weighing) records — independent of the database.
 
 export type WeightRecordLike = { date: Date; weightKg: number };
 
@@ -34,7 +34,7 @@ export type WeightPoint = {
   weight: number;
 };
 
-// Kayitlari tarihe gore (eskiden yeniye) grafik noktalarina cevirir.
+// Turns the records into chart points, ordered by date, oldest first.
 export function weightSeries(records: WeightRecordLike[]): WeightPoint[] {
   return [...records].sort(byDateAsc).map((r) => {
     const d = new Date(r.date);

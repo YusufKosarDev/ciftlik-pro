@@ -4,7 +4,7 @@ import { withTenant } from "@/lib/tenant-prisma";
 import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 
-// DELETE /api/invitations/[id] -> ADMIN bekleyen bir daveti iptal eder.
+// DELETE /api/invitations/[id] -> an ADMIN cancels a pending invitation.
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -28,7 +28,7 @@ export async function DELETE(
     await logAudit(authz.session.user, "DELETE", "Invitation", id, existing.email);
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Davet iptal hatasi:", error);
+    console.error("Failed to cancel invitation:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

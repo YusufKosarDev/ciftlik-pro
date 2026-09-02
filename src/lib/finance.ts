@@ -1,13 +1,13 @@
-// Aylik gelir-gider grafik verisi. (Grafik bileseni bu tipi buradan alir;
-// boylece lib -> bilesen ters bagimliligi olmaz.)
+// Data for the monthly income/expense chart. (The chart component takes this type
+// from here, so there is no lib -> component back-dependency.)
 export type MonthlyFinance = {
   month: string; // Orn. "Ara 2025"
   gelir: number;
   gider: number;
 };
 
-// Ay etiketi aktif dile gore uretilir: Intl kisa ay adini (Oca / Jan) verir,
-// boylece sabit bir Turkce dizi tutmaya gerek kalmaz.
+// The month label follows the active locale: Intl gives the short month name
+// (Oca / Jan), so there is no hard-coded Turkish array to maintain.
 
 type SimpleTransaction = {
   type: "INCOME" | "EXPENSE";
@@ -15,7 +15,7 @@ type SimpleTransaction = {
   date: Date;
 };
 
-// Islemleri son 6 aya gore gruplayip grafik verisi uretir.
+// Groups transactions into the last 6 months and produces the chart data.
 export function buildMonthlyFinance(
   transactions: SimpleTransaction[],
   locale: string = "tr"
@@ -27,7 +27,7 @@ export function buildMonthlyFinance(
   const buckets: MonthlyFinance[] = [];
   const keyToIndex = new Map<string, number>();
 
-  // Son 6 ayi (en eskiden yeniye) hazirla
+  // Prepare the last 6 months, oldest first
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const key = `${d.getFullYear()}-${d.getMonth()}`;

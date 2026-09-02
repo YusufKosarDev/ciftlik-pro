@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ product }, { status: 201 });
   } catch (error) {
-    console.error("Urun ekleme hatasi:", error);
+    console.error("Failed to add product:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

@@ -7,9 +7,10 @@ import { rateLimit, clientIp } from "@/lib/rate-limit";
 import { getStripe } from "@/lib/stripe";
 import { logAudit } from "@/lib/audit";
 
-// POST /api/orders -> HERKESE ACIK per-tenant magaza siparisi (cok kalemli, odemesiz).
-// Kimlik gerektirmez; hiz siniri + dogrulama + urun aktiflik kontrolu uygulanir.
-// Siparis, slug ile cozumlenen tenant'a baglanir; fiyat/ad her kalem icin snapshot.
+// POST /api/orders -> a PUBLIC per-tenant storefront order (multi-line, unpaid).
+// It needs no identity; a rate limit, validation and an active-product check are
+// applied. The order is attached to the tenant resolved from the slug, and price
+// and name are snapshotted per line.
 export async function POST(request: Request) {
   const te = await getTranslations("Errors");
   try {
@@ -32,16 +33,18 @@ export async function POST(request: Request) {
 
     const data = parsed.data;
 
-    // Slug -> tenant. Gecersiz slug = bilinmeyen magaza.
+    // Slug -> tenant. An invalid slug means an unknown storefront.
     const tenant = await resolveStorefront(data.slug);
     if (!tenant) {
       return NextResponse.json({ error: te("storeNotFound") }, { status: 404 });
     }
 
-    // Tum islemler bu tenant baglaminda: urun dogrulamasi + siparis olusturma.
+    // Everything runs in this tenant's context: product validation and order
+    // creation alike.
     const result = await withTenant(tenant.id, async (db) => {
       const productIds = [...new Set(data.items.map((i) => i.productId))];
-      // forTenant, sorguya tenantId filtresi enjekte eder: baska tenant'in urunu gelmez.
+      // forTenant injects the tenantId filter, so another tenant's product cannot
+      // come back.
       const products = await db.product.findMany({
         where: { id: { in: productIds }, active: true },
       });
@@ -82,9 +85,10 @@ export async function POST(request: Request) {
     }
     const { order, itemsData, total } = result;
 
-    // Denetim kaydi: siparis herkese acik akistan gelir (oturum yok), bu yuzden
-    // aktor kimligi musteri adidir. Kayit, siparisin ait oldugu tenant'in
-    // baglaminda yazilir; boylece ciftlik kendi denetim gunlugunde gorur.
+    // Audit record: the order arrives through the public flow with no session, so
+    // the actor's identity is the customer's name. The row is written in the
+    // context of the tenant the order belongs to, so the farm sees it in its own
+    // audit log.
     await logAudit(
       { tenantId: tenant.id, name: data.customerName },
       "CREATE",
@@ -93,8 +97,9 @@ export async function POST(request: Request) {
       `${itemsData.length} kalem, toplam ${total} (magaza siparisi)`
     );
 
-    // Gercek odeme yapilandirildiysa Stripe Checkout oturumu olustur ve URL dondur.
-    // Kesirli miktari desteklemek icin her satir quantity:1 + unit_amount=lineTotal.
+    // When real payment is configured, create a Stripe Checkout session and return
+    // its URL. To support fractional quantities each line uses quantity:1 with
+    // unit_amount=lineTotal.
     const stripe = getStripe();
     if (stripe) {
       const origin = process.env.NEXT_PUBLIC_SITE_URL ?? new URL(request.url).origin;
@@ -108,7 +113,7 @@ export async function POST(request: Request) {
           },
           quantity: 1,
         })),
-        // tenantId webhook'ta siparisi dogru tenant baglaminda guncellemek icin.
+        // tenantId lets the webhook update the order in the right tenant context.
         metadata: { orderId: order.id, tenantId: tenant.id },
         success_url: `${origin}/magaza/${tenant.slug}/siparis-tamam`,
         cancel_url: `${origin}/magaza/${tenant.slug}/sepet`,
@@ -124,7 +129,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true, orderId: order.id }, { status: 201 });
   } catch (error) {
-    console.error("Siparis olusturma hatasi:", error);
+    console.error("Failed to create order:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

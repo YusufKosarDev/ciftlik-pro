@@ -49,7 +49,7 @@ export async function PATCH(
 
     return NextResponse.json({ order });
   } catch (error) {
-    console.error("Siparis guncelleme hatasi:", error);
+    console.error("Failed to update order:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }
@@ -82,7 +82,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Siparis silme hatasi:", error);
+    console.error("Failed to delete order:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

@@ -5,12 +5,12 @@ import { authorizeWrite } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 import { feedSchema } from "@/lib/validations/feed";
 
-// Atomik stok dusumu sirasinda yetersiz stok durumunu isaretlemek icin
-// kullanilan ozel hata. $transaction icinde firlatilirsa islem geri alinir.
+// A dedicated error used to signal insufficient stock during the atomic
+// deduction. Thrown inside $transaction, it rolls the operation back.
 class InsufficientStockError extends Error {}
 
-// POST /api/feed -> yem tuketim kaydi olusturur ve stok miktarini dusurur.
-// Kayit olusturma + stok dusumu tek transaction'da yapilir.
+// POST /api/feed -> records feed consumption and deducts the stock quantity.
+// Creating the record and deducting the stock happen in one transaction.
 export async function POST(request: Request) {
   const te = await getTranslations("Errors");
   try {
@@ -48,9 +48,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Stok dusumu, yaris kosulunu (TOCTOU) onlemek icin ATOMIK yapilir:
-    // updateMany yalnizca quantity >= talep oldugunda gunceller. Iki eszamanli
-    // istek olsa bile stok asla eksiye dusmez. count === 0 ise tx geri alinir.
+    // The deduction is ATOMIC, to close the TOCTOU race: updateMany only updates
+    // when quantity >= the amount requested. Even with two concurrent requests the
+    // stock can never go negative. When count === 0 the transaction is rolled
+    // back.
     let log;
     try {
       log = await withTenant(tenantId, async (db) => {
@@ -73,7 +74,7 @@ export async function POST(request: Request) {
       });
     } catch (err) {
       if (err instanceof InsufficientStockError) {
-        // Esnek erisim sirasinda baska bir istek stogu tuketmis olabilir.
+        // Another request may have consumed the stock in the meantime.
         const fresh = await withTenant(tenantId, (db) =>
           db.inventoryItem.findFirst({
             where: { id: data.inventoryItemId },
@@ -92,7 +93,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ log }, { status: 201 });
   } catch (error) {
-    console.error("Yem tuketim hatasi:", error);
+    console.error("Feed consumption failed:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

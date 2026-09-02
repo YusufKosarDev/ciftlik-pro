@@ -7,9 +7,10 @@ import { findInvitationByToken, isInvitationUsable } from "@/lib/invitations";
 import { AcceptInviteForm } from "@/components/accept-invite-form";
 import { LanguageSwitcher } from "@/components/language-switcher";
 
-// Public davet kabul sayfasi. Daveti token ile okur (Invitation RLS altindadir;
-// baglamsiz okuma SECURITY DEFINER fonksiyonuyla yapilir), gecerliyse kabul
-// formunu gosterir; degilse bilgilendirir.
+// The public invitation acceptance page. It reads the invitation by token
+// (Invitation is under RLS, so the context-free read goes through a SECURITY
+// DEFINER function) and shows the acceptance form when it is valid, or an
+// explanation when it is not.
 export default async function DavetPage({
   params,
 }: {

@@ -32,7 +32,7 @@ describe("password-hash", () => {
   });
 
   it("eski bcrypt hashlerini geriye donuk uyumlu sekilde dogrular", async () => {
-    // "sifre1234" parolasinin cost 10 ile uretilmis bcrypt hash'i
+    // A bcrypt hash of the password "sifre1234", generated at cost 10
     const bcryptHash = "$2b$10$wmoGyVt7NUGydA7ffQ4t2OzWmzp1RfPQf2wEF8GtEXTR63ApZjDbm";
     
     const isValid = await verifyPassword("sifre1234", bcryptHash);
@@ -43,9 +43,9 @@ describe("password-hash", () => {
   });
 });
 
-// Seed/bootstrap script'leri Docker'da tsx olmadan calistigi icin ayri bir
-// .mjs uygulamasi kullaniyor (prisma/password-hash.mjs). Iki uygulamanin AYNI
-// formati uretmesi sart: aksi halde seed'lenen hesaplar giris yapamaz.
+// The seed and bootstrap scripts run in Docker without tsx, so they use a separate
+// .mjs implementation (prisma/password-hash.mjs). The two implementations MUST
+// produce the same format: otherwise the seeded accounts cannot sign in.
 describe("seed script'i ile uyum (prisma/password-hash.mjs)", () => {
   it("mjs uygulamasinin urettigi hash, uygulama tarafinda dogrulanir", async () => {
     const { hashPassword: hashFromSeed } = await import("../../prisma/password-hash.mjs");

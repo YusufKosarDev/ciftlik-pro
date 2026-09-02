@@ -25,7 +25,7 @@ export default async function PersonelPage({
     getLocale(),
   ]);
 
-  // Sadece ADMIN bu sayfaya erisebilir (sayfa tarafi koruma)
+  // Only an ADMIN may reach this page (the page-side guard)
   if (session?.user.role !== "ADMIN") {
     redirect("/panel");
   }
@@ -56,7 +56,7 @@ export default async function PersonelPage({
         select: { id: true, name: true, email: true, role: true, createdAt: true },
       }),
       db.user.count({ where }),
-      // Bekleyen (kabul edilmemis, suresi gecmemis) davetler.
+      // Pending invitations: not yet accepted and not yet expired.
       db.invitation.findMany({
         where: { acceptedAt: null, expiresAt: { gt: new Date() } },
         orderBy: { createdAt: "desc" },

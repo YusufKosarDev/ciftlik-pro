@@ -49,7 +49,7 @@ export async function PUT(
 
     return NextResponse.json({ structure });
   } catch (error) {
-    console.error("Yapi guncelleme hatasi:", error);
+    console.error("Failed to update structure:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }
@@ -81,7 +81,7 @@ export async function DELETE(
     await logAudit(authz.session.user, "DELETE", "Structure", id, existing.name);
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Yapi silme hatasi:", error);
+    console.error("Failed to delete structure:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }
@@ -125,7 +125,7 @@ export async function PATCH(
 
     return NextResponse.json({ structure });
   } catch (error) {
-    console.error("Yapi konum guncelleme hatasi:", error);
+    console.error("Failed to update structure position:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

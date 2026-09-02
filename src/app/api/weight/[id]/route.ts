@@ -28,7 +28,7 @@ export async function DELETE(
     await logAudit(authz.session.user, "DELETE", "WeightRecord", id, `${existing.weightKg} kg`);
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Agirlik kaydi silme hatasi:", error);
+    console.error("Failed to delete weight record:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }

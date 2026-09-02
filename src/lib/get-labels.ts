@@ -14,10 +14,12 @@ import type {
   Role,
 } from "@prisma/client";
 
-// Enum etiketleri icin i18n yardimcisi (sunucu bilesenleri). `useLabels` (client)
-// ile ayni sekli dondurur; cagri yerleri `const { speciesLabels } = await getLabels();`.
+// The i18n helper for enum labels, for server components. It returns the same
+// shape as `useLabels` (client); call sites read
+// `const { speciesLabels } = await getLabels();`.
 export async function getLabels() {
-  // Dinamik (enum'dan turetilmis) anahtarlar icin gevsek imza; degerler katalogda mevcut.
+  // A loose signature for the dynamic (enum-derived) keys; the values exist in the
+  // catalogue.
   const t = (await getTranslations("Labels")) as unknown as (key: string) => string;
   const map = <T extends string>(group: string, keys: readonly T[]) =>
     Object.fromEntries(keys.map((k) => [k, t(`${group}.${k}`)])) as Record<T, string>;

@@ -54,7 +54,7 @@ export async function POST(
 
     return NextResponse.json({ crop }, { status: 201 });
   } catch (error) {
-    console.error("Ekim kaydi ekleme hatasi:", error);
+    console.error("Failed to add crop record:", error);
     return NextResponse.json(
       { error: te("serverErrorRetry") },
       { status: 500 }
