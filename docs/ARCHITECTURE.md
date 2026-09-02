@@ -4,8 +4,9 @@ This document explains **why** Çiftlik Pro is built the way it is. It is organi
 around the decisions that were genuinely hard, the alternatives that were rejected,
 and the trade-offs that came with each choice.
 
-For the phased migration plan see [`SAAS-PLAN.md`](SAAS-PLAN.md) (Turkish); for the
-production database role setup see [`PRODUCTION-RLS.md`](PRODUCTION-RLS.md) (Turkish).
+For the production database role setup see
+[`PRODUCTION-RLS.md`](PRODUCTION-RLS.md); for the phased migration plan see
+[`SAAS-PLAN.md`](SAAS-PLAN.md) (Turkish).
 
 ---
 

@@ -190,7 +190,8 @@ Sertleştirme önlemleri:
   bypass edemeyen bir rolle kanıtlanır: CI her push'ta `ciftlik_app` rolünü
   (`NOSUPERUSER NOBYPASSRLS`) kurup izolasyon testlerini o rolle koşar.
   Barındırılan demoda bu katman etkin değildir; gerekçesi
-  [`docs/PRODUCTION-RLS.md`](docs/PRODUCTION-RLS.md#neon-limitation) içinde.
+  [`docs/PRODUCTION-RLS.md`](docs/PRODUCTION-RLS.md#neon-limitation) içinde
+  (İngilizce).
 - **Kayıt & davet** — herkese açık **çiftlik kaydı** sahip-ADMIN üretir; personel
   yalnızca **token'lı davetle** eklenir. Davet token'ları tahmin edilemez sırlardır,
   süre sınırlıdır ve tek kullanımlıktır. Ziyaretçiler giriş ekranından rol seçerek salt-okunur vitrin hesaplarıyla gezer.
@@ -270,7 +271,8 @@ bağımsız katmanda** zorlanır:
    > katmanında, hem bağlantı proxy'sinin tanıdığı hem de `neon_superuser`
    > dışında kalan bir rol oluşturulamıyor. Denenen iki yol ve ikisinin de neden
    > kapandığı:
-   > [`docs/PRODUCTION-RLS.md`](docs/PRODUCTION-RLS.md#neon-limitation).
+   > [`docs/PRODUCTION-RLS.md`](docs/PRODUCTION-RLS.md#neon-limitation)
+   > (İngilizce).
    > Uygulama katmanı (Prisma extension + `withTenant` + `SET LOCAL`) demoda da
    > tam olarak çalışır.
 2. **Uygulama katmanı** — bir Prisma Client Extension (`forTenant`) `where`'lere
