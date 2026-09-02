@@ -49,3 +49,11 @@ next-env.d.ts
 /playwright-report
 /blob-report
 /playwright/.cache
+
+# Next 16.3 yazar: `next dev` her calistiginda depo kokune AGENTS.md ve CLAUDE.md
+# uretir (node_modules/next/dist/server/lib/generate-agent-files.js) ve silinince
+# yeniden olusturur. Icerikleri Next'in kendi paketinden turer, bu deponun bir
+# parcasi degildir; herkese acik bir depoya yazmadigimiz talimat dosyalari
+# eklemek yerine yok sayiyoruz.
+/AGENTS.md
+/CLAUDE.md
