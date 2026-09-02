@@ -1,1 +1,6 @@
-npx lint-staged
+# --relative: lint-staged passes ABSOLUTE paths to the task by default. Windows
+# caps a command line at 8191 characters, and on a commit touching 140+ files the
+# absolute paths exceed that, so the hook dies with "The command line is too long"
+# — a failure that depends only on the NUMBER of files, not on their content.
+# Relative paths roughly halve the command for the same set of files.
+npx lint-staged --relative
